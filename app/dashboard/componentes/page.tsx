@@ -18,6 +18,7 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
 import {
   Table,
   TableBody,
@@ -221,7 +222,7 @@ export default function ComponentesPage() {
       case "memoria-ram":
         return (
           <>
-            <TableHead className="text-muted-foreground font-medium">Modelo</TableHead>
+            <TableHead className="text-muted-foreground font-medium">Nº Interno</TableHead>
             <TableHead className="text-muted-foreground font-medium">Tecnología</TableHead>
             <TableHead className="text-muted-foreground font-medium">Formato</TableHead>
             <TableHead className="text-muted-foreground font-medium">Capacidad</TableHead>
@@ -243,7 +244,6 @@ export default function ComponentesPage() {
           <>
             <TableHead className="text-muted-foreground font-medium">Modelo</TableHead>
             <TableHead className="text-muted-foreground font-medium">Familia</TableHead>
-            <TableHead className="text-muted-foreground font-medium">Socket</TableHead>
             <TableHead className="text-muted-foreground font-medium">Frecuencia</TableHead>
             <TableHead className="text-muted-foreground font-medium">Núcleos / Hilos</TableHead>
             <TableHead className="text-muted-foreground font-medium">Marca</TableHead>
@@ -253,7 +253,6 @@ export default function ComponentesPage() {
         return (
           <>
             <TableHead className="text-muted-foreground font-medium">Modelo</TableHead>
-            <TableHead className="text-muted-foreground font-medium">Ensamblador</TableHead>
             <TableHead className="text-muted-foreground font-medium">VRAM</TableHead>
             <TableHead className="text-muted-foreground font-medium">Marca</TableHead>
           </>
@@ -264,10 +263,15 @@ export default function ComponentesPage() {
   }
 
   const renderTableRows = () => {
+    const formatDate = (dateStr: string) => {
+      if (!dateStr) return "N/A"
+      return new Date(dateStr).toLocaleDateString("es-CL", { timeZone: "UTC" })
+    }
+
     if (isLoading) {
       return (
         <TableRow>
-          <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+          <TableCell colSpan={12} className="text-center py-8 text-muted-foreground">
             Cargando componentes...
           </TableCell>
         </TableRow>
@@ -277,7 +281,7 @@ export default function ComponentesPage() {
     if (filteredData.length === 0) {
       return (
         <TableRow>
-          <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+          <TableCell colSpan={12} className="text-center py-8 text-muted-foreground">
             No se encontraron componentes de este tipo.
           </TableCell>
         </TableRow>
@@ -316,6 +320,22 @@ export default function ComponentesPage() {
         </TableCell>
       )
 
+      const commonCells = (
+        <>
+          <TableCell>{item.proveedor?.nombre || "N/A"}</TableCell>
+          <TableCell className="font-medium">
+            {item.factura !== undefined && item.factura !== null ? `$${item.factura.toLocaleString("es-CL")}` : "N/A"}
+          </TableCell>
+          <TableCell>{formatDate(item.fecha_compra)}</TableCell>
+          <TableCell className="font-semibold">{item.uso}</TableCell>
+          <TableCell>
+            <Badge className={item.activa ? "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border-emerald-500/20" : "bg-destructive/10 text-destructive hover:bg-destructive/20 border-destructive/20"}>
+              {item.activa ? "Activo" : "Inactivo"}
+            </Badge>
+          </TableCell>
+        </>
+      )
+
       switch (activeTab) {
         case "disco-almacenamiento":
           return (
@@ -324,6 +344,7 @@ export default function ComponentesPage() {
               <TableCell>{item.tipo_disco}</TableCell>
               <TableCell>{item.capacidad}</TableCell>
               <TableCell>{getBrandName(item.id_marca)}</TableCell>
+              {commonCells}
               {actions}
             </TableRow>
           )
@@ -334,18 +355,20 @@ export default function ComponentesPage() {
               <TableCell>{item.potencia}</TableCell>
               <TableCell>{item.certificacion}</TableCell>
               <TableCell>{getBrandName(item.id_marca)}</TableCell>
+              {commonCells}
               {actions}
             </TableRow>
           )
         case "memoria-ram":
           return (
             <TableRow key={item.id} className="border-border">
-              <TableCell className="font-semibold">{item.modelo}</TableCell>
-              <TableCell>{item.tipo_tecnologia}</TableCell>
+              <TableCell className="font-mono text-sm font-bold">{item.n_interno || "N/A"}</TableCell>
+              <TableCell className="font-semibold">{item.tipo_tecnologia}</TableCell>
               <TableCell>{item.formato}</TableCell>
               <TableCell>{item.capacidad || item.tamaño_capacidad || "N/A"}</TableCell>
               <TableCell>{item.frecuencia || item.velocidad}</TableCell>
               <TableCell>{getBrandName(item.id_marca)}</TableCell>
+              {commonCells}
               {actions}
             </TableRow>
           )
@@ -356,6 +379,7 @@ export default function ComponentesPage() {
               <TableCell>{item.socket}</TableCell>
               <TableCell>{item.chipset}</TableCell>
               <TableCell>{getBrandName(item.id_marca)}</TableCell>
+              {commonCells}
               {actions}
             </TableRow>
           )
@@ -364,10 +388,10 @@ export default function ComponentesPage() {
             <TableRow key={item.id} className="border-border">
               <TableCell className="font-semibold">{item.modelo}</TableCell>
               <TableCell>{item.familia}</TableCell>
-              <TableCell>{item.socket}</TableCell>
               <TableCell>{item.frecuencia}</TableCell>
               <TableCell>{item.nucleos} / {item.hilos}</TableCell>
               <TableCell>{getBrandName(item.id_marca)}</TableCell>
+              {commonCells}
               {actions}
             </TableRow>
           )
@@ -375,9 +399,9 @@ export default function ComponentesPage() {
           return (
             <TableRow key={item.id} className="border-border">
               <TableCell className="font-semibold">{item.modelo}</TableCell>
-              <TableCell>{item.ensamblador}</TableCell>
               <TableCell>{item.vram}</TableCell>
               <TableCell>{getBrandName(item.id_marca)}</TableCell>
+              {commonCells}
               {actions}
             </TableRow>
           )
@@ -474,6 +498,11 @@ export default function ComponentesPage() {
                   <TableHeader>
                     <TableRow className="border-border hover:bg-transparent">
                       {renderTableHeaders()}
+                      <TableHead className="text-muted-foreground font-medium">Proveedor</TableHead>
+                      <TableHead className="text-muted-foreground font-medium">Factura</TableHead>
+                      <TableHead className="text-muted-foreground font-medium">Fecha Compra</TableHead>
+                      <TableHead className="text-muted-foreground font-medium">Stock</TableHead>
+                      <TableHead className="text-muted-foreground font-medium">Estado</TableHead>
                       <TableHead className="w-[50px]"></TableHead>
                     </TableRow>
                   </TableHeader>

@@ -17,6 +17,7 @@ import {
   Cpu,
   Key,
   Tv,
+  Truck,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -73,6 +74,11 @@ const navItems = [
     title: "Componentes",
     href: "/dashboard/componentes",
     icon: Cpu,
+  },
+  {
+    title: "Proveedores",
+    href: "/dashboard/proveedores",
+    icon: Truck,
   },
   {
     title: "Licencias",

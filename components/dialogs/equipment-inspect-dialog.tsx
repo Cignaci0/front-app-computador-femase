@@ -188,9 +188,10 @@ export function EquipmentInspectDialog({ open, onOpenChange, equipment }: Equipm
                     <div key={i} className="bg-secondary/25 p-3 rounded-md border border-border/40">
                       <div className="text-xs text-primary font-bold">Slot {i + 1}</div>
                       <div className="text-sm font-semibold text-foreground mt-1">
-                        {r.marca?.nombre || ""} - {r.modelo || "DESCONOCIDO"}
+                        {r.marca?.nombre || "Sin Marca"} {r.tipo_tecnologia || ""} {r.formato || ""}
                       </div>
-                      <div className="text-xs text-muted-foreground mt-1 flex justify-between">
+                      <div className="text-xs text-muted-foreground mt-1 flex justify-between flex-wrap gap-1">
+                        <span>Nº Interno: <strong>{r.n_interno || "N/A"}</strong></span>
                         <span>Tecnología: {r.tipo_tecnologia || "DDR4"}</span>
                         <span>Formato: {r.formato || "DIMM"}</span>
                         <span>Capacidad: {r.capacidad || "N/A"}</span>

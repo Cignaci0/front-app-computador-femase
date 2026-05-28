@@ -300,7 +300,8 @@ export default function EquiposPage() {
                         if (rams.length === 0) return "N/A";
                         return rams.map(r => {
                           const freqPart = r.frecuencia ? ` - ${r.frecuencia}` : "";
-                          return `${r.modelo} (${r.capacidad}${freqPart})`;
+                          const ramLabel = `${r.tipo_tecnologia || ""} ${r.formato || ""}`.trim() || "RAM";
+                          return `${ramLabel} (${r.capacidad}${freqPart})`;
                         }).join(" + ");
                       })()}
                     </TableCell>

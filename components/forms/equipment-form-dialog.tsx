@@ -37,7 +37,7 @@ interface EquipmentFormDialogProps {
   onSave: (data: any) => void
 }
 
-const STATUSES = ["ACTIVO", "MANTENIMIENTO", "BODEGA", "BAJA"]
+const STATUSES = ["LISTO", "ACTIVO", "MANTENIMIENTO", "BODEGA", "BAJA"]
 
 export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSave }: EquipmentFormDialogProps) {
   // Navigation tab state
@@ -136,7 +136,7 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
         setTipoDeEquipoId(equipmentToEdit.tipo_de_equipo?.id ? String(equipmentToEdit.tipo_de_equipo.id) : "")
         setMarcaId(equipmentToEdit.marca?.id ? String(equipmentToEdit.marca.id) : "")
         setModeloId(equipmentToEdit.modelo?.id ? String(equipmentToEdit.modelo.id) : "")
-        setEstado(equipmentToEdit.estado || "MANTENIMIENTO")
+        setEstado(equipmentToEdit.estado || "LISTO")
 
         if (equipmentToEdit.vencimiento_garantia) {
           setVencimientoGarantia(equipmentToEdit.vencimiento_garantia.substring(0, 10))
@@ -201,7 +201,7 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
         setTipoDeEquipoId("")
         setMarcaId("")
         setModeloId("")
-        setEstado("MANTENIMIENTO")
+        setEstado("LISTO")
         setVencimientoGarantia("")
         setClienteId("")
         setUsuario("")
@@ -259,6 +259,18 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
     officeLicensesOptions.push(equipmentToEdit.key_office)
   }
   const filteredOfficeLicenses = officeLicensesOptions.filter((lic) => lic.activa || String(lic.id) === String(keyOfficeId))
+
+  // Filter hardware components: only show those that have activa === true OR are currently selected in the equipment
+  const filteredCpus = cpus.filter((c) => c.activa || String(c.id) === String(procesadorId))
+  const filteredPlates = plates.filter((pl) => pl.activa || String(pl.id) === String(placaId))
+  const filteredGpus = gpus.filter((g) => g.activa || String(g.id) === String(tarjetaGraficaId))
+  const filteredPowers = powers.filter((p) => p.activa || String(p.id) === String(fuenteId))
+
+  const selectedRamIds = [memoriaRam1Id, memoriaRam2Id, memoriaRam3Id, memoriaRam4Id].filter(Boolean)
+  const filteredRams = rams.filter((r) => r.activa || selectedRamIds.includes(String(r.id)))
+
+  const selectedDiskIds = [discoAlma1Id, discoAlma2Id, discoAlma3Id].filter(Boolean)
+  const filteredDisks = disks.filter((d) => d.activa || selectedDiskIds.includes(String(d.id)))
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -359,21 +371,23 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                   </Select>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="eq-status">Estado *</Label>
-                  <Select value={estado} onValueChange={setEstado}>
-                    <SelectTrigger id="eq-status" className="bg-secondary/50 border-0">
-                      <SelectValue placeholder="Selecciona estado" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {STATUSES.map((s) => (
-                        <SelectItem key={s} value={s}>
-                          {s}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                {equipmentToEdit && (
+                  <div className="space-y-2">
+                    <Label htmlFor="eq-status">Estado *</Label>
+                    <Select value={estado} onValueChange={setEstado}>
+                      <SelectTrigger id="eq-status" className="bg-secondary/50 border-0">
+                        <SelectValue placeholder="Selecciona estado" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {STATUSES.map((s) => (
+                          <SelectItem key={s} value={s}>
+                            {s}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
 
                 <div className="space-y-2">
                   <Label htmlFor="eq-brand">Marca *</Label>
@@ -477,9 +491,9 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="_null">Ninguno / Sin CPU</SelectItem>
-                      {cpus.map((c) => (
+                      {filteredCpus.map((c) => (
                         <SelectItem key={c.id} value={String(c.id)}>
-                          {c.familia} {c.modelo} ({c.socket})
+                          {c.familia} {c.modelo} (Stock: {c.uso}) {c.proveedor?.nombre ? `- ${c.proveedor.nombre}` : ""}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -495,9 +509,9 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="_null">Ninguno / Sin Placa</SelectItem>
-                      {plates.map((pl) => (
+                      {filteredPlates.map((pl) => (
                         <SelectItem key={pl.id} value={String(pl.id)}>
-                          {pl.modelo} ({pl.socket})
+                          {pl.modelo} (Stock: {pl.uso}) {pl.proveedor?.nombre ? `- ${pl.proveedor.nombre}` : ""}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -513,9 +527,9 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="_null">Ninguno / Sin GPU</SelectItem>
-                      {gpus.map((g) => (
+                      {filteredGpus.map((g) => (
                         <SelectItem key={g.id} value={String(g.id)}>
-                          {g.ensamblador} {g.modelo} ({g.vram})
+                          {g.modelo} ({g.vram}) (Stock: {g.uso}) {g.proveedor?.nombre ? `- ${g.proveedor.nombre}` : ""}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -531,9 +545,9 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="_null">Ninguno / Sin Fuente</SelectItem>
-                      {powers.map((p) => (
+                      {filteredPowers.map((p) => (
                         <SelectItem key={p.id} value={String(p.id)}>
-                          {p.modelo} {p.potencia}
+                          {p.modelo} {p.potencia} (Stock: {p.uso}) {p.proveedor?.nombre ? `- ${p.proveedor.nombre}` : ""}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -574,9 +588,9 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="_null">Ninguno</SelectItem>
-                          {rams.map((r) => (
+                          {filteredRams.map((r) => (
                             <SelectItem key={r.id} value={String(r.id)}>
-                              {r.modelo} {r.capacidad} {r.velocidad}
+                              {r.tipo_tecnologia} {r.formato} {r.capacidad} {r.frecuencia || r.velocidad || ""} (Stock: {r.uso}) {r.proveedor?.nombre ? `- ${r.proveedor.nombre}` : ""}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -593,9 +607,9 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="_null">Ninguno</SelectItem>
-                          {rams.map((r) => (
+                          {filteredRams.map((r) => (
                             <SelectItem key={r.id} value={String(r.id)}>
-                              {r.modelo} {r.capacidad} {r.velocidad}
+                              {r.tipo_tecnologia} {r.formato} {r.capacidad} {r.frecuencia || r.velocidad || ""} (Stock: {r.uso}) {r.proveedor?.nombre ? `- ${r.proveedor.nombre}` : ""}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -612,9 +626,9 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="_null">Ninguno</SelectItem>
-                          {rams.map((r) => (
+                          {filteredRams.map((r) => (
                             <SelectItem key={r.id} value={String(r.id)}>
-                              {r.modelo} {r.capacidad} {r.velocidad}
+                              {r.tipo_tecnologia} {r.formato} {r.capacidad} {r.frecuencia || r.velocidad || ""} (Stock: {r.uso}) {r.proveedor?.nombre ? `- ${r.proveedor.nombre}` : ""}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -631,9 +645,9 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="_null">Ninguno</SelectItem>
-                          {rams.map((r) => (
+                          {filteredRams.map((r) => (
                             <SelectItem key={r.id} value={String(r.id)}>
-                              {r.modelo} {r.capacidad} {r.velocidad}
+                              {r.tipo_tecnologia} {r.formato} {r.capacidad} {r.frecuencia || r.velocidad || ""} (Stock: {r.uso}) {r.proveedor?.nombre ? `- ${r.proveedor.nombre}` : ""}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -677,9 +691,9 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="_null">Ninguno</SelectItem>
-                            {disks.map((d) => (
+                            {filteredDisks.map((d) => (
                               <SelectItem key={d.id} value={String(d.id)}>
-                                {d.tipo_disco} {d.modelo} {d.capacidad}
+                                {d.tipo_disco} {d.modelo} {d.capacidad} (Stock: {d.uso}) {d.proveedor?.nombre ? `- ${d.proveedor.nombre}` : ""}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -709,9 +723,9 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="_null">Ninguno</SelectItem>
-                            {disks.map((d) => (
+                            {filteredDisks.map((d) => (
                               <SelectItem key={d.id} value={String(d.id)}>
-                                {d.tipo_disco} {d.modelo} {d.capacidad}
+                                {d.tipo_disco} {d.modelo} {d.capacidad} (Stock: {d.uso}) {d.proveedor?.nombre ? `- ${d.proveedor.nombre}` : ""}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -741,9 +755,9 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="_null">Ninguno</SelectItem>
-                            {disks.map((d) => (
+                            {filteredDisks.map((d) => (
                               <SelectItem key={d.id} value={String(d.id)}>
-                                {d.tipo_disco} {d.modelo} {d.capacidad}
+                                {d.tipo_disco} {d.modelo} {d.capacidad} (Stock: {d.uso}) {d.proveedor?.nombre ? `- ${d.proveedor.nombre}` : ""}
                               </SelectItem>
                             ))}
                           </SelectContent>
