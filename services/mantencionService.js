@@ -1,0 +1,94 @@
+const BASE_URL = "http://localhost:3000/mantencion";
+
+async function safeParseResponse(response) {
+  const text = await response.text();
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
+}
+
+/**
+ * Obtiene la lista paginada de mantenciones.
+ * @param {number} page - Número de página
+ * @param {number} limit - Límite de elementos por página
+ */
+export async function getMantenciones(page = 1, limit = 10) {
+  try {
+    const response = await fetch(`${BASE_URL}?page=${page}&limit=${limit}`);
+    if (!response.ok) {
+      throw new Error(`Error al obtener mantenciones: ${response.statusText}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Error en getMantenciones:", error);
+    throw error;
+  }
+}
+
+/**
+ * Crea una nueva mantención en el backend.
+ * @param {object} data - Datos de la mantención a crear
+ */
+export async function createMantencion(data) {
+  try {
+    const response = await fetch(BASE_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      throw new Error(`Error al crear mantención: ${response.statusText}`);
+    }
+    return await safeParseResponse(response);
+  } catch (error) {
+    console.error("Error en createMantencion:", error);
+    throw error;
+  }
+}
+
+/**
+ * Actualiza una mantención existente en el backend.
+ * @param {number|string} id - ID de la mantención
+ * @param {object} data - Datos a actualizar
+ */
+export async function updateMantencion(id, data) {
+  try {
+    const response = await fetch(`${BASE_URL}/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      throw new Error(`Error al actualizar mantención: ${response.statusText}`);
+    }
+    return await safeParseResponse(response);
+  } catch (error) {
+    console.error("Error en updateMantencion:", error);
+    throw error;
+  }
+}
+
+/**
+ * Elimina una mantención en el backend.
+ * @param {number|string} id - ID de la mantención a eliminar
+ */
+export async function deleteMantencion(id) {
+  try {
+    const response = await fetch(`${BASE_URL}/${id}`, {
+      method: "DELETE",
+    });
+    if (!response.ok) {
+      throw new Error(`Error al eliminar mantención: ${response.statusText}`);
+    }
+    return true;
+  } catch (error) {
+    console.error("Error en deleteMantencion:", error);
+    throw error;
+  }
+}

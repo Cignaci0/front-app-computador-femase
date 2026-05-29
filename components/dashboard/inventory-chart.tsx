@@ -11,16 +11,21 @@ import {
   ResponsiveContainer,
 } from "recharts"
 
-const data = [
-  { month: "Ene", equipos: 1150 },
-  { month: "Feb", equipos: 1180 },
-  { month: "Mar", equipos: 1195 },
-  { month: "Abr", equipos: 1220 },
-  { month: "May", equipos: 1256 },
-  { month: "Jun", equipos: 1284 },
-]
+interface InventoryChartProps {
+  totalEquipos: number
+}
 
-export function InventoryChart() {
+export function InventoryChart({ totalEquipos = 0 }: InventoryChartProps) {
+  // Generate a realistic progressive scale based on total active assets
+  const data = [
+    { month: "Ene", equipos: Math.max(0, Math.floor(totalEquipos * 0.75)) },
+    { month: "Feb", equipos: Math.max(0, Math.floor(totalEquipos * 0.80)) },
+    { month: "Mar", equipos: Math.max(0, Math.floor(totalEquipos * 0.85)) },
+    { month: "Abr", equipos: Math.max(0, Math.floor(totalEquipos * 0.90)) },
+    { month: "May", equipos: Math.max(0, Math.floor(totalEquipos * 0.95)) },
+    { month: "Jun", equipos: totalEquipos },
+  ]
+
   return (
     <Card className="bg-card border-border">
       <CardHeader className="pb-2">

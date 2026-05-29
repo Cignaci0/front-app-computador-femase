@@ -1,66 +1,80 @@
+"use client"
+
 import { Monitor, Users, Wrench, AlertTriangle } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 
-const stats = [
-  {
-    title: "Total Equipos",
-    value: "1,284",
-    change: "+12",
-    changeLabel: "este mes",
-    icon: Monitor,
-    trend: "up" as const,
-  },
-  {
-    title: "Usuarios Asignados",
-    value: "856",
-    change: "+23",
-    changeLabel: "activos",
-    icon: Users,
-    trend: "up" as const,
-  },
-  {
-    title: "Mantenciones Pendientes",
-    value: "47",
-    change: "-8",
-    changeLabel: "esta semana",
-    icon: Wrench,
-    trend: "down" as const,
-  },
-  {
-    title: "Alertas Activas",
-    value: "12",
-    change: "+3",
-    changeLabel: "nuevas",
-    icon: AlertTriangle,
-    trend: "warning" as const,
-  },
-]
+interface StatsCardsProps {
+  totalEquipos: number
+  totalClientes: number
+  totalMantencionesPendientes: number
+  totalAlertas: number
+}
 
-export function StatsCards() {
+export function StatsCards({
+  totalEquipos = 0,
+  totalClientes = 0,
+  totalMantencionesPendientes = 0,
+  totalAlertas = 0,
+}: StatsCardsProps) {
+  const stats = [
+    {
+      title: "Total Equipos y PCs",
+      value: String(totalEquipos),
+      change: `+${totalEquipos}`,
+      changeLabel: "registrados en total",
+      icon: Monitor,
+      trend: "up" as const,
+    },
+    {
+      title: "Clientes Activos",
+      value: String(totalClientes),
+      change: `+${totalClientes}`,
+      changeLabel: "sucursales/clientes",
+      icon: Users,
+      trend: "up" as const,
+    },
+    {
+      title: "Mantenciones Activas",
+      value: String(totalMantencionesPendientes),
+      change: `${totalMantencionesPendientes}`,
+      changeLabel: "pendientes o en progreso",
+      icon: Wrench,
+      trend: totalMantencionesPendientes > 0 ? ("warning" as const) : ("down" as const),
+    },
+    {
+      title: "Alertas de Mantención",
+      value: String(totalAlertas),
+      change: `${totalAlertas}`,
+      changeLabel: "equipos vencidos (+1 año)",
+      icon: AlertTriangle,
+      trend: totalAlertas > 0 ? ("warning" as const) : ("down" as const),
+    },
+  ]
+
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {stats.map((stat) => (
-        <Card key={stat.title} className="bg-card border-border">
+        <Card key={stat.title} className="bg-card border-border shadow-sm">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">{stat.title}</p>
-                <p className="text-2xl font-semibold tracking-tight">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{stat.title}</p>
+                <p className="text-3xl font-semibold tracking-tight">
                   {stat.value}
                 </p>
               </div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-md bg-secondary">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-secondary/80 border border-border">
                 <stat.icon className="h-5 w-5 text-muted-foreground" />
               </div>
             </div>
-            <div className="mt-4 flex items-center gap-1 text-xs">
+            <div className="mt-4 flex items-center gap-1.5 text-xs">
               <span
                 className={
                   stat.trend === "up"
-                    ? "text-chart-2"
+                    ? "text-emerald-500 font-medium"
                     : stat.trend === "down"
-                    ? "text-chart-2"
-                    : "text-chart-3"
+                    ? "text-blue-500 font-medium"
+                    : "text-amber-500 font-medium"
                 }
               >
                 {stat.change}

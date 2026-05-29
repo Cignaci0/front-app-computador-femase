@@ -10,14 +10,32 @@ import {
   Tooltip,
 } from "recharts"
 
-const data = [
-  { name: "Activo", value: 892, color: "oklch(0.696 0.17 162.48)" },
-  { name: "En Mantención", value: 156, color: "oklch(0.769 0.188 70.08)" },
-  { name: "En Bodega", value: 184, color: "oklch(0.488 0.243 264.376)" },
-  { name: "Dado de Baja", value: 52, color: "oklch(0.577 0.245 27.325)" },
-]
+interface DeviceStatusOverviewProps {
+  activo?: number
+  mantencion?: number
+  bodega?: number
+  dadoDeBaja?: number
+}
 
-export function DeviceStatusOverview() {
+export function DeviceStatusOverview({
+  activo = 0,
+  mantencion = 0,
+  bodega = 0,
+  dadoDeBaja = 0,
+}: DeviceStatusOverviewProps) {
+  const data = [
+    { name: "Activo", value: activo, color: "oklch(0.696 0.17 162.48)" },
+    { name: "En Mantención", value: mantencion, color: "oklch(0.769 0.188 70.08)" },
+    { name: "En Bodega", value: bodega, color: "oklch(0.488 0.243 264.376)" },
+    { name: "Dado de Baja", value: dadoDeBaja, color: "oklch(0.577 0.245 27.325)" },
+  ]
+
+  // Filter out status segments that have 0 value to clean up the pie chart UI
+  const filteredData = data.filter((item) => item.value > 0)
+
+  // Fallback data so the chart isn't empty when there is no equipment yet
+  const chartData = filteredData.length > 0 ? filteredData : [{ name: "Sin Equipos", value: 1, color: "oklch(0.6 0 0)" }]
+
   return (
     <Card className="bg-card border-border">
       <CardHeader className="pb-2">
@@ -30,7 +48,7 @@ export function DeviceStatusOverview() {
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
-                data={data}
+                data={chartData}
                 cx="50%"
                 cy="50%"
                 innerRadius={60}
@@ -38,7 +56,7 @@ export function DeviceStatusOverview() {
                 paddingAngle={2}
                 dataKey="value"
               >
-                {data.map((entry, index) => (
+                {chartData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>
@@ -50,6 +68,7 @@ export function DeviceStatusOverview() {
                   fontSize: "12px",
                 }}
                 labelStyle={{ color: "oklch(0.93 0 0)" }}
+                itemStyle={{ color: "oklch(0.93 0 0)" }}
               />
               <Legend
                 verticalAlign="bottom"
