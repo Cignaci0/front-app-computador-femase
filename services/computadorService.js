@@ -58,7 +58,7 @@ export async function createComputador(data) {
       if (NUMERIC_KEYS.includes(key)) {
         if (payload[key] === null || payload[key] === undefined || payload[key] === "" || payload[key] === "_null") {
           payload[key] = null;
-        } else {
+        } else if (typeof payload[key] !== "object") {
           payload[key] = Number(payload[key]);
         }
       }
@@ -93,7 +93,7 @@ export async function updateComputador(id, data) {
       if (NUMERIC_KEYS.includes(key)) {
         if (payload[key] === null || payload[key] === undefined || payload[key] === "" || payload[key] === "_null") {
           payload[key] = null;
-        } else {
+        } else if (typeof payload[key] !== "object") {
           payload[key] = Number(payload[key]);
         }
       }
@@ -131,6 +131,23 @@ export async function deleteComputador(id) {
     return true;
   } catch (error) {
     console.error("Error en deleteComputador:", error);
+    throw error;
+  }
+}
+
+/**
+ * Busca computadores utilizando un término general (ILIKE).
+ * @param {string} query - Término de búsqueda (serial, bios, marca, etc.)
+ */
+export async function buscarComputadores(query) {
+  try {
+    const response = await fetch(`${BASE_URL}/buscar/general?query=${encodeURIComponent(query)}`);
+    if (!response.ok) {
+      throw new Error(`Error al buscar computadores: ${response.statusText}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Error en buscarComputadores:", error);
     throw error;
   }
 }

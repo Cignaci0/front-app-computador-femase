@@ -49,7 +49,6 @@ const FIELDS_BY_TYPE: Record<string, { key: string; label: string; placeholder: 
     { key: "uso", label: "Cantidad", placeholder: "Ej: 5", type: "number" }
   ],
   "memoria-ram": [
-    { key: "n_interno", label: "Nº Interno", placeholder: "Ej: 45536758765...", type: "text" },
     { key: "id_marca", label: "Marca", placeholder: "Selecciona una marca", type: "brand" },
     { key: "tipo_tecnologia", label: "Tipo de Tecnología", placeholder: "Ej: DDR5, DDR4...", type: "text" },
     { key: "formato", label: "Formato", placeholder: "Ej: DIMM, SO-DIMM...", type: "text" },

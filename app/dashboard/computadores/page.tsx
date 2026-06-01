@@ -29,7 +29,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { EquipmentFormDialog } from "@/components/forms/equipment-form-dialog"
 import { EquipmentInspectDialog } from "@/components/dialogs/equipment-inspect-dialog"
-import { getComputadores, createComputador, updateComputador, deleteComputador } from "@/services/computadorService"
+import { getComputadores, createComputador, updateComputador, deleteComputador, buscarComputadores } from "@/services/computadorService"
 import { getTiposDeEquipo } from "@/services/tipoDeEquipoService"
 import { toast } from "sonner"
 
@@ -93,15 +93,23 @@ export default function EquiposPage() {
     }).catch((err) => console.error(err))
   }, [])
 
-  // Fetch computers paginated
-  const fetchComputers = async (page = 1) => {
+  // Fetch computers paginated or by search query
+  const fetchComputers = async (page = 1, search = searchQuery) => {
     setLoading(true)
     try {
-      const res = await getComputadores(page, limit)
-      setComputers(res.data || [])
-      setTotalItems(res.meta?.total || 0)
-      setTotalPages(res.meta?.lastPage || 1)
-      setCurrentPage(res.meta?.page || page)
+      if (search.trim()) {
+        const res = await buscarComputadores(search.trim())
+        setComputers(res || [])
+        setTotalItems(res?.length || 0)
+        setTotalPages(1)
+        setCurrentPage(1)
+      } else {
+        const res = await getComputadores(page, limit)
+        setComputers(res.data || [])
+        setTotalItems(res.meta?.total || 0)
+        setTotalPages(res.meta?.lastPage || 1)
+        setCurrentPage(res.meta?.page || page)
+      }
     } catch (error) {
       toast.error("Error al cargar computadores de la API")
       console.error(error)
@@ -110,9 +118,21 @@ export default function EquiposPage() {
     }
   }
 
+  // Fetch when page changes (only if not searching)
   useEffect(() => {
-    fetchComputers(currentPage)
+    if (!searchQuery.trim()) {
+      fetchComputers(currentPage)
+    }
   }, [currentPage])
+
+  // Debounced search query fetching
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      fetchComputers(1, searchQuery)
+    }, 300)
+
+    return () => clearTimeout(delayDebounceFn)
+  }, [searchQuery])
 
   const handleSaveEquipment = async (data: any) => {
     try {
@@ -147,22 +167,8 @@ export default function EquiposPage() {
     }
   }
 
-  // Filter computers on the client side from fetched list
+  // Filter computers on the client side from fetched list (status and type filters)
   const filteredData = computers.filter((item) => {
-    const matchesSearch =
-      String(item.id).toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (item.n_serie_bios || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (item.marca?.nombre || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (item.modelo?.nombre || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (item.procesador?.familia || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (item.procesador?.modelo || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-      [item.memoria_ram_1, item.memoria_ram_2, item.memoria_ram_3, item.memoria_ram_4].some(
-        (r) => r && (r.modelo || "").toLowerCase().includes(searchQuery.toLowerCase())
-      ) ||
-      [item.disco_alma_1, item.disco_alma_2, item.disco_alma_3].some(
-        (d) => d && (d.modelo || "").toLowerCase().includes(searchQuery.toLowerCase())
-      )
-
     const matchesStatus =
       statusFilter === "all" ||
       (item.estado || "").toUpperCase() === statusFilter.toUpperCase()
@@ -171,7 +177,7 @@ export default function EquiposPage() {
       typeFilter === "all" ||
       String(item.tipo_de_equipo?.id || item.tipo_de_equipo) === typeFilter
 
-    return matchesSearch && matchesStatus && matchesType
+    return matchesStatus && matchesType
   })
 
   const formatDate = (dateStr: string) => {
