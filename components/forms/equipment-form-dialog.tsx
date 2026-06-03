@@ -380,7 +380,6 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
             setMDisco1({
               id: String(disk1.id || ""),
               marca: String(disk1.id_marca?.id || disk1.id_marca || ""),
-              tipo_disk: disk1.tipo_disco || "", // Support legacy naming or typo in source
               tipo_disco: disk1.tipo_disco || "",
               modelo: disk1.modelo || "",
               capacidad: disk1.capacidad || "",
@@ -401,7 +400,6 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
             setMDisco2({
               id: String(disk2.id || ""),
               marca: String(disk2.id_marca?.id || disk2.id_marca || ""),
-              tipo_disk: disk2.tipo_disco || "",
               tipo_disco: disk2.tipo_disco || "",
               modelo: disk2.modelo || "",
               capacidad: disk2.capacidad || "",
@@ -422,7 +420,6 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
             setMDisco3({
               id: String(disk3.id || ""),
               marca: String(disk3.id_marca?.id || disk3.id_marca || ""),
-              tipo_disk: disk3.tipo_disco || "",
               tipo_disco: disk3.tipo_disco || "",
               modelo: disk3.modelo || "",
               capacidad: disk3.capacidad || "",

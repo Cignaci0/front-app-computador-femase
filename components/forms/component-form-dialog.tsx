@@ -28,7 +28,7 @@ import { Settings, Receipt } from "lucide-react"
 interface ComponentFormDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  type: string // "disco-almacenamiento" | "fuente-poder" | "memoria-ram" | "placa-madre" | "procesador" | "tarjeta-grafica"
+  type: string 
   componentToEdit?: any | null
   onSave: (data: any) => void
 }
