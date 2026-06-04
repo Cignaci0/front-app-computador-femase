@@ -93,6 +93,7 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
   const [procesadorMode, setProcesadorMode] = useState<"existing" | "manual">("existing")
   const [placaMode, setPlacaMode] = useState<"existing" | "manual">("existing")
   const [fuenteMode, setFuenteMode] = useState<"existing" | "manual">("existing")
+  const [tarjetaGraficaMode, setTarjetaGraficaMode] = useState<"existing" | "manual">("existing")
 
   const [ram1Mode, setRam1Mode] = useState<"existing" | "manual">("existing")
   const [ram2Mode, setRam2Mode] = useState<"existing" | "manual">("existing")
@@ -107,6 +108,7 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
   const [mProcesador, setMProcesador] = useState({ id: "", marca: "", familia: "", modelo: "", nucleos: "", hilos: "", frecuencia: "" })
   const [mPlaca, setMPlaca] = useState({ id: "", marca: "", modelo: "", socket: "", chipset: "" })
   const [mFuente, setMFuente] = useState({ id: "", marca: "", modelo: "", potencia: "", certificacion: "" })
+  const [mTarjetaGrafica, setMTarjetaGrafica] = useState({ id: "", marca: "", modelo: "", vram: "" })
 
   const [mRam1, setMRam1] = useState({ id: "", marca: "", tipo_tecnologia: "", formato: "", capacidad: "", frecuencia: "" })
   const [mRam2, setMRam2] = useState({ id: "", marca: "", tipo_tecnologia: "", formato: "", capacidad: "", frecuencia: "" })
@@ -161,6 +163,7 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
       setProcesadorMode("existing")
       setPlacaMode("existing")
       setFuenteMode("existing")
+      setTarjetaGraficaMode("existing")
       setRam1Mode("existing")
       setRam2Mode("existing")
       setRam3Mode("existing")
@@ -172,6 +175,7 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
       setMProcesador({ id: "", marca: "", familia: "", modelo: "", nucleos: "", hilos: "", frecuencia: "" })
       setMPlaca({ id: "", marca: "", modelo: "", socket: "", chipset: "" })
       setMFuente({ id: "", marca: "", modelo: "", potencia: "", certificacion: "" })
+      setMTarjetaGrafica({ id: "", marca: "", modelo: "", vram: "" })
       setMRam1({ id: "", marca: "", tipo_tecnologia: "", formato: "", capacidad: "", frecuencia: "" })
       setMRam2({ id: "", marca: "", tipo_tecnologia: "", formato: "", capacidad: "", frecuencia: "" })
       setMRam3({ id: "", marca: "", tipo_tecnologia: "", formato: "", capacidad: "", frecuencia: "" })
@@ -207,7 +211,25 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
         setCamara(!!equipmentToEdit.camara)
         setIdTeamviewer(equipmentToEdit.id_teamviewer || "")
 
-        setTarjetaGraficaId(equipmentToEdit.tarjeta_grafica?.id ? String(equipmentToEdit.tarjeta_grafica.id) : "")
+        // Tarjeta Gráfica
+        if (equipmentToEdit.tarjeta_grafica) {
+          if (equipmentToEdit.tarjeta_grafica.particular === false) {
+            setTarjetaGraficaMode("manual")
+            setMTarjetaGrafica({
+              id: String(equipmentToEdit.tarjeta_grafica.id || ""),
+              marca: String(equipmentToEdit.tarjeta_grafica.id_marca?.id || equipmentToEdit.tarjeta_grafica.id_marca || ""),
+              modelo: equipmentToEdit.tarjeta_grafica.modelo || "",
+              vram: equipmentToEdit.tarjeta_grafica.vram || "",
+            })
+            setTarjetaGraficaId("")
+          } else {
+            setTarjetaGraficaMode("existing")
+            setTarjetaGraficaId(String(equipmentToEdit.tarjeta_grafica.id))
+          }
+        } else {
+          setTarjetaGraficaMode("existing")
+          setTarjetaGraficaId("")
+        }
 
         // Procesador
         if (equipmentToEdit.procesador) {
@@ -464,7 +486,9 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
         setIdTeamviewer("")
 
         setProcesadorId("")
+        setTarjetaGraficaMode("existing")
         setTarjetaGraficaId("")
+        setMTarjetaGrafica({ id: "", marca: "", modelo: "", vram: "" })
         setFuenteId("")
         setPlacaId("")
 
@@ -668,7 +692,17 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
           ? Number(placaId)
           : null,
 
-      tarjeta_grafica: tarjetaGraficaId && tarjetaGraficaId !== "_null" ? Number(tarjetaGraficaId) : null,
+      tarjeta_grafica:
+        tarjetaGraficaMode === "manual"
+          ? {
+              id: mTarjetaGrafica.id ? Number(mTarjetaGrafica.id) : null,
+              marca: mTarjetaGrafica.marca ? Number(mTarjetaGrafica.marca) : null,
+              modelo: mTarjetaGrafica.modelo || "",
+              vram: mTarjetaGrafica.vram || "",
+            }
+          : tarjetaGraficaId && tarjetaGraficaId !== "_null"
+          ? Number(tarjetaGraficaId)
+          : null,
 
       fuente:
         fuenteMode === "manual"
@@ -1175,20 +1209,88 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
 
                 {/* Tarjeta Gráfica */}
                 <div className="space-y-2 bg-secondary/5 p-4 rounded-lg border border-border/40">
-                  <Label htmlFor="eq-gpu" className="font-semibold text-sm">Tarjeta Gráfica (GPU)</Label>
-                  <Select value={tarjetaGraficaId} onValueChange={setTarjetaGraficaId}>
-                    <SelectTrigger id="eq-gpu" className="bg-secondary/50 border-0 mt-1">
-                      <SelectValue placeholder="Ninguno" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="_null">Ninguno / Sin GPU</SelectItem>
-                      {filteredGpus.map((g) => (
-                        <SelectItem key={g.id} value={String(g.id)}>
-                          {g.modelo} ({g.vram}) (Stock: {g.uso}) {g.proveedor?.nombre ? `- ${g.proveedor.nombre}` : ""}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="eq-gpu" className="font-semibold text-sm">Tarjeta Gráfica (GPU)</Label>
+                    <div className="flex bg-secondary/60 p-0.5 rounded-md text-xs">
+                      <button
+                        type="button"
+                        onClick={() => setTarjetaGraficaMode("existing")}
+                        className={`px-2 py-1 rounded-md transition-all ${
+                          tarjetaGraficaMode === "existing"
+                            ? "bg-background text-foreground font-medium shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        Existente
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setTarjetaGraficaMode("manual")}
+                        className={`px-2 py-1 rounded-md transition-all ${
+                          tarjetaGraficaMode === "manual"
+                            ? "bg-background text-foreground font-medium shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        Ingreso Manual
+                      </button>
+                    </div>
+                  </div>
+
+                  {tarjetaGraficaMode === "existing" ? (
+                    <Select value={tarjetaGraficaId} onValueChange={setTarjetaGraficaId}>
+                      <SelectTrigger id="eq-gpu" className="bg-secondary/50 border-0 mt-2">
+                        <SelectValue placeholder="Ninguno" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="_null">Ninguno / Sin GPU</SelectItem>
+                        {filteredGpus.map((g) => (
+                          <SelectItem key={g.id} value={String(g.id)}>
+                            {g.modelo} ({g.vram}) (Stock: {g.uso}) {g.proveedor?.nombre ? `- ${g.proveedor.nombre}` : ""}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-3 mt-3 bg-secondary/10 p-3 rounded-md border border-border/30">
+                      <div className="space-y-1">
+                        <Label className="text-xs">Marca *</Label>
+                        <Select
+                          value={mTarjetaGrafica.marca}
+                          onValueChange={(val) => setMTarjetaGrafica({ ...mTarjetaGrafica, marca: val })}
+                        >
+                          <SelectTrigger className="bg-secondary/50 border-0 h-8 text-xs">
+                            <SelectValue placeholder="Seleccionar" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {dbBrands.map((b) => (
+                              <SelectItem key={b.id} value={String(b.id)}>
+                                {b.nombre}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">Modelo</Label>
+                        <Input
+                          placeholder="Ej: RTX 4060, RX 7600..."
+                          className="bg-secondary/50 border-0 h-8 text-xs"
+                          value={mTarjetaGrafica.modelo}
+                          onChange={(e) => setMTarjetaGrafica({ ...mTarjetaGrafica, modelo: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-1 col-span-2">
+                        <Label className="text-xs">VRAM</Label>
+                        <Input
+                          placeholder="Ej: 8 GB, 12 GB..."
+                          className="bg-secondary/50 border-0 h-8 text-xs"
+                          value={mTarjetaGrafica.vram}
+                          onChange={(e) => setMTarjetaGrafica({ ...mTarjetaGrafica, vram: e.target.value })}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Fuente de Poder */}
