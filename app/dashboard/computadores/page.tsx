@@ -38,31 +38,31 @@ function getStatusBadge(status: string) {
   switch (normStatus) {
     case "ACTIVO":
       return (
-        <Badge variant="outline" className="bg-chart-2/10 text-chart-2 border-chart-2/20">
+        <Badge className="bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
           Activo
         </Badge>
       )
     case "MANTENIMIENTO":
     case "MANTENCIÓN":
       return (
-        <Badge variant="outline" className="bg-chart-3/10 text-chart-3 border-chart-3/20">
+        <Badge className="bg-amber-500/10 text-amber-500 border border-amber-500/20">
           Mantención
         </Badge>
       )
     case "BODEGA":
       return (
-        <Badge variant="outline" className="bg-chart-1/10 text-chart-1 border-chart-1/20">
+        <Badge className="bg-blue-500/10 text-blue-500 border border-blue-500/20">
           Bodega
         </Badge>
       )
     case "BAJA":
       return (
-        <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20">
+        <Badge className="bg-rose-500/10 text-rose-500 border border-rose-500/20">
           Baja
         </Badge>
       )
     default:
-      return <Badge variant="outline">{status}</Badge>
+      return <Badge variant="secondary">{status}</Badge>
   }
 }
 
@@ -291,7 +291,7 @@ export default function EquiposPage() {
                     </TableCell>
                     <TableCell>{item.marca?.nombre || "N/A"}</TableCell>
                     <TableCell>{item.modelo?.nombre || "N/A"}</TableCell>
-                    <TableCell>{item.cliente?.nombre || "N/A"}</TableCell>
+                    <TableCell className="text-muted-foreground">{item.cliente?.nombre || "Sin Asignar"}</TableCell>
                     <TableCell className="text-sm">
                       {item.procesador
                         ? `${item.procesador.familia} ${item.procesador.modelo}${

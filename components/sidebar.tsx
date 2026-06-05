@@ -51,11 +51,7 @@ const navItems = [
     href: "/dashboard/equipos",
     icon: Tv,
   },
-  {
-    title: "Monitores",
-    href: "/dashboard/monitores",
-    icon: Tv,
-  },
+
   {
     title: "Clientes",
     href: "/dashboard/clientes",

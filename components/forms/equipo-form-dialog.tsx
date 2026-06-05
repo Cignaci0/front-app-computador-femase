@@ -24,9 +24,6 @@ import { Switch } from "@/components/ui/switch"
 import { getMarcas } from "@/services/marcaService"
 import { getModelos } from "@/services/modeloService"
 import { getTiposDeEquipo } from "@/services/tipoDeEquipoService"
-import { getClientes } from "@/services/clienteService"
-import { getMonitores } from "@/services/monitorService"
-
 interface EquipoFormDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -38,19 +35,17 @@ export function EquipoFormDialog({ open, onOpenChange, equipoToEdit, onSave }: E
   const [tipoDeEquipoId, setTipoDeEquipoId] = useState("")
   const [marcaId, setMarcaId] = useState("")
   const [modeloId, setModeloId] = useState("")
-  const [clienteId, setClienteId] = useState("")
-  const [nombre, setNombre] = useState("")
+  const [pulgadas, setPulgadas] = useState("")
+  const [estado, setEstado] = useState("EN BODEGA")
+  const [isMonitor, setIsMonitor] = useState(false)
   const [nSerie, setNSerie] = useState("")
-  const [vencimientoGarantia, setVencimientoGarantia] = useState("")
-  
-  const [hasMonitor, setHasMonitor] = useState(false)
-  const [monitorId, setMonitorId] = useState("")
+  const [garantia, setGarantia] = useState("")
 
   const [dbBrands, setDbBrands] = useState<{ id: number; nombre: string }[]>([])
   const [dbModels, setDbModels] = useState<{ id: number; name: string; brandId: number }[]>([])
-  const [dbTypes, setDbTypes] = useState<{ id: number; nombre: string }[]>([])
-  const [dbClientes, setDbClientes] = useState<{ id: number; nombre: string }[]>([])
-  const [dbMonitors, setDbMonitors] = useState<any[]>([])
+  const [dbTypes, setDbTypes] = useState<{ id: number; nombre: string; computador?: boolean }[]>([])
+
+  const STATUSES = ["RECIBIDO", "ENTREGADO"]
 
   useEffect(() => {
     if (open) {
@@ -64,40 +59,36 @@ export function EquipoFormDialog({ open, onOpenChange, equipoToEdit, onSave }: E
         setDbModels(mapped)
       }).catch(err => console.error(err))
       getTiposDeEquipo(1, 1000).then((res) => setDbTypes(res.data || [])).catch(err => console.error(err))
-      getClientes(1, 1000).then((res) => setDbClientes(res.data || [])).catch(err => console.error(err))
-      getMonitores(1, 1000).then((res) => setDbMonitors(res.data || [])).catch(err => console.error(err))
 
       if (equipoToEdit) {
         setTipoDeEquipoId(equipoToEdit.tipo_equipo?.id ? String(equipoToEdit.tipo_equipo.id) : "")
         setMarcaId(equipoToEdit.marca?.id ? String(equipoToEdit.marca.id) : "")
         setModeloId(equipoToEdit.modelo?.id ? String(equipoToEdit.modelo.id) : "")
-        setClienteId(equipoToEdit.cliente?.id ? String(equipoToEdit.cliente.id) : "")
-        setNombre(equipoToEdit.nombre || "")
         setNSerie(equipoToEdit.n_serie || "")
+        setEstado(equipoToEdit.estado || "EN BODEGA")
         
-        if (equipoToEdit.fe_exp_garantia) {
-          setVencimientoGarantia(equipoToEdit.fe_exp_garantia.substring(0, 10))
+        if (equipoToEdit.garantia !== undefined && equipoToEdit.garantia !== null) {
+          setGarantia(String(equipoToEdit.garantia))
         } else {
-          setVencimientoGarantia("")
+          setGarantia("")
         }
 
-        if (equipoToEdit.monitor?.id) {
-          setHasMonitor(true)
-          setMonitorId(String(equipoToEdit.monitor.id))
+        if (equipoToEdit.pulgadas) {
+          setIsMonitor(true)
+          setPulgadas(equipoToEdit.pulgadas)
         } else {
-          setHasMonitor(false)
-          setMonitorId("")
+          setIsMonitor(false)
+          setPulgadas("")
         }
       } else {
         setTipoDeEquipoId("")
         setMarcaId("")
         setModeloId("")
-        setClienteId("")
-        setNombre("")
         setNSerie("")
-        setVencimientoGarantia("")
-        setHasMonitor(false)
-        setMonitorId("")
+        setEstado("RECIBIDO")
+        setGarantia("")
+        setIsMonitor(false)
+        setPulgadas("")
       }
     }
   }, [open, equipoToEdit])
@@ -106,29 +97,24 @@ export function EquipoFormDialog({ open, onOpenChange, equipoToEdit, onSave }: E
     (m) => String(m.brandId) === String(marcaId)
   )
 
-  const filteredMonitors = dbMonitors.filter(
-    (m) => String(m.marca?.id || m.marca) === String(marcaId)
-  )
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!tipoDeEquipoId || !marcaId || !modeloId || !vencimientoGarantia || !nombre || !nSerie) return
+    if (!tipoDeEquipoId || !marcaId || !modeloId || !garantia || !nSerie) return
 
     onSave({
-      cliente: clienteId && clienteId !== "_null" ? Number(clienteId) : null,
-      tipo_equipo: Number(tipoDeEquipoId),
+      tipo_equipo: { id: Number(tipoDeEquipoId) },
+      marca: { id: Number(marcaId) },
+      modelo: { id: Number(modeloId) },
       n_serie: nSerie,
-      fe_exp_garantia: vencimientoGarantia,
-      marca: Number(marcaId),
-      modelo: Number(modeloId),
-      nombre: nombre,
-      monitor: hasMonitor && monitorId && monitorId !== "_null" ? Number(monitorId) : null,
+      pulgadas: isMonitor ? pulgadas : "",
+      garantia: Number(garantia),
+      estado: estado,
     })
     onOpenChange(false)
   }
 
   const isFormValid = () => {
-    return !!tipoDeEquipoId && !!marcaId && !!modeloId && !!vencimientoGarantia && !!nombre && !!nSerie
+    return !!tipoDeEquipoId && !!marcaId && !!modeloId && !!garantia && !!nSerie && (!isMonitor || !!pulgadas)
   }
 
   return (
@@ -144,17 +130,6 @@ export function EquipoFormDialog({ open, onOpenChange, equipoToEdit, onSave }: E
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="eq-name">Nombre del Equipo *</Label>
-              <Input
-                id="eq-name"
-                placeholder="Ej: Impresora Max 550"
-                className="bg-secondary/50 border-0"
-                value={nombre}
-                onChange={(e) => setNombre(e.target.value)}
-              />
-            </div>
-
-            <div className="space-y-2">
               <Label htmlFor="eq-nserie">Número de Serie *</Label>
               <Input
                 id="eq-nserie"
@@ -165,6 +140,21 @@ export function EquipoFormDialog({ open, onOpenChange, equipoToEdit, onSave }: E
               />
             </div>
 
+            {equipoToEdit && (
+              <div className="space-y-2">
+                <Label htmlFor="eq-status">Estado *</Label>
+                <Select value={estado} onValueChange={setEstado} disabled={!equipoToEdit}>
+                  <SelectTrigger id="eq-status" className="bg-secondary/50 border-0">
+                    <SelectValue placeholder="Selecciona estado" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="RECIBIDO">RECIBIDO</SelectItem>
+                    <SelectItem value="ENTREGADO">ENTREGADO</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label htmlFor="eq-type">Tipo de Equipo *</Label>
               <Select value={tipoDeEquipoId} onValueChange={setTipoDeEquipoId}>
@@ -172,7 +162,7 @@ export function EquipoFormDialog({ open, onOpenChange, equipoToEdit, onSave }: E
                   <SelectValue placeholder="Selecciona tipo" />
                 </SelectTrigger>
                 <SelectContent>
-                  {dbTypes.map((t) => (
+                  {dbTypes.filter(t => !t.computador || String(t.id) === tipoDeEquipoId).map((t) => (
                     <SelectItem key={t.id} value={String(t.id)}>
                       {t.nombre}
                     </SelectItem>
@@ -182,14 +172,19 @@ export function EquipoFormDialog({ open, onOpenChange, equipoToEdit, onSave }: E
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="eq-warranty">Vencimiento de Garantía *</Label>
-              <Input
-                id="eq-warranty"
-                type="date"
-                className="bg-secondary/50 border-0"
-                value={vencimientoGarantia}
-                onChange={(e) => setVencimientoGarantia(e.target.value)}
-              />
+              <Label htmlFor="eq-warranty">Meses de Garantía *</Label>
+              <Select value={garantia} onValueChange={setGarantia}>
+                <SelectTrigger id="eq-warranty" className="bg-secondary/50 border-0">
+                  <SelectValue placeholder="Selecciona garantía" />
+                </SelectTrigger>
+                <SelectContent>
+                  {[3, 6, 12, 18].map((mes) => (
+                    <SelectItem key={mes} value={String(mes)}>
+                      {mes} meses
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
@@ -230,55 +225,33 @@ export function EquipoFormDialog({ open, onOpenChange, equipoToEdit, onSave }: E
               </Select>
             </div>
 
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="eq-client">Cliente (Opcional)</Label>
-              <Select value={clienteId} onValueChange={setClienteId}>
-                <SelectTrigger id="eq-client" className="bg-secondary/50 border-0">
-                  <SelectValue placeholder="Selecciona cliente" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="_null">Ninguno</SelectItem>
-                  {dbClientes.map((c) => (
-                    <SelectItem key={c.id} value={String(c.id)}>
-                      {c.nombre}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
           </div>
 
           <div className="flex items-center space-x-3 bg-secondary/20 p-3 rounded-md border border-border mt-2">
             <Switch
-              id="eq-has-monitor"
-              checked={hasMonitor}
+              id="eq-is-monitor"
+              checked={isMonitor}
               onCheckedChange={(checked) => {
-                setHasMonitor(checked)
-                if (!checked) setMonitorId("")
+                setIsMonitor(checked)
+                if (!checked) setPulgadas("")
               }}
             />
             <div>
-              <Label htmlFor="eq-has-monitor" className="font-semibold cursor-pointer">¿Requiere/Utiliza Monitor?</Label>
-              <p className="text-xs text-muted-foreground">Activa esta opción para asociar este equipo a un monitor específico del inventario.</p>
+              <Label htmlFor="eq-is-monitor" className="font-semibold cursor-pointer">¿Es un Monitor?</Label>
+              <p className="text-xs text-muted-foreground">Activa esta opción si el equipo es un monitor para registrar las pulgadas.</p>
             </div>
           </div>
 
-          {hasMonitor && (
+          {isMonitor && (
             <div className="space-y-2 bg-secondary/10 p-4 rounded-md border border-border/40 mt-2">
-              <Label htmlFor="eq-monitor">Monitor Asociado</Label>
-              <Select value={monitorId} onValueChange={setMonitorId} disabled={!marcaId}>
-                <SelectTrigger id="eq-monitor" className="bg-secondary/50 border-0">
-                  <SelectValue placeholder={marcaId ? "Selecciona monitor" : "Selecciona marca del equipo primero"} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="_null">Ninguno</SelectItem>
-                  {filteredMonitors.map((m) => (
-                    <SelectItem key={m.id} value={String(m.id)}>
-                      Monitor {m.marca?.nombre || ""} {m.pulgadas ? `${m.pulgadas}"` : ""}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label htmlFor="eq-pulgadas">Pulgadas del Monitor *</Label>
+              <Input
+                id="eq-pulgadas"
+                placeholder="Ej: 24, 27, 32..."
+                className="bg-secondary/50 border-0 max-w-sm"
+                value={pulgadas}
+                onChange={(e) => setPulgadas(e.target.value)}
+              />
             </div>
           )}
 

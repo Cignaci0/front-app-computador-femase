@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Dialog,
   DialogContent,
@@ -603,14 +604,25 @@ export default function LicenciasPage() {
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <Label htmlFor="lic-nombre">Nombre / Versión</Label>
-                <Input
-                  id="lic-nombre"
-                  placeholder={activeTab === "win" ? "Ej: 11 PRO x64 25H2" : "Ej: KEY OFFICE 2021 PRO PLUS"}
-                  className="bg-secondary/50 border-0"
-                  value={formNombre}
-                  onChange={(e) => setFormNombre(e.target.value)}
-                  required
-                />
+                <Select value={formNombre} onValueChange={setFormNombre} required>
+                  <SelectTrigger id="lic-nombre" className="bg-secondary/50 border-0">
+                    <SelectValue placeholder={activeTab === "win" ? "Selecciona versión de Windows" : "Selecciona versión de Office"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {activeTab === "win" ? (
+                      <>
+                        <SelectItem value="Windows 10">Windows 10</SelectItem>
+                        <SelectItem value="Windows 11">Windows 11</SelectItem>
+                      </>
+                    ) : (
+                      <>
+                        <SelectItem value="Office 2019">Office 2019</SelectItem>
+                        <SelectItem value="Office 2021">Office 2021</SelectItem>
+                        <SelectItem value="Office 2024">Office 2024</SelectItem>
+                      </>
+                    )}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">

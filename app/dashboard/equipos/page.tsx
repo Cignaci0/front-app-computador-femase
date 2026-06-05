@@ -26,6 +26,9 @@ import {
   deleteEquipo,
 } from "@/services/equipoService"
 import { EquipoFormDialog } from "@/components/forms/equipo-form-dialog"
+import { EquipoInspectDialog } from "@/components/dialogs/equipo-inspect-dialog"
+import { Eye } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 
 export default function EquiposPage() {
   const [data, setData] = useState<any[]>([])
@@ -38,6 +41,9 @@ export default function EquiposPage() {
   // Dialog State
   const [dialogOpen, setDialogOpen] = useState(false)
   const [equipoToEdit, setEquipoToEdit] = useState<any | null>(null)
+  
+  const [inspectDialogOpen, setInspectDialogOpen] = useState(false)
+  const [equipoToInspect, setEquipoToInspect] = useState<any | null>(null)
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -55,7 +61,6 @@ export default function EquiposPage() {
         let items = response.data
         if (s) {
           items = items.filter((item: any) => 
-            (item.nombre || "").toLowerCase().includes(s.toLowerCase()) ||
             (item.n_serie || "").toLowerCase().includes(s.toLowerCase())
           )
         }
@@ -108,6 +113,21 @@ export default function EquiposPage() {
     return new Date(dateStr).toLocaleDateString("es-CL", { timeZone: "UTC" })
   }
 
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "ACTIVO":
+        return <Badge className="bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">Activo</Badge>
+      case "MANTENIMIENTO":
+        return <Badge className="bg-amber-500/10 text-amber-500 border border-amber-500/20">Mantención</Badge>
+      case "BODEGA":
+        return <Badge className="bg-blue-500/10 text-blue-500 border border-blue-500/20">Bodega</Badge>
+      case "BAJA":
+        return <Badge className="bg-rose-500/10 text-rose-500 border border-rose-500/20">Baja</Badge>
+      default:
+        return <Badge variant="secondary">{status}</Badge>
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -147,10 +167,10 @@ export default function EquiposPage() {
         <Table>
           <TableHeader>
             <TableRow className="border-border hover:bg-transparent">
-              <TableHead className="font-medium">Nombre</TableHead>
               <TableHead className="font-medium">N° Serie</TableHead>
               <TableHead className="font-medium">Marca / Modelo</TableHead>
               <TableHead className="font-medium">Tipo</TableHead>
+              <TableHead className="font-medium">Estado</TableHead>
               <TableHead className="font-medium">Cliente</TableHead>
               <TableHead className="font-medium w-[80px]"></TableHead>
             </TableRow>
@@ -158,15 +178,20 @@ export default function EquiposPage() {
           <TableBody>
             {data.map((item) => (
               <TableRow key={item.id} className="border-border hover:bg-secondary/10">
-                <TableCell className="font-semibold">{item.nombre}</TableCell>
-                <TableCell className="font-mono text-xs">{item.n_serie}</TableCell>
+                <TableCell className="font-mono text-xs font-semibold">{item.n_serie}</TableCell>
                 <TableCell>
                   <div className="flex flex-col">
                     <span className="font-medium">{item.marca?.nombre || "N/A"}</span>
                     <span className="text-xs text-muted-foreground">{item.modelo?.nombre || "N/A"}</span>
                   </div>
                 </TableCell>
-                <TableCell>{item.tipo_equipo?.nombre || "N/A"}</TableCell>
+                <TableCell>
+                  <div className="flex flex-col">
+                    <span>{item.tipo_equipo?.nombre || "N/A"}</span>
+                    {item.pulgadas && <span className="text-xs text-muted-foreground">Monitor {item.pulgadas}"</span>}
+                  </div>
+                </TableCell>
+                <TableCell>{getStatusBadge(item.estado)}</TableCell>
                 <TableCell>{item.cliente?.nombre || "Sin Asignar"}</TableCell>
                 <TableCell>
                   <DropdownMenu>
@@ -176,6 +201,16 @@ export default function EquiposPage() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="border-border">
+                      <DropdownMenuItem
+                        className="cursor-pointer"
+                        onClick={() => {
+                          setEquipoToInspect(item)
+                          setInspectDialogOpen(true)
+                        }}
+                      >
+                        <Eye className="mr-2 h-4 w-4" />
+                        <span>Inspeccionar</span>
+                      </DropdownMenuItem>
                       <DropdownMenuItem
                         className="cursor-pointer"
                         onClick={() => {
@@ -239,6 +274,12 @@ export default function EquiposPage() {
         onOpenChange={setDialogOpen}
         equipoToEdit={equipoToEdit}
         onSave={handleSave}
+      />
+
+      <EquipoInspectDialog
+        open={inspectDialogOpen}
+        onOpenChange={setInspectDialogOpen}
+        equipo={equipoToInspect}
       />
     </div>
   )

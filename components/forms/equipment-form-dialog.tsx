@@ -221,7 +221,7 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
   // Catalog lists
   const [dbBrands, setDbBrands] = useState<{ id: number; nombre: string }[]>([])
   const [dbModels, setDbModels] = useState<{ id: number; name: string; brandId: number }[]>([])
-  const [dbTypes, setDbTypes] = useState<{ id: number; nombre: string }[]>([])
+  const [dbTypes, setDbTypes] = useState<{ id: number; nombre: string; computador?: boolean }[]>([])
   const [dbClientes, setDbClientes] = useState<{ id: number; nombre: string }[]>([])
 
   const [cpus, setCpus] = useState<any[]>([])
@@ -304,8 +304,8 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
         setMacEthernet1(equipmentToEdit.mac_ethernet_1 || "")
         setMacEthernet2(equipmentToEdit.mac_ethernet_2 || "")
         setMacWifi(equipmentToEdit.mac_wifi || "")
-        setKeyWinId(equipmentToEdit.key_win?.id ? String(equipmentToEdit.key_win.id) : "")
-        setKeyOfficeId(equipmentToEdit.key_office?.id ? String(equipmentToEdit.key_office.id) : "")
+        setKeyWinId(equipmentToEdit.lice_clie ? "clie" : (equipmentToEdit.key_win?.id ? String(equipmentToEdit.key_win.id) : ""))
+        setKeyOfficeId(equipmentToEdit.lice_marca ? "marca" : (equipmentToEdit.key_office?.id ? String(equipmentToEdit.key_office.id) : ""))
         setDvd(!!equipmentToEdit.dvd)
         setCamara(!!equipmentToEdit.camara)
         setIdTeamviewer(equipmentToEdit.id_teamviewer || "")
@@ -756,13 +756,14 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
       mac_ethernet_1: macEthernet1 || "",
       mac_ethernet_2: macEthernet2 || "",
       mac_wifi: macWifi || "",
-      key_win: keyWinId && keyWinId !== "_null" ? Number(keyWinId) : null,
-      key_office: keyOfficeId && keyOfficeId !== "_null" ? Number(keyOfficeId) : null,
+      lice_clie: keyWinId === "clie",
+      key_win: keyWinId && keyWinId !== "_null" && keyWinId !== "clie" ? Number(keyWinId) : null,
+      lice_marca: keyOfficeId === "marca",
+      key_office: keyOfficeId && keyOfficeId !== "_null" && keyOfficeId !== "marca" ? Number(keyOfficeId) : null,
       dvd,
       camara,
       id_teamviewer: idTeamviewer || "",
 
-      // Hardware relationships (either IDs or manual component objects)
       procesador:
         procesadorMode === "manual"
           ? {
@@ -995,7 +996,7 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                       <SelectValue placeholder="Selecciona tipo" />
                     </SelectTrigger>
                     <SelectContent>
-                      {dbTypes.map((t) => (
+                      {dbTypes.filter(t => t.computador || String(t.id) === tipoDeEquipoId).map((t) => (
                         <SelectItem key={t.id} value={String(t.id)}>
                           {t.nombre}
                         </SelectItem>
@@ -2728,6 +2729,7 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="_null">Ninguna</SelectItem>
+                      <SelectItem value="clie">Licencia de marca</SelectItem>
                       {filteredWinLicenses.map((lic) => (
                         <SelectItem key={lic.id} value={String(lic.id)}>
                           {lic.nombre} ({lic.key})
@@ -2745,6 +2747,7 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="_null">Ninguna</SelectItem>
+                      <SelectItem value="marca">Cliente ya posee una</SelectItem>
                       {filteredOfficeLicenses.map((lic) => (
                         <SelectItem key={lic.id} value={String(lic.id)}>
                           {lic.nombre} ({lic.key}) {lic.uso !== undefined ? `[Usos: ${lic.uso}]` : ''}

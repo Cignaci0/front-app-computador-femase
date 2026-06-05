@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Badge } from "@/components/ui/badge"
 
 export default function AsignarEquiposPage() {
   const [clientes, setClientes] = useState<any[]>([])
@@ -25,9 +26,11 @@ export default function AsignarEquiposPage() {
   const [encargado, setEncargado] = useState<string>("")
   
   const [todosListos, setTodosListos] = useState<any[]>([])
-  const [disponibles, setDisponibles] = useState<any[]>([])
+  const [todosEquiposListos, setTodosEquiposListos] = useState<any[]>([])
   const [asignadosHistoricos, setAsignadosHistoricos] = useState<any[]>([])
   const [asignadosNuevos, setAsignadosNuevos] = useState<any[]>([])
+  
+  const [tipoFiltro, setTipoFiltro] = useState<"computador" | "equipo">("computador")
   
   const [seleccionadosIzquierda, setSeleccionadosIzquierda] = useState<number[]>([])
   const [seleccionadosDerecha, setSeleccionadosDerecha] = useState<number[]>([])
@@ -38,7 +41,16 @@ export default function AsignarEquiposPage() {
   useEffect(() => {
     fetchClientes()
     fetchListos()
+    fetchEquiposListos()
   }, [])
+
+  useEffect(() => {
+    if (tipoFiltro === "equipo") {
+      fetchEquiposListos()
+    } else {
+      fetchListos()
+    }
+  }, [tipoFiltro])
 
   const fetchClientes = async () => {
     try {
@@ -54,7 +66,17 @@ export default function AsignarEquiposPage() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/computador/listos?page=1&limit=251`)
       const json = await res.json()
       setTodosListos(json.listos || [])
-      setDisponibles(json.listos || [])
+    } catch (error) {
+      console.error("Error al cargar computadores listos", error)
+    }
+  }
+
+  const fetchEquiposListos = async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/equipos/listos?page=1&limit=251`)
+      const json = await res.json()
+      const arr = (json.listos || []).map((e: any) => ({ ...e, _isEquipo: true }))
+      setTodosEquiposListos(arr)
     } catch (error) {
       console.error("Error al cargar equipos listos", error)
     }
@@ -69,10 +91,9 @@ export default function AsignarEquiposPage() {
       setEncargado("")
     }
     setAsignadosNuevos([])
-    setDisponibles(todosListos)
     setSeleccionadosIzquierda([])
     setSeleccionadosDerecha([])
-  }, [clienteId, todosListos])
+  }, [clienteId, todosListos, todosEquiposListos])
 
   const fetchAsignadosCliente = async (id: string) => {
     setIsLoading(true)
@@ -84,11 +105,20 @@ export default function AsignarEquiposPage() {
       
       if (arrayEquipos.length > 0) {
         const computadoresAsignados = arrayEquipos.map((d: any) => {
-          if (d.tipo_de_equipo) return d;
+          if (d.tipo_de_equipo) {
+             return { ...d, _isEquipo: !!d.pulgadas || d.estado === 'ENTREGADO' } 
+          }
           if (d.computador) {
             return {
               ...d.computador,
               encargadoAsignado: d.encargado
+            }
+          }
+          if (d.equipo) {
+            return {
+              ...d.equipo,
+              encargadoAsignado: d.encargado,
+              _isEquipo: true
             }
           }
           return d;
@@ -107,6 +137,10 @@ export default function AsignarEquiposPage() {
     }
   }
 
+  // Calcular disponibles dinámicamente según lo ya seleccionado
+  const todosDisponibles = tipoFiltro === "computador" ? todosListos : todosEquiposListos
+  const disponibles = todosDisponibles.filter(d => !asignadosNuevos.some(an => an.id === d.id && !!an._isEquipo === !!d._isEquipo))
+
   // 3. Transfer Logic
   const handleToggleIzquierda = (id: number) => {
     setSeleccionadosIzquierda(prev => 
@@ -123,25 +157,20 @@ export default function AsignarEquiposPage() {
   const moveRight = () => {
     const toMove = disponibles.filter(c => seleccionadosIzquierda.includes(c.id))
     setAsignadosNuevos([...asignadosNuevos, ...toMove])
-    setDisponibles(disponibles.filter(c => !seleccionadosIzquierda.includes(c.id)))
     setSeleccionadosIzquierda([])
   }
 
   const moveAllRight = () => {
     setAsignadosNuevos([...asignadosNuevos, ...disponibles])
-    setDisponibles([])
     setSeleccionadosIzquierda([])
   }
 
   const moveLeft = () => {
-    const toMove = asignadosNuevos.filter(c => seleccionadosDerecha.includes(c.id))
-    setDisponibles([...disponibles, ...toMove])
     setAsignadosNuevos(asignadosNuevos.filter(c => !seleccionadosDerecha.includes(c.id)))
     setSeleccionadosDerecha([])
   }
 
   const moveAllLeft = () => {
-    setDisponibles([...disponibles, ...asignadosNuevos])
     setAsignadosNuevos([])
     setSeleccionadosDerecha([])
   }
@@ -161,7 +190,8 @@ export default function AsignarEquiposPage() {
       setIsLoading(true)
       const payload = {
         cliente: Number(clienteId),
-        computador: asignadosNuevos.map(c => c.id),
+        computador: asignadosNuevos.filter(c => !c._isEquipo).map(c => c.id),
+        equipo: asignadosNuevos.filter(c => c._isEquipo).map(c => c.id),
         encargado: encargado.trim()
       }
 
@@ -178,6 +208,7 @@ export default function AsignarEquiposPage() {
       alert("Equipos asociados correctamente al cliente")
       // Refrescar datos
       fetchListos()
+      fetchEquiposListos()
       fetchAsignadosCliente(clienteId)
       setAsignadosNuevos([])
       setClienteId("")
@@ -241,10 +272,18 @@ export default function AsignarEquiposPage() {
           <div className="flex flex-col lg:flex-row gap-4 flex-1 min-h-0">
             {/* Lista Izquierda: Disponibles */}
             <div className="flex-1 flex flex-col border rounded-lg bg-card overflow-hidden">
-              <div className="bg-secondary/50 p-3 border-b font-medium text-sm flex justify-between items-center">
-                <span>Equipos Listos (Disponibles)</span>
-                <span className="text-muted-foreground bg-background px-2 py-0.5 rounded-full text-xs">
-                  {disponibles.length}
+              <div className="bg-secondary/50 p-2 border-b flex items-center justify-between gap-2">
+                <Select value={tipoFiltro} onValueChange={(val: "computador" | "equipo") => { setTipoFiltro(val); setSeleccionadosIzquierda([]) }}>
+                  <SelectTrigger className="w-[180px] h-8 text-xs font-semibold bg-background">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="computador">Computadores Listos</SelectItem>
+                    <SelectItem value="equipo">Equipos Listos</SelectItem>
+                  </SelectContent>
+                </Select>
+                <span className="text-muted-foreground bg-background px-2 py-0.5 rounded-full text-xs font-medium">
+                  {disponibles.length} disp.
                 </span>
               </div>
               <div className="flex-1 overflow-y-auto p-2 space-y-1">
@@ -264,8 +303,13 @@ export default function AsignarEquiposPage() {
                         onCheckedChange={() => handleToggleIzquierda(c.id)}
                       />
                       <div className="flex flex-col">
-                        <span className="text-sm font-medium">{c.nombre_equipo || `Computador ${c.id}`}</span>
-                        <span className="text-xs text-muted-foreground">ID: {c.id} | {c.tipo_de_equipo?.nombre || "PC"} - {c.marca?.nombre || ""} {c.modelo?.nombre || ""}</span>
+                        <span className="text-sm font-medium">
+                          {c._isEquipo ? (c.tipo_equipo?.nombre || "Equipo") : `Computador ${c.id}`}
+                          <span className="text-xs font-normal text-muted-foreground ml-2">SN: {c.n_serie || c.n_serie_bios || "N/A"}</span>
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          ID: {c.id} | {c.marca?.nombre || ""} {c.modelo?.nombre || ""}
+                        </span>
                       </div>
                     </div>
                   ))
@@ -321,8 +365,14 @@ export default function AsignarEquiposPage() {
                       >
                         <Checkbox disabled checked />
                         <div className="flex flex-col">
-                          <span className="text-sm font-medium">{c.nombre_equipo || `Computador ${c.id}`} <span className="font-normal italic text-xs ml-1">(Encargado: {c.encargadoAsignado || "N/A"})</span></span>
-                          <span className="text-xs text-muted-foreground">ID: {c.id} | {c.tipo_de_equipo?.nombre || "PC"} - {c.marca?.nombre || ""} {c.modelo?.nombre || ""}</span>
+                          <span className="text-sm font-medium">
+                            {c._isEquipo ? (c.tipo_equipo?.nombre || "Equipo") : `Computador ${c.id}`}
+                            <span className="font-normal italic text-xs ml-1 text-muted-foreground">(Encargado: {c.encargadoAsignado || "N/A"})</span>
+                          </span>
+                          <span className="text-xs text-muted-foreground mt-0.5">
+                            {c._isEquipo ? <Badge variant="secondary" className="mr-1 text-[10px] py-0 px-1">EQ</Badge> : <Badge variant="secondary" className="mr-1 text-[10px] py-0 px-1">PC</Badge>}
+                            ID: {c.id} | SN: {c.n_serie || c.n_serie_bios || "N/A"} | {c.marca?.nombre || ""} {c.modelo?.nombre || ""}
+                          </span>
                         </div>
                       </div>
                     ))}
@@ -339,8 +389,14 @@ export default function AsignarEquiposPage() {
                           onCheckedChange={() => handleToggleDerecha(c.id)}
                         />
                         <div className="flex flex-col">
-                          <span className="text-sm font-medium text-primary">{c.nombre_equipo || `Computador ${c.id}`} <span className="font-bold text-xs">(NUEVO)</span></span>
-                          <span className="text-xs text-muted-foreground">ID: {c.id} | {c.tipo_de_equipo?.nombre || "PC"} - {c.marca?.nombre || ""} {c.modelo?.nombre || ""}</span>
+                          <span className="text-sm font-medium text-primary">
+                            {c._isEquipo ? (c.tipo_equipo?.nombre || "Equipo") : `Computador ${c.id}`}
+                            <span className="font-bold text-xs ml-2">(NUEVO)</span>
+                          </span>
+                          <span className="text-xs text-muted-foreground mt-0.5">
+                            {c._isEquipo ? <Badge variant="outline" className="mr-1 text-[10px] py-0 px-1 border-primary/30 text-primary">EQ</Badge> : <Badge variant="outline" className="mr-1 text-[10px] py-0 px-1 border-primary/30 text-primary">PC</Badge>}
+                            ID: {c.id} | SN: {c.n_serie || c.n_serie_bios || "N/A"} | {c.marca?.nombre || ""} {c.modelo?.nombre || ""}
+                          </span>
                         </div>
                       </div>
                     ))}

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Plus, Search, MoreHorizontal, Pencil, Trash2 } from "lucide-react"
+import { Plus, Search, MoreHorizontal, Pencil, Trash2, User, Phone, Mail } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -24,10 +24,10 @@ import { toast } from "sonner"
 import { getProveedores, createProveedor, updateProveedor, deleteProveedor } from "@/services/proveedorService"
 
 export default function ProveedoresPage() {
-  const [proveedores, setProveedores] = useState<{ id: number; nombre: string }[]>([])
+  const [proveedores, setProveedores] = useState<{ id: number; nombre: string; contacto?: string; telefono?: string; email?: string }[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [proveedorToEdit, setProveedorToEdit] = useState<{ id: number; nombre: string } | null>(null)
+  const [proveedorToEdit, setProveedorToEdit] = useState<{ id: number; nombre: string; contacto?: string; telefono?: string; email?: string } | null>(null)
   
   const [currentPage, setCurrentPage] = useState(1)
   const [limit, setLimit] = useState(6)
@@ -54,13 +54,13 @@ export default function ProveedoresPage() {
     fetchProveedoresData(currentPage, limit)
   }, [currentPage, limit])
 
-  const handleSaveProveedor = async (nombre: string) => {
+  const handleSaveProveedor = async (nombre: string, contacto: string, telefono: string, email: string) => {
     try {
       if (proveedorToEdit) {
-        await updateProveedor(proveedorToEdit.id, nombre)
+        await updateProveedor(proveedorToEdit.id, nombre, contacto, telefono, email)
         toast.success("Proveedor actualizado exitosamente")
       } else {
-        await createProveedor(nombre)
+        await createProveedor(nombre, contacto, telefono, email)
         toast.success("Proveedor creado exitosamente")
       }
       setProveedorToEdit(null)
@@ -136,16 +136,47 @@ export default function ProveedoresPage() {
           <Table>
             <TableHeader>
               <TableRow className="border-border hover:bg-transparent">
-                <TableHead className="text-muted-foreground font-medium">ID</TableHead>
                 <TableHead className="text-muted-foreground font-medium">Nombre</TableHead>
+                <TableHead className="text-muted-foreground font-medium">Contacto</TableHead>
+                <TableHead className="text-muted-foreground font-medium">Teléfono</TableHead>
+                <TableHead className="text-muted-foreground font-medium">Correo</TableHead>
                 <TableHead className="text-muted-foreground font-medium w-[50px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredData.map((item) => (
                 <TableRow key={item.id} className="border-border">
-                  <TableCell className="text-muted-foreground">#{item.id}</TableCell>
                   <TableCell className="font-medium">{item.nombre}</TableCell>
+                  <TableCell>
+                    {item.contacto ? (
+                      <div className="flex items-center gap-1.5 text-sm text-foreground/80">
+                        <User className="h-3.5 w-3.5 text-primary/70" />
+                        <span>{item.contacto}</span>
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground/50 text-xs italic">—</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {item.telefono ? (
+                      <div className="flex items-center gap-1.5 text-sm text-foreground/80">
+                        <Phone className="h-3.5 w-3.5 text-primary/70" />
+                        <span>{item.telefono}</span>
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground/50 text-xs italic">—</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {item.email ? (
+                      <div className="flex items-center gap-1.5 text-sm text-foreground/80">
+                        <Mail className="h-3.5 w-3.5 text-primary/70" />
+                        <span className="underline decoration-dotted underline-offset-2 decoration-primary/30">{item.email}</span>
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground/50 text-xs italic">—</span>
+                    )}
+                  </TableCell>
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -178,7 +209,7 @@ export default function ProveedoresPage() {
               ))}
               {!isLoading && filteredData.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={3} className="text-center py-6 text-muted-foreground">
+                  <TableCell colSpan={6} className="text-center py-6 text-muted-foreground">
                     No se encontraron proveedores.
                   </TableCell>
                 </TableRow>

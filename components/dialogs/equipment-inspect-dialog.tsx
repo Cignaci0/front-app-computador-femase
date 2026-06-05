@@ -104,7 +104,7 @@ export function EquipmentInspectDialog({ open, onOpenChange, equipment }: Equipm
         <DialogHeader className="border-b border-border/50 pb-4">
           <div className="flex items-center justify-between">
             <DialogTitle className="text-xl font-bold flex items-center gap-2">
-              <span>Ficha Técnica Equipo #{equipment.id}</span>
+              <span>Ficha Técnica Equipo</span>
               {getStatusBadge(equipment.estado)}
             </DialogTitle>
           </div>
@@ -143,6 +143,9 @@ export function EquipmentInspectDialog({ open, onOpenChange, equipment }: Equipm
               {renderDetailItem("Nombre de Equipo (Host)", equipment.nombre_equipo, true)}
               {renderDetailItem("Vencimiento Garantía", equipment.vencimiento_garantia ? `${equipment.vencimiento_garantia} meses` : "N/A")}
               {equipment.vencimiento_garantia_fecha && renderDetailItem("Fecha Vencimiento Garantía", formatDate(equipment.vencimiento_garantia_fecha))}
+              {equipment.fecha_ingreso && renderDetailItem("Fecha Ingreso", formatDate(equipment.fecha_ingreso))}
+              {equipment.fecha_listo && renderDetailItem("Fecha Listo", formatDate(equipment.fecha_listo))}
+              {equipment.fecha_entregado && renderDetailItem("Fecha Entregado", formatDate(equipment.fecha_entregado))}
               {renderDetailItem("Última Actualización", formatDate(equipment.updatedAt))}
             </div>
             

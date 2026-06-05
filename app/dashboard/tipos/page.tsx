@@ -19,15 +19,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import { EquipmentTypeFormDialog } from "@/components/forms/equipment-type-form-dialog"
 import { toast } from "sonner"
 import { getTiposDeEquipo, createTipoDeEquipo, updateTipoDeEquipo, deleteTipoDeEquipo } from "@/services/tipoDeEquipoService"
 
 export default function TiposPage() {
-  const [types, setTypes] = useState<{ id: number; name: string; description: string }[]>([])
+  const [types, setTypes] = useState<{ id: number; name: string; description: string; computador?: boolean }[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [typeToEdit, setTypeToEdit] = useState<{ id: number; name: string; description: string } | null>(null)
+  const [typeToEdit, setTypeToEdit] = useState<{ id: number; name: string; description: string; computador?: boolean } | null>(null)
 
   const [currentPage, setCurrentPage] = useState(1)
   const [limit, setLimit] = useState(6)
@@ -44,6 +45,7 @@ export default function TiposPage() {
         id: item.id,
         name: item.nombre || item.name,
         description: item.descripcion || item.description || "",
+        computador: item.computador,
       }))
       setTypes(mapped)
       if (response.meta) {
@@ -56,6 +58,7 @@ export default function TiposPage() {
         id: item.id,
         name: item.nombre || item.name,
         description: item.descripcion || item.description || "",
+        computador: item.computador,
       }))
       localStorage.setItem("femase_tipos", JSON.stringify(allMapped))
     } catch (error) {
@@ -71,15 +74,15 @@ export default function TiposPage() {
     fetchTypesData(currentPage, limit)
   }, [currentPage, limit])
 
-  const handleSaveType = async (name: string, description: string) => {
+  const handleSaveType = async (name: string, description: string, computador: boolean) => {
     try {
       if (typeToEdit) {
         // Edit
-        await updateTipoDeEquipo(typeToEdit.id, name, description)
+        await updateTipoDeEquipo(typeToEdit.id, name, description, computador)
         toast.success("Tipo de equipo actualizado exitosamente")
       } else {
         // Create
-        await createTipoDeEquipo(name, description)
+        await createTipoDeEquipo(name, description, computador)
         toast.success("Tipo de equipo creado exitosamente")
       }
       setTypeToEdit(null)
@@ -159,6 +162,7 @@ export default function TiposPage() {
               <TableRow className="border-border hover:bg-transparent">
                 <TableHead className="text-muted-foreground font-medium">Tipo</TableHead>
                 <TableHead className="text-muted-foreground font-medium">Descripción</TableHead>
+                <TableHead className="text-muted-foreground font-medium">¿Es PC?</TableHead>
                 <TableHead className="text-muted-foreground font-medium w-[50px]"></TableHead>
               </TableRow>
             </TableHeader>
@@ -167,6 +171,13 @@ export default function TiposPage() {
                 <TableRow key={item.id} className="border-border">
                   <TableCell className="font-medium">{item.name}</TableCell>
                   <TableCell className="text-muted-foreground">{item.description}</TableCell>
+                  <TableCell>
+                    {item.computador ? (
+                      <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">Sí</Badge>
+                    ) : (
+                      <span className="text-muted-foreground text-sm">No</span>
+                    )}
+                  </TableCell>
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -199,7 +210,7 @@ export default function TiposPage() {
               ))}
               {!isLoading && filteredData.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={3} className="text-center py-6 text-muted-foreground">
+                  <TableCell colSpan={4} className="text-center py-6 text-muted-foreground">
                     No se encontraron tipos de equipo.
                   </TableCell>
                 </TableRow>

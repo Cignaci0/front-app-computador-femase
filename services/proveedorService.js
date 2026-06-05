@@ -24,7 +24,7 @@ export async function getProveedores(page = 1, limit = 1000) {
  * @param {string} nombre - Nombre del proveedor.
  * @returns {Promise<any>}
  */
-export async function createProveedor(nombre) {
+export async function createProveedor(nombre, contacto = "", telefono = "", email = "") {
   try {
     const response = await fetch(API_URL, {
       method: "POST",
@@ -33,6 +33,9 @@ export async function createProveedor(nombre) {
       },
       body: JSON.stringify({
         nombre: nombre,
+        contacto: contacto,
+        telefono: telefono,
+        email: email,
       }),
     });
     if (!response.ok) {
@@ -51,14 +54,14 @@ export async function createProveedor(nombre) {
  * @param {string} nombre - Nuevo nombre del proveedor.
  * @returns {Promise<any>}
  */
-export async function updateProveedor(id, nombre) {
+export async function updateProveedor(id, nombre, contacto = "", telefono = "", email = "") {
   try {
     const response = await fetch(`${API_URL}/${id}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ nombre }),
+      body: JSON.stringify({ nombre, contacto, telefono, email }),
     });
     if (!response.ok) {
       throw new Error(`Error al actualizar proveedor: ${response.statusText}`);

@@ -25,7 +25,7 @@ export async function getTiposDeEquipo(page = 1, limit = 6) {
  * @param {string} descripcion - Descripción del tipo de equipo.
  * @returns {Promise<string>}
  */
-export async function createTipoDeEquipo(nombre, descripcion) {
+export async function createTipoDeEquipo(nombre, descripcion, computador = false) {
   try {
     const response = await fetch(API_URL, {
       method: "POST",
@@ -35,6 +35,7 @@ export async function createTipoDeEquipo(nombre, descripcion) {
       body: JSON.stringify({
         nombre: nombre,
         descripcion: descripcion,
+        computador: computador,
       }),
     });
     if (!response.ok) {
@@ -54,7 +55,7 @@ export async function createTipoDeEquipo(nombre, descripcion) {
  * @param {string} descripcion - Nueva descripción del tipo de equipo.
  * @returns {Promise<string>}
  */
-export async function updateTipoDeEquipo(id, nombre, descripcion) {
+export async function updateTipoDeEquipo(id, nombre, descripcion, computador = false) {
   try {
     const response = await fetch(`${API_URL}/${id}`, {
       method: "PATCH",
@@ -64,6 +65,7 @@ export async function updateTipoDeEquipo(id, nombre, descripcion) {
       body: JSON.stringify({
         nombre: nombre,
         descripcion: descripcion,
+        computador: computador,
       }),
     });
     if (!response.ok) {

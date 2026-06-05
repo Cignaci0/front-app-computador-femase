@@ -16,19 +16,28 @@ import { Label } from "@/components/ui/label"
 interface ProveedorFormDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  proveedorToEdit?: { id: number; nombre: string } | null
-  onSave: (nombre: string) => void
+  proveedorToEdit?: { id: number; nombre: string; contacto?: string; telefono?: string; email?: string } | null
+  onSave: (nombre: string, contacto: string, telefono: string, email: string) => void
 }
 
 export function ProveedorFormDialog({ open, onOpenChange, proveedorToEdit, onSave }: ProveedorFormDialogProps) {
   const [nombre, setNombre] = useState("")
+  const [contacto, setContacto] = useState("")
+  const [telefono, setTelefono] = useState("")
+  const [email, setEmail] = useState("")
 
   useEffect(() => {
     if (open) {
       if (proveedorToEdit) {
-        setNombre(proveedorToEdit.nombre)
+        setNombre(proveedorToEdit.nombre || "")
+        setContacto(proveedorToEdit.contacto || "")
+        setTelefono(proveedorToEdit.telefono || "")
+        setEmail(proveedorToEdit.email || "")
       } else {
         setNombre("")
+        setContacto("")
+        setTelefono("")
+        setEmail("")
       }
     }
   }, [proveedorToEdit, open])
@@ -36,7 +45,7 @@ export function ProveedorFormDialog({ open, onOpenChange, proveedorToEdit, onSav
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!nombre.trim()) return
-    onSave(nombre.trim())
+    onSave(nombre.trim(), contacto.trim(), telefono.trim(), email.trim())
     onOpenChange(false)
   }
 
@@ -59,7 +68,41 @@ export function ProveedorFormDialog({ open, onOpenChange, proveedorToEdit, onSav
                 className="bg-secondary/50 border-0"
                 value={nombre}
                 onChange={(e) => setNombre(e.target.value)}
+                required
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="prov-contacto">Contacto</Label>
+              <Input
+                id="prov-contacto"
+                placeholder="Nombre del contacto..."
+                className="bg-secondary/50 border-0"
+                value={contacto}
+                onChange={(e) => setContacto(e.target.value)}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="prov-telefono">Teléfono</Label>
+                <Input
+                  id="prov-telefono"
+                  placeholder="Ej: +569..."
+                  className="bg-secondary/50 border-0"
+                  value={telefono}
+                  onChange={(e) => setTelefono(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="prov-email">Email</Label>
+                <Input
+                  id="prov-email"
+                  placeholder="correo@ejemplo.com"
+                  type="email"
+                  className="bg-secondary/50 border-0"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
             </div>
           </div>
           <DialogFooter>
