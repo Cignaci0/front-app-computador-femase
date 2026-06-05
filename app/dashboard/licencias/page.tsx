@@ -620,7 +620,13 @@ export default function LicenciasPage() {
                   placeholder="Ej: 7MKMN-M2X9W-7RFX6-HXDT7-2R7RX"
                   className="bg-secondary/50 border-0 font-mono text-sm"
                   value={formKey}
-                  onChange={(e) => setFormKey(e.target.value)}
+                  onChange={(e) => {
+                    let val = e.target.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+                    let formatted = val.match(/.{1,5}/g)?.join('-') || '';
+                    setFormKey(formatted.slice(0, 29));
+                  }}
+                  pattern="[A-Z0-9]{5}-[A-Z0-9]{5}-[A-Z0-9]{5}-[A-Z0-9]{5}-[A-Z0-9]{5}"
+                  title="El formato debe ser: XXXXX-XXXXX-XXXXX-XXXXX-XXXXX"
                   required
                 />
               </div>

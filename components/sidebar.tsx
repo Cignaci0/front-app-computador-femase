@@ -18,6 +18,7 @@ import {
   Key,
   Tv,
   Truck,
+  MonitorPlay,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -39,6 +40,11 @@ const navItems = [
     title: "Computadores",
     href: "/dashboard/computadores",
     icon: Monitor,
+  },
+  {
+    title: "Asignar Equipos",
+    href: "/dashboard/asignar-equipos",
+    icon: MonitorPlay,
   },
   {
     title: "Equipos",

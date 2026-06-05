@@ -37,7 +37,106 @@ interface EquipmentFormDialogProps {
   onSave: (data: any) => void
 }
 
-const STATUSES = ["LISTO", "ACTIVO", "MANTENIMIENTO", "BODEGA", "BAJA"]
+const STATUSES = ["RECIBIDO", "LISTO", "ENTREGADO"]
+
+const RAM_SPECS: Record<string, { label: string, frecuencias: string[], capacidades: string[], formatos: string[] }> = {
+  "DDR": { label: "DDR (DDR1)", frecuencias: ["200", "266", "333", "400"], capacidades: ["128 MB", "256 MB", "512 MB", "1 GB", "2 GB"], formatos: ["DIMM", "SO-DIMM"] },
+  "DDR2": { label: "DDR2", frecuencias: ["400", "533", "667", "800", "1066"], capacidades: ["256 MB", "512 MB", "1 GB", "2 GB", "4 GB"], formatos: ["DIMM", "SO-DIMM"] },
+  "DDR3": { label: "DDR3", frecuencias: ["800", "1066", "1333", "1600", "1866", "2133"], capacidades: ["1 GB", "2 GB", "4 GB", "8 GB", "16 GB"], formatos: ["DIMM", "SO-DIMM"] },
+  "DDR4": { label: "DDR4", frecuencias: ["1600", "1866", "2133", "2400", "2666", "2933", "3200", "3600+", "4000+", "4266+", "4400+", "4600+", "4800+", "5000+"], capacidades: ["4 GB", "8 GB", "16 GB", "32 GB", "64 GB", "128 GB"], formatos: ["DIMM", "SO-DIMM"] },
+  "DDR5": { label: "DDR5", frecuencias: ["4800", "5200", "5600", "6000", "6400", "6800", "7200", "7600", "8000", "8400", "8800", "9200+", "9600+", "10000+"], capacidades: ["8 GB", "16 GB", "24 GB", "32 GB", "48 GB", "64 GB", "96 GB", "128 GB"], formatos: ["DIMM", "SO-DIMM", "CAMM2*"] },
+}
+
+const DISK_SPECS: Record<string, string[]> = {
+  "HDD 3.5\"": ["500 GB", "1 TB", "2 TB", "4 TB", "6 TB", "8 TB", "10 TB", "12 TB", "14 TB", "16 TB", "18 TB", "20 TB", "22 TB", "24 TB", "28 TB"],
+  "HDD 2.5\"": ["250 GB", "320 GB", "500 GB", "750 GB", "1 TB", "2 TB", "4 TB", "5 TB"],
+  "SSD 2.5\"": ["120 GB", "128 GB", "240 GB", "250 GB", "256 GB", "480 GB", "500 GB", "512 GB", "960 GB", "1 TB", "2 TB", "4 TB", "8 TB"],
+  "mSATA": ["32 GB", "64 GB", "128 GB", "256 GB", "512 GB", "1 TB"],
+  "M.2 SATA 2280": ["120 GB", "128 GB", "240 GB", "250 GB", "256 GB", "480 GB", "500 GB", "512 GB", "1 TB", "2 TB"],
+  "M.2 SATA 2242": ["120 GB", "128 GB", "240 GB", "250 GB", "256 GB", "480 GB", "500 GB", "512 GB", "1 TB", "2 TB"],
+  "NVMe 2280": ["128 GB", "256 GB", "512 GB", "1 TB", "2 TB", "4 TB", "8 TB", "16 TB"],
+  "NVMe 2242": ["128 GB", "256 GB", "512 GB", "1 TB", "2 TB", "4 TB", "8 TB", "16 TB"],
+  "NVMe 2230": ["128 GB", "256 GB", "512 GB", "1 TB", "2 TB", "4 TB", "8 TB", "16 TB"],
+  "NVMe 2260": ["128 GB", "256 GB", "512 GB", "1 TB", "2 TB", "4 TB", "8 TB", "16 TB"],
+  "NVMe 22110": ["128 GB", "256 GB", "512 GB", "1 TB", "2 TB", "4 TB", "8 TB", "16 TB"],
+}
+
+const CPU_SPECS: Record<string, Record<string, Record<string, { nucleos: string; hilos: string; frecuencia: string }>>> = {
+  "INTEL": {
+    "Core i3": {
+      "i3-12100": { nucleos: "4", hilos: "8", frecuencia: "4.3 GHz turbo" },
+      "i3-13100": { nucleos: "4", hilos: "8", frecuencia: "4.5 GHz turbo" },
+      "i3-14100": { nucleos: "4", hilos: "8", frecuencia: "4.7 GHz turbo" },
+    },
+    "Core i5": {
+      "i5-12400": { nucleos: "6", hilos: "12", frecuencia: "4.4 GHz turbo" },
+      "i5-13400": { nucleos: "10", hilos: "16", frecuencia: "4.6 GHz turbo" },
+      "i5-13600K": { nucleos: "14", hilos: "20", frecuencia: "5.1 GHz turbo" },
+      "i5-14600K": { nucleos: "14", hilos: "20", frecuencia: "5.3 GHz turbo" },
+    },
+    "Core i7": {
+      "i7-12700K": { nucleos: "12", hilos: "20", frecuencia: "5.0 GHz turbo" },
+      "i7-13700K": { nucleos: "16", hilos: "24", frecuencia: "5.4 GHz turbo" },
+      "i7-14700K": { nucleos: "20", hilos: "28", frecuencia: "5.6 GHz turbo" },
+    },
+    "Core i9": {
+      "i9-12900K": { nucleos: "16", hilos: "24", frecuencia: "5.2 GHz turbo" },
+      "i9-13900K": { nucleos: "24", hilos: "32", frecuencia: "5.8 GHz turbo" },
+      "i9-14900K": { nucleos: "24", hilos: "32", frecuencia: "6.0 GHz turbo" },
+    },
+    "Core Ultra 5": {
+      "Core Ultra 5 125H": { nucleos: "14", hilos: "18", frecuencia: "4.5 GHz turbo" },
+      "Core Ultra 5 135H": { nucleos: "14", hilos: "18", frecuencia: "4.6 GHz turbo" },
+    },
+    "Core Ultra 7": {
+      "Core Ultra 7 155H": { nucleos: "16", hilos: "22", frecuencia: "4.8 GHz turbo" },
+      "Core Ultra 7 165H": { nucleos: "16", hilos: "22", frecuencia: "5.0 GHz turbo" },
+    },
+    "Core Ultra 9": {
+      "Core Ultra 9 185H": { nucleos: "16", hilos: "22", frecuencia: "5.1 GHz turbo" },
+    }
+  },
+  "AMD": {
+    "Ryzen 3": {
+      "Ryzen 3 3100": { nucleos: "4", hilos: "8", frecuencia: "3.9 GHz turbo" },
+      "Ryzen 3 4100": { nucleos: "4", hilos: "8", frecuencia: "4.0 GHz turbo" },
+      "Ryzen 3 5300G": { nucleos: "4", hilos: "8", frecuencia: "4.2 GHz turbo" },
+    },
+    "Ryzen 5": {
+      "Ryzen 5 3600": { nucleos: "6", hilos: "12", frecuencia: "4.2 GHz turbo" },
+      "Ryzen 5 5600X": { nucleos: "6", hilos: "12", frecuencia: "4.6 GHz turbo" },
+      "Ryzen 5 7600X": { nucleos: "6", hilos: "12", frecuencia: "5.3 GHz turbo" },
+      "Ryzen 5 8600G": { nucleos: "6", hilos: "12", frecuencia: "5.0 GHz turbo" },
+    },
+    "Ryzen 7": {
+      "Ryzen 7 3700X": { nucleos: "8", hilos: "16", frecuencia: "4.4 GHz turbo" },
+      "Ryzen 7 5800X": { nucleos: "8", hilos: "16", frecuencia: "4.7 GHz turbo" },
+      "Ryzen 7 7700X": { nucleos: "8", hilos: "16", frecuencia: "5.4 GHz turbo" },
+      "Ryzen 7 7800X3D": { nucleos: "8", hilos: "16", frecuencia: "5.0 GHz turbo" },
+    },
+    "Ryzen 9": {
+      "Ryzen 9 3900X": { nucleos: "12", hilos: "24", frecuencia: "4.6 GHz turbo" },
+      "Ryzen 9 5900X": { nucleos: "12", hilos: "24", frecuencia: "4.8 GHz turbo" },
+      "Ryzen 9 7900X": { nucleos: "12", hilos: "24", frecuencia: "5.6 GHz turbo" },
+      "Ryzen 9 7950X": { nucleos: "16", hilos: "32", frecuencia: "5.7 GHz turbo" },
+    },
+    "Ryzen Threadripper": {
+      "Threadripper 1900X": { nucleos: "8", hilos: "16", frecuencia: "4.0 GHz turbo" },
+      "Threadripper 3960X": { nucleos: "24", hilos: "48", frecuencia: "4.5 GHz turbo" },
+      "Threadripper 7970X": { nucleos: "32", hilos: "64", frecuencia: "5.3 GHz turbo" },
+      "Threadripper 7980X": { nucleos: "64", hilos: "128", frecuencia: "5.1 GHz turbo" },
+    },
+    "Ryzen Threadripper Pro": {
+      "Threadripper Pro 3955WX": { nucleos: "16", hilos: "32", frecuencia: "4.3 GHz turbo" },
+      "Threadripper Pro 5975WX": { nucleos: "32", hilos: "64", frecuencia: "4.5 GHz turbo" },
+      "Threadripper Pro 7995WX": { nucleos: "96", hilos: "192", frecuencia: "5.1 GHz turbo" },
+    }
+  }
+}
+
+const CPU_CORES = ["4", "6", "8", "10", "12", "14", "16", "20", "24", "32", "64", "96"]
+const CPU_THREADS = ["8", "12", "16", "18", "20", "22", "24", "28", "32", "48", "64", "128", "192"]
+const CPU_FREQS = ["3.9 GHz turbo", "4.0 GHz turbo", "4.2 GHz turbo", "4.3 GHz turbo", "4.4 GHz turbo", "4.5 GHz turbo", "4.6 GHz turbo", "4.7 GHz turbo", "4.8 GHz turbo", "5.0 GHz turbo", "5.1 GHz turbo", "5.2 GHz turbo", "5.3 GHz turbo", "5.4 GHz turbo", "5.6 GHz turbo", "5.7 GHz turbo", "5.8 GHz turbo", "6.0 GHz turbo"]
 
 export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSave }: EquipmentFormDialogProps) {
   // Navigation tab state
@@ -47,7 +146,7 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
   const [tipoDeEquipoId, setTipoDeEquipoId] = useState("")
   const [marcaId, setMarcaId] = useState("")
   const [modeloId, setModeloId] = useState("")
-  const [estado, setEstado] = useState("")
+  const [estado, setEstado] = useState("RECIBIDO")
   const [vencimientoGarantia, setVencimientoGarantia] = useState("")
 
   // Custom added fields from Computador entity
@@ -189,10 +288,10 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
         setTipoDeEquipoId(equipmentToEdit.tipo_de_equipo?.id ? String(equipmentToEdit.tipo_de_equipo.id) : "")
         setMarcaId(equipmentToEdit.marca?.id ? String(equipmentToEdit.marca.id) : "")
         setModeloId(equipmentToEdit.modelo?.id ? String(equipmentToEdit.modelo.id) : "")
-        setEstado(equipmentToEdit.estado || "LISTO")
+        setEstado(equipmentToEdit.estado || "RECIBIDO")
 
         if (equipmentToEdit.vencimiento_garantia) {
-          setVencimientoGarantia(equipmentToEdit.vencimiento_garantia.substring(0, 10))
+          setVencimientoGarantia(String(equipmentToEdit.vencimiento_garantia))
         } else {
           setVencimientoGarantia("")
         }
@@ -469,7 +568,7 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
         setTipoDeEquipoId("")
         setMarcaId("")
         setModeloId("")
-        setEstado("LISTO")
+        setEstado("RECIBIDO")
         setVencimientoGarantia("")
         setClienteId("")
         setUsuario("")
@@ -558,7 +657,7 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
 
       const availableStock = r.uso + dbUsageCount - selectedCountInOtherSlots;
 
-      const isSelectedInThisSlot = 
+      const isSelectedInThisSlot =
         (slotNum === 1 && memoriaRam1Id === rIdStr) ||
         (slotNum === 2 && memoriaRam2Id === rIdStr) ||
         (slotNum === 3 && memoriaRam3Id === rIdStr) ||
@@ -610,7 +709,7 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
 
       const availableStock = d.uso + dbUsageCount - selectedCountInOtherSlots;
 
-      const isSelectedInThisSlot = 
+      const isSelectedInThisSlot =
         (slotNum === 1 && discoAlma1Id === dIdStr) ||
         (slotNum === 2 && discoAlma2Id === dIdStr) ||
         (slotNum === 3 && discoAlma3Id === dIdStr);
@@ -648,7 +747,7 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
       marca: Number(marcaId),
       modelo: Number(modeloId),
       estado,
-      vencimiento_garantia: vencimientoGarantia,
+      vencimiento_garantia: Number(vencimientoGarantia),
       cliente: clienteId ? Number(clienteId) : null,
       usuario: usuario || "",
       nombre_equipo: nombreEquipo || "",
@@ -667,119 +766,119 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
       procesador:
         procesadorMode === "manual"
           ? {
-              id: mProcesador.id ? Number(mProcesador.id) : null,
-              marca: mProcesador.marca ? Number(mProcesador.marca) : null,
-              familia: mProcesador.familia || "",
-              modelo: mProcesador.modelo || "",
-              frecuencia: mProcesador.frecuencia || "",
-              nucleos: mProcesador.nucleos ? Number(mProcesador.nucleos) : null,
-              hilos: mProcesador.hilos ? Number(mProcesador.hilos) : null,
-            }
+            id: mProcesador.id ? Number(mProcesador.id) : null,
+            marca: mProcesador.marca || null,
+            familia: mProcesador.familia || "",
+            modelo: mProcesador.modelo || "",
+            frecuencia: mProcesador.frecuencia || "",
+            nucleos: mProcesador.nucleos ? Number(mProcesador.nucleos) : null,
+            hilos: mProcesador.hilos ? Number(mProcesador.hilos) : null,
+          }
           : procesadorId && procesadorId !== "_null"
-          ? Number(procesadorId)
-          : null,
+            ? Number(procesadorId)
+            : null,
 
       placa:
         placaMode === "manual"
           ? {
-              id: mPlaca.id ? Number(mPlaca.id) : null,
-              marca: mPlaca.marca ? Number(mPlaca.marca) : null,
-              modelo: mPlaca.modelo || "",
-              socket: mPlaca.socket || "",
-              chipset: mPlaca.chipset || "",
-            }
+            id: mPlaca.id ? Number(mPlaca.id) : null,
+            marca: mPlaca.marca ? Number(mPlaca.marca) : null,
+            modelo: mPlaca.modelo || "",
+            socket: mPlaca.socket || "",
+            chipset: mPlaca.chipset || "",
+          }
           : placaId && placaId !== "_null"
-          ? Number(placaId)
-          : null,
+            ? Number(placaId)
+            : null,
 
       tarjeta_grafica:
         tarjetaGraficaMode === "manual"
           ? {
-              id: mTarjetaGrafica.id ? Number(mTarjetaGrafica.id) : null,
-              marca: mTarjetaGrafica.marca ? Number(mTarjetaGrafica.marca) : null,
-              modelo: mTarjetaGrafica.modelo || "",
-              vram: mTarjetaGrafica.vram || "",
-            }
+            id: mTarjetaGrafica.id ? Number(mTarjetaGrafica.id) : null,
+            marca: mTarjetaGrafica.marca ? Number(mTarjetaGrafica.marca) : null,
+            modelo: mTarjetaGrafica.modelo || "",
+            vram: mTarjetaGrafica.vram || "",
+          }
           : tarjetaGraficaId && tarjetaGraficaId !== "_null"
-          ? Number(tarjetaGraficaId)
-          : null,
+            ? Number(tarjetaGraficaId)
+            : null,
 
       fuente:
         fuenteMode === "manual"
           ? {
-              id: mFuente.id ? Number(mFuente.id) : null,
-              marca: mFuente.marca ? Number(mFuente.marca) : null,
-              modelo: mFuente.modelo || "",
-              potencia: mFuente.potencia || "",
-              certificacion: mFuente.certificacion || "",
-            }
+            id: mFuente.id ? Number(mFuente.id) : null,
+            marca: mFuente.marca ? Number(mFuente.marca) : null,
+            modelo: mFuente.modelo || "",
+            potencia: mFuente.potencia || "",
+            certificacion: mFuente.certificacion || "",
+          }
           : fuenteId && fuenteId !== "_null"
-          ? Number(fuenteId)
-          : null,
+            ? Number(fuenteId)
+            : null,
 
       // RAM
       memoria_ram_1:
         Number(ramSlots) >= 1
           ? ram1Mode === "manual"
             ? {
-                id: mRam1.id ? Number(mRam1.id) : null,
-                marca: mRam1.marca ? Number(mRam1.marca) : null,
-                tipo_tecnologia: mRam1.tipo_tecnologia || "",
-                formato: mRam1.formato || "",
-                capacidad: mRam1.capacidad || "",
-                frecuencia: mRam1.frecuencia || "",
-              }
+              id: mRam1.id ? Number(mRam1.id) : null,
+              marca: mRam1.marca ? Number(mRam1.marca) : null,
+              tipo_tecnologia: mRam1.tipo_tecnologia || "",
+              formato: mRam1.formato || "",
+              capacidad: mRam1.capacidad || "",
+              frecuencia: mRam1.frecuencia || "",
+            }
             : memoriaRam1Id && memoriaRam1Id !== "_null"
-            ? Number(memoriaRam1Id)
-            : null
+              ? Number(memoriaRam1Id)
+              : null
           : null,
 
       memoria_ram_2:
         Number(ramSlots) >= 2
           ? ram2Mode === "manual"
             ? {
-                id: mRam2.id ? Number(mRam2.id) : null,
-                marca: mRam2.marca ? Number(mRam2.marca) : null,
-                tipo_tecnologia: mRam2.tipo_tecnologia || "",
-                formato: mRam2.formato || "",
-                capacidad: mRam2.capacidad || "",
-                frecuencia: mRam2.frecuencia || "",
-              }
+              id: mRam2.id ? Number(mRam2.id) : null,
+              marca: mRam2.marca ? Number(mRam2.marca) : null,
+              tipo_tecnologia: mRam2.tipo_tecnologia || "",
+              formato: mRam2.formato || "",
+              capacidad: mRam2.capacidad || "",
+              frecuencia: mRam2.frecuencia || "",
+            }
             : memoriaRam2Id && memoriaRam2Id !== "_null"
-            ? Number(memoriaRam2Id)
-            : null
+              ? Number(memoriaRam2Id)
+              : null
           : null,
 
       memoria_ram_3:
         Number(ramSlots) >= 3
           ? ram3Mode === "manual"
             ? {
-                id: mRam3.id ? Number(mRam3.id) : null,
-                marca: mRam3.marca ? Number(mRam3.marca) : null,
-                tipo_tecnologia: mRam3.tipo_tecnologia || "",
-                formato: mRam3.formato || "",
-                capacidad: mRam3.capacidad || "",
-                frecuencia: mRam3.frecuencia || "",
-              }
+              id: mRam3.id ? Number(mRam3.id) : null,
+              marca: mRam3.marca ? Number(mRam3.marca) : null,
+              tipo_tecnologia: mRam3.tipo_tecnologia || "",
+              formato: mRam3.formato || "",
+              capacidad: mRam3.capacidad || "",
+              frecuencia: mRam3.frecuencia || "",
+            }
             : memoriaRam3Id && memoriaRam3Id !== "_null"
-            ? Number(memoriaRam3Id)
-            : null
+              ? Number(memoriaRam3Id)
+              : null
           : null,
 
       memoria_ram_4:
         Number(ramSlots) >= 4
           ? ram4Mode === "manual"
             ? {
-                id: mRam4.id ? Number(mRam4.id) : null,
-                marca: mRam4.marca ? Number(mRam4.marca) : null,
-                tipo_tecnologia: mRam4.tipo_tecnologia || "",
-                formato: mRam4.formato || "",
-                capacidad: mRam4.capacidad || "",
-                frecuencia: mRam4.frecuencia || "",
-              }
+              id: mRam4.id ? Number(mRam4.id) : null,
+              marca: mRam4.marca ? Number(mRam4.marca) : null,
+              tipo_tecnologia: mRam4.tipo_tecnologia || "",
+              formato: mRam4.formato || "",
+              capacidad: mRam4.capacidad || "",
+              frecuencia: mRam4.frecuencia || "",
+            }
             : memoriaRam4Id && memoriaRam4Id !== "_null"
-            ? Number(memoriaRam4Id)
-            : null
+              ? Number(memoriaRam4Id)
+              : null
           : null,
 
       // Storage Disks
@@ -787,45 +886,45 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
         Number(diskSlots) >= 1
           ? disco1Mode === "manual"
             ? {
-                id: mDisco1.id ? Number(mDisco1.id) : null,
-                marca: mDisco1.marca ? Number(mDisco1.marca) : null,
-                tipo_disco: mDisco1.tipo_disco || "",
-                modelo: mDisco1.modelo || "",
-                capacidad: mDisco1.capacidad || "",
-              }
+              id: mDisco1.id ? Number(mDisco1.id) : null,
+              marca: mDisco1.marca ? Number(mDisco1.marca) : null,
+              tipo_disco: mDisco1.tipo_disco || "",
+              modelo: mDisco1.modelo || "",
+              capacidad: mDisco1.capacidad || "",
+            }
             : discoAlma1Id && discoAlma1Id !== "_null"
-            ? Number(discoAlma1Id)
-            : null
+              ? Number(discoAlma1Id)
+              : null
           : null,
 
       disco_alma_2:
         Number(diskSlots) >= 2
           ? disco2Mode === "manual"
             ? {
-                id: mDisco2.id ? Number(mDisco2.id) : null,
-                marca: mDisco2.marca ? Number(mDisco2.marca) : null,
-                tipo_disco: mDisco2.tipo_disco || "",
-                modelo: mDisco2.modelo || "",
-                capacidad: mDisco2.capacidad || "",
-              }
+              id: mDisco2.id ? Number(mDisco2.id) : null,
+              marca: mDisco2.marca ? Number(mDisco2.marca) : null,
+              tipo_disco: mDisco2.tipo_disco || "",
+              modelo: mDisco2.modelo || "",
+              capacidad: mDisco2.capacidad || "",
+            }
             : discoAlma2Id && discoAlma2Id !== "_null"
-            ? Number(discoAlma2Id)
-            : null
+              ? Number(discoAlma2Id)
+              : null
           : null,
 
       disco_alma_3:
         Number(diskSlots) >= 3
           ? disco3Mode === "manual"
             ? {
-                id: mDisco3.id ? Number(mDisco3.id) : null,
-                marca: mDisco3.marca ? Number(mDisco3.marca) : null,
-                tipo_disco: mDisco3.tipo_disco || "",
-                modelo: mDisco3.modelo || "",
-                capacidad: mDisco3.capacidad || "",
-              }
+              id: mDisco3.id ? Number(mDisco3.id) : null,
+              marca: mDisco3.marca ? Number(mDisco3.marca) : null,
+              tipo_disco: mDisco3.tipo_disco || "",
+              modelo: mDisco3.modelo || "",
+              capacidad: mDisco3.capacidad || "",
+            }
             : discoAlma3Id && discoAlma3Id !== "_null"
-            ? Number(discoAlma3Id)
-            : null
+              ? Number(discoAlma3Id)
+              : null
           : null,
 
       // Disk Serial numbers
@@ -837,7 +936,26 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
   }
 
   const isFormValid = () => {
-    return !!tipoDeEquipoId && !!marcaId && !!modeloId && !!estado && !!vencimientoGarantia
+    const basicValid = !!tipoDeEquipoId && !!marcaId && !!modeloId && !!estado && !!vencimientoGarantia
+    
+    const hasMac = !!macEthernet1?.trim() || !!macEthernet2?.trim() || !!macWifi?.trim()
+    const hasBios = !!nSerieBios?.trim()
+    
+    const hasRam = (ram1Mode === "existing" && !!memoriaRam1Id && memoriaRam1Id !== "_null") || 
+                   (ram1Mode === "manual" && !!mRam1.marca && !!mRam1.capacidad)
+                  
+    const hasDisk = (disco1Mode === "existing" && !!discoAlma1Id && discoAlma1Id !== "_null") || 
+                    (disco1Mode === "manual" && !!mDisco1.marca && !!mDisco1.capacidad)
+
+    const isValidBase = basicValid && hasMac && hasBios && hasRam && hasDisk
+
+    if (equipmentToEdit && estado === "LISTO") {
+      const hasWin = !!keyWinId && keyWinId !== "_null"
+      const hasOffice = !!keyOfficeId && keyOfficeId !== "_null"
+      return isValidBase && hasWin && hasOffice && !!idTeamviewer?.trim()
+    }
+
+    return isValidBase
   }
 
   return (
@@ -942,25 +1060,10 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                   </Select>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="eq-client">Cliente</Label>
-                  <Select value={clienteId} onValueChange={setClienteId}>
-                    <SelectTrigger id="eq-client" className="bg-secondary/50 border-0">
-                      <SelectValue placeholder="Selecciona cliente" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="_null">Ninguno</SelectItem>
-                      {dbClientes.map((c) => (
-                        <SelectItem key={c.id} value={String(c.id)}>
-                          {c.nombre}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+
 
                 <div className="space-y-2">
-                  <Label htmlFor="eq-user">Usuario / Departamento</Label>
+                  <Label htmlFor="eq-user">TIPO DE USUARIO</Label>
                   <Input
                     id="eq-user"
                     placeholder="Ej: ADMINISTRACION, SOPORTE..."
@@ -982,14 +1085,23 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="eq-warranty">Vencimiento de Garantía *</Label>
-                  <Input
-                    id="eq-warranty"
-                    type="date"
-                    className="bg-secondary/50 border-0"
-                    value={vencimientoGarantia}
-                    onChange={(e) => setVencimientoGarantia(e.target.value)}
-                  />
+                  <Label htmlFor="eq-warranty">Garantía (Meses) *</Label>
+                  <Select value={vencimientoGarantia} onValueChange={setVencimientoGarantia}>
+                    <SelectTrigger id="eq-warranty" className="bg-secondary/50 border-0">
+                      <SelectValue placeholder="Selecciona" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="3">3 meses</SelectItem>
+                      <SelectItem value="6">6 meses</SelectItem>
+                      <SelectItem value="12">12 meses</SelectItem>
+                      <SelectItem value="18">18 meses</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {equipmentToEdit?.vencimiento_garantia_fecha && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Vence el: {new Date(equipmentToEdit.vencimiento_garantia_fecha).toLocaleDateString("es-CL", { timeZone: "UTC" })}
+                    </p>
+                  )}
                 </div>
               </div>
             </TabsContent>
@@ -1005,22 +1117,20 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                       <button
                         type="button"
                         onClick={() => setProcesadorMode("existing")}
-                        className={`px-2 py-1 rounded-md transition-all ${
-                          procesadorMode === "existing"
+                        className={`px-2 py-1 rounded-md transition-all ${procesadorMode === "existing"
                             ? "bg-background text-foreground font-medium shadow-sm"
                             : "text-muted-foreground hover:text-foreground"
-                        }`}
+                          }`}
                       >
                         Existente
                       </button>
                       <button
                         type="button"
                         onClick={() => setProcesadorMode("manual")}
-                        className={`px-2 py-1 rounded-md transition-all ${
-                          procesadorMode === "manual"
+                        className={`px-2 py-1 rounded-md transition-all ${procesadorMode === "manual"
                             ? "bg-background text-foreground font-medium shadow-sm"
                             : "text-muted-foreground hover:text-foreground"
-                        }`}
+                          }`}
                       >
                         Ingreso Manual
                       </button>
@@ -1047,37 +1157,63 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                         <Label className="text-xs">Marca *</Label>
                         <Select
                           value={mProcesador.marca}
-                          onValueChange={(val) => setMProcesador({ ...mProcesador, marca: val })}
+                          onValueChange={(val) => setMProcesador({ ...mProcesador, marca: val, familia: "", modelo: "", nucleos: "", hilos: "", frecuencia: "" })}
                         >
                           <SelectTrigger className="bg-secondary/50 border-0 h-8 text-xs">
                             <SelectValue placeholder="Seleccionar" />
                           </SelectTrigger>
                           <SelectContent>
-                            {dbBrands.map((b) => (
-                              <SelectItem key={b.id} value={String(b.id)}>
-                                {b.nombre}
-                              </SelectItem>
-                            ))}
+                            <SelectItem value="INTEL">INTEL</SelectItem>
+                            <SelectItem value="AMD">AMD</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
                       <div className="space-y-1">
                         <Label className="text-xs">Familia</Label>
-                        <Input
-                          placeholder="Ej: Core i7, Ryzen 5..."
-                          className="bg-secondary/50 border-0 h-8 text-xs"
+                        <Select
                           value={mProcesador.familia}
-                          onChange={(e) => setMProcesador({ ...mProcesador, familia: e.target.value })}
-                        />
+                          onValueChange={(val) => setMProcesador({ ...mProcesador, familia: val, modelo: "", nucleos: "", hilos: "", frecuencia: "" })}
+                          disabled={!mProcesador.marca}
+                        >
+                          <SelectTrigger className="bg-secondary/50 border-0 h-8 text-xs">
+                            <SelectValue placeholder="Familia" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {mProcesador.marca && CPU_SPECS[mProcesador.marca] && Object.keys(CPU_SPECS[mProcesador.marca]).map(f => (
+                              <SelectItem key={f} value={f}>{f}</SelectItem>
+                            ))}
+                            {mProcesador.familia && mProcesador.marca && (!CPU_SPECS[mProcesador.marca] || !CPU_SPECS[mProcesador.marca][mProcesador.familia]) && (
+                              <SelectItem value={mProcesador.familia}>{mProcesador.familia}</SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div className="space-y-1">
                         <Label className="text-xs">Modelo</Label>
-                        <Input
-                          placeholder="Ej: 13700K, 5600X..."
-                          className="bg-secondary/50 border-0 h-8 text-xs"
+                        <Select
                           value={mProcesador.modelo}
-                          onChange={(e) => setMProcesador({ ...mProcesador, modelo: e.target.value })}
-                        />
+                          onValueChange={(val) => {
+                            const specs = mProcesador.marca && CPU_SPECS[mProcesador.marca]?.[mProcesador.familia]?.[val];
+                            if (specs) {
+                              setMProcesador({ ...mProcesador, modelo: val, nucleos: specs.nucleos, hilos: specs.hilos, frecuencia: specs.frecuencia });
+                            } else {
+                              setMProcesador({ ...mProcesador, modelo: val });
+                            }
+                          }}
+                          disabled={!mProcesador.familia}
+                        >
+                          <SelectTrigger className="bg-secondary/50 border-0 h-8 text-xs">
+                            <SelectValue placeholder="Modelo" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {mProcesador.marca && mProcesador.familia && CPU_SPECS[mProcesador.marca]?.[mProcesador.familia] && Object.keys(CPU_SPECS[mProcesador.marca][mProcesador.familia]).map(m => (
+                              <SelectItem key={m} value={m}>{m}</SelectItem>
+                            ))}
+                            {mProcesador.modelo && mProcesador.familia && (!CPU_SPECS[mProcesador.marca]?.[mProcesador.familia] || !CPU_SPECS[mProcesador.marca][mProcesador.familia][mProcesador.modelo]) && (
+                              <SelectItem value={mProcesador.modelo}>{mProcesador.modelo}</SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div className="space-y-1">
                         <Label className="text-xs">Frecuencia</Label>
@@ -1086,6 +1222,8 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                           className="bg-secondary/50 border-0 h-8 text-xs"
                           value={mProcesador.frecuencia}
                           onChange={(e) => setMProcesador({ ...mProcesador, frecuencia: e.target.value })}
+                          readOnly={!!(mProcesador.marca && CPU_SPECS[mProcesador.marca]?.[mProcesador.familia]?.[mProcesador.modelo])}
+                          disabled={!!(mProcesador.marca && CPU_SPECS[mProcesador.marca]?.[mProcesador.familia]?.[mProcesador.modelo]) || !mProcesador.modelo}
                         />
                       </div>
                       <div className="space-y-1">
@@ -1096,6 +1234,8 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                           className="bg-secondary/50 border-0 h-8 text-xs"
                           value={mProcesador.nucleos}
                           onChange={(e) => setMProcesador({ ...mProcesador, nucleos: e.target.value })}
+                          readOnly={!!(mProcesador.marca && CPU_SPECS[mProcesador.marca]?.[mProcesador.familia]?.[mProcesador.modelo])}
+                          disabled={!!(mProcesador.marca && CPU_SPECS[mProcesador.marca]?.[mProcesador.familia]?.[mProcesador.modelo]) || !mProcesador.modelo}
                         />
                       </div>
                       <div className="space-y-1">
@@ -1106,6 +1246,8 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                           className="bg-secondary/50 border-0 h-8 text-xs"
                           value={mProcesador.hilos}
                           onChange={(e) => setMProcesador({ ...mProcesador, hilos: e.target.value })}
+                          readOnly={!!(mProcesador.marca && CPU_SPECS[mProcesador.marca]?.[mProcesador.familia]?.[mProcesador.modelo])}
+                          disabled={!!(mProcesador.marca && CPU_SPECS[mProcesador.marca]?.[mProcesador.familia]?.[mProcesador.modelo]) || !mProcesador.modelo}
                         />
                       </div>
                     </div>
@@ -1120,22 +1262,20 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                       <button
                         type="button"
                         onClick={() => setPlacaMode("existing")}
-                        className={`px-2 py-1 rounded-md transition-all ${
-                          placaMode === "existing"
+                        className={`px-2 py-1 rounded-md transition-all ${placaMode === "existing"
                             ? "bg-background text-foreground font-medium shadow-sm"
                             : "text-muted-foreground hover:text-foreground"
-                        }`}
+                          }`}
                       >
                         Existente
                       </button>
                       <button
                         type="button"
                         onClick={() => setPlacaMode("manual")}
-                        className={`px-2 py-1 rounded-md transition-all ${
-                          placaMode === "manual"
+                        className={`px-2 py-1 rounded-md transition-all ${placaMode === "manual"
                             ? "bg-background text-foreground font-medium shadow-sm"
                             : "text-muted-foreground hover:text-foreground"
-                        }`}
+                          }`}
                       >
                         Ingreso Manual
                       </button>
@@ -1215,22 +1355,20 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                       <button
                         type="button"
                         onClick={() => setTarjetaGraficaMode("existing")}
-                        className={`px-2 py-1 rounded-md transition-all ${
-                          tarjetaGraficaMode === "existing"
+                        className={`px-2 py-1 rounded-md transition-all ${tarjetaGraficaMode === "existing"
                             ? "bg-background text-foreground font-medium shadow-sm"
                             : "text-muted-foreground hover:text-foreground"
-                        }`}
+                          }`}
                       >
                         Existente
                       </button>
                       <button
                         type="button"
                         onClick={() => setTarjetaGraficaMode("manual")}
-                        className={`px-2 py-1 rounded-md transition-all ${
-                          tarjetaGraficaMode === "manual"
+                        className={`px-2 py-1 rounded-md transition-all ${tarjetaGraficaMode === "manual"
                             ? "bg-background text-foreground font-medium shadow-sm"
                             : "text-muted-foreground hover:text-foreground"
-                        }`}
+                          }`}
                       >
                         Ingreso Manual
                       </button>
@@ -1301,22 +1439,20 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                       <button
                         type="button"
                         onClick={() => setFuenteMode("existing")}
-                        className={`px-2 py-1 rounded-md transition-all ${
-                          fuenteMode === "existing"
+                        className={`px-2 py-1 rounded-md transition-all ${fuenteMode === "existing"
                             ? "bg-background text-foreground font-medium shadow-sm"
                             : "text-muted-foreground hover:text-foreground"
-                        }`}
+                          }`}
                       >
                         Existente
                       </button>
                       <button
                         type="button"
                         onClick={() => setFuenteMode("manual")}
-                        className={`px-2 py-1 rounded-md transition-all ${
-                          fuenteMode === "manual"
+                        className={`px-2 py-1 rounded-md transition-all ${fuenteMode === "manual"
                             ? "bg-background text-foreground font-medium shadow-sm"
                             : "text-muted-foreground hover:text-foreground"
-                        }`}
+                          }`}
                       >
                         Ingreso Manual
                       </button>
@@ -1421,18 +1557,16 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                           <button
                             type="button"
                             onClick={() => setRam1Mode("existing")}
-                            className={`px-1.5 py-0.5 rounded transition-all ${
-                              ram1Mode === "existing" ? "bg-background text-foreground font-medium shadow-sm" : "text-muted-foreground"
-                            }`}
+                            className={`px-1.5 py-0.5 rounded transition-all ${ram1Mode === "existing" ? "bg-background text-foreground font-medium shadow-sm" : "text-muted-foreground"
+                              }`}
                           >
                             Existente
                           </button>
                           <button
                             type="button"
                             onClick={() => setRam1Mode("manual")}
-                            className={`px-1.5 py-0.5 rounded transition-all ${
-                              ram1Mode === "manual" ? "bg-background text-foreground font-medium shadow-sm" : "text-muted-foreground"
-                            }`}
+                            className={`px-1.5 py-0.5 rounded transition-all ${ram1Mode === "manual" ? "bg-background text-foreground font-medium shadow-sm" : "text-muted-foreground"
+                              }`}
                           >
                             Manual
                           </button>
@@ -1475,39 +1609,90 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                           </div>
                           <div className="space-y-1">
                             <Label className="text-[10px]">Tecnología</Label>
-                            <Input
-                              placeholder="Ej: DDR4..."
-                              className="bg-secondary/50 border-0 h-7 text-[10px]"
+                            <Select
                               value={mRam1.tipo_tecnologia}
-                              onChange={(e) => setMRam1({ ...mRam1, tipo_tecnologia: e.target.value })}
-                            />
+                              onValueChange={(val) => setMRam1({ ...mRam1, tipo_tecnologia: val, formato: "", capacidad: "", frecuencia: "" })}
+                            >
+                              <SelectTrigger className="bg-secondary/50 border-0 h-7 text-[10px]">
+                                <SelectValue placeholder="Tecnología" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {Object.keys(RAM_SPECS).map((tech) => (
+                                  <SelectItem key={tech} value={tech}>
+                                    {RAM_SPECS[tech].label}
+                                  </SelectItem>
+                                ))}
+                                {mRam1.tipo_tecnologia && !RAM_SPECS[mRam1.tipo_tecnologia] && (
+                                  <SelectItem value={mRam1.tipo_tecnologia}>{mRam1.tipo_tecnologia}</SelectItem>
+                                )}
+                              </SelectContent>
+                            </Select>
                           </div>
                           <div className="space-y-1">
                             <Label className="text-[10px]">Formato</Label>
-                            <Input
-                              placeholder="Ej: UDIMM..."
-                              className="bg-secondary/50 border-0 h-7 text-[10px]"
+                            <Select
                               value={mRam1.formato}
-                              onChange={(e) => setMRam1({ ...mRam1, formato: e.target.value })}
-                            />
+                              onValueChange={(val) => setMRam1({ ...mRam1, formato: val })}
+                              disabled={!mRam1.tipo_tecnologia}
+                            >
+                              <SelectTrigger className="bg-secondary/50 border-0 h-7 text-[10px]">
+                                <SelectValue placeholder="Formato" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {mRam1.tipo_tecnologia && RAM_SPECS[mRam1.tipo_tecnologia]?.formatos.map((fmt) => (
+                                  <SelectItem key={fmt} value={fmt}>
+                                    {fmt}
+                                  </SelectItem>
+                                ))}
+                                {mRam1.formato && mRam1.tipo_tecnologia && !RAM_SPECS[mRam1.tipo_tecnologia]?.formatos.includes(mRam1.formato) && (
+                                  <SelectItem value={mRam1.formato}>{mRam1.formato}</SelectItem>
+                                )}
+                              </SelectContent>
+                            </Select>
                           </div>
                           <div className="space-y-1">
                             <Label className="text-[10px]">Capacidad</Label>
-                            <Input
-                              placeholder="Ej: 8GB..."
-                              className="bg-secondary/50 border-0 h-7 text-[10px]"
+                            <Select
                               value={mRam1.capacidad}
-                              onChange={(e) => setMRam1({ ...mRam1, capacidad: e.target.value })}
-                            />
+                              onValueChange={(val) => setMRam1({ ...mRam1, capacidad: val })}
+                              disabled={!mRam1.tipo_tecnologia}
+                            >
+                              <SelectTrigger className="bg-secondary/50 border-0 h-7 text-[10px]">
+                                <SelectValue placeholder="Capacidad" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {mRam1.tipo_tecnologia && RAM_SPECS[mRam1.tipo_tecnologia]?.capacidades.map((cap) => (
+                                  <SelectItem key={cap} value={cap}>
+                                    {cap}
+                                  </SelectItem>
+                                ))}
+                                {mRam1.capacidad && mRam1.tipo_tecnologia && !RAM_SPECS[mRam1.tipo_tecnologia]?.capacidades.includes(mRam1.capacidad) && (
+                                  <SelectItem value={mRam1.capacidad}>{mRam1.capacidad}</SelectItem>
+                                )}
+                              </SelectContent>
+                            </Select>
                           </div>
                           <div className="space-y-1 col-span-2">
                             <Label className="text-[10px]">Frecuencia</Label>
-                            <Input
-                              placeholder="Ej: 3200MHz..."
-                              className="bg-secondary/50 border-0 h-7 text-[10px]"
+                            <Select
                               value={mRam1.frecuencia}
-                              onChange={(e) => setMRam1({ ...mRam1, frecuencia: e.target.value })}
-                            />
+                              onValueChange={(val) => setMRam1({ ...mRam1, frecuencia: val })}
+                              disabled={!mRam1.tipo_tecnologia}
+                            >
+                              <SelectTrigger className="bg-secondary/50 border-0 h-7 text-[10px]">
+                                <SelectValue placeholder="Frecuencia" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {mRam1.tipo_tecnologia && RAM_SPECS[mRam1.tipo_tecnologia]?.frecuencias.map((freq) => (
+                                  <SelectItem key={freq} value={`${freq} MHz`}>
+                                    {freq} MHz
+                                  </SelectItem>
+                                ))}
+                                {mRam1.frecuencia && mRam1.tipo_tecnologia && !RAM_SPECS[mRam1.tipo_tecnologia]?.frecuencias.some(f => `${f} MHz` === mRam1.frecuencia) && (
+                                  <SelectItem value={mRam1.frecuencia}>{mRam1.frecuencia}</SelectItem>
+                                )}
+                              </SelectContent>
+                            </Select>
                           </div>
                         </div>
                       )}
@@ -1522,18 +1707,16 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                           <button
                             type="button"
                             onClick={() => setRam2Mode("existing")}
-                            className={`px-1.5 py-0.5 rounded transition-all ${
-                              ram2Mode === "existing" ? "bg-background text-foreground font-medium shadow-sm" : "text-muted-foreground"
-                            }`}
+                            className={`px-1.5 py-0.5 rounded transition-all ${ram2Mode === "existing" ? "bg-background text-foreground font-medium shadow-sm" : "text-muted-foreground"
+                              }`}
                           >
                             Existente
                           </button>
                           <button
                             type="button"
                             onClick={() => setRam2Mode("manual")}
-                            className={`px-1.5 py-0.5 rounded transition-all ${
-                              ram2Mode === "manual" ? "bg-background text-foreground font-medium shadow-sm" : "text-muted-foreground"
-                            }`}
+                            className={`px-1.5 py-0.5 rounded transition-all ${ram2Mode === "manual" ? "bg-background text-foreground font-medium shadow-sm" : "text-muted-foreground"
+                              }`}
                           >
                             Manual
                           </button>
@@ -1576,39 +1759,90 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                           </div>
                           <div className="space-y-1">
                             <Label className="text-[10px]">Tecnología</Label>
-                            <Input
-                              placeholder="Ej: DDR4..."
-                              className="bg-secondary/50 border-0 h-7 text-[10px]"
+                            <Select
                               value={mRam2.tipo_tecnologia}
-                              onChange={(e) => setMRam2({ ...mRam2, tipo_tecnologia: e.target.value })}
-                            />
+                              onValueChange={(val) => setMRam2({ ...mRam2, tipo_tecnologia: val, formato: "", capacidad: "", frecuencia: "" })}
+                            >
+                              <SelectTrigger className="bg-secondary/50 border-0 h-7 text-[10px]">
+                                <SelectValue placeholder="Tecnología" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {Object.keys(RAM_SPECS).map((tech) => (
+                                  <SelectItem key={tech} value={tech}>
+                                    {RAM_SPECS[tech].label}
+                                  </SelectItem>
+                                ))}
+                                {mRam2.tipo_tecnologia && !RAM_SPECS[mRam2.tipo_tecnologia] && (
+                                  <SelectItem value={mRam2.tipo_tecnologia}>{mRam2.tipo_tecnologia}</SelectItem>
+                                )}
+                              </SelectContent>
+                            </Select>
                           </div>
                           <div className="space-y-1">
                             <Label className="text-[10px]">Formato</Label>
-                            <Input
-                              placeholder="Ej: UDIMM..."
-                              className="bg-secondary/50 border-0 h-7 text-[10px]"
+                            <Select
                               value={mRam2.formato}
-                              onChange={(e) => setMRam2({ ...mRam2, formato: e.target.value })}
-                            />
+                              onValueChange={(val) => setMRam2({ ...mRam2, formato: val })}
+                              disabled={!mRam2.tipo_tecnologia}
+                            >
+                              <SelectTrigger className="bg-secondary/50 border-0 h-7 text-[10px]">
+                                <SelectValue placeholder="Formato" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {mRam2.tipo_tecnologia && RAM_SPECS[mRam2.tipo_tecnologia]?.formatos.map((fmt) => (
+                                  <SelectItem key={fmt} value={fmt}>
+                                    {fmt}
+                                  </SelectItem>
+                                ))}
+                                {mRam2.formato && mRam2.tipo_tecnologia && !RAM_SPECS[mRam2.tipo_tecnologia]?.formatos.includes(mRam2.formato) && (
+                                  <SelectItem value={mRam2.formato}>{mRam2.formato}</SelectItem>
+                                )}
+                              </SelectContent>
+                            </Select>
                           </div>
                           <div className="space-y-1">
                             <Label className="text-[10px]">Capacidad</Label>
-                            <Input
-                              placeholder="Ej: 8GB..."
-                              className="bg-secondary/50 border-0 h-7 text-[10px]"
+                            <Select
                               value={mRam2.capacidad}
-                              onChange={(e) => setMRam2({ ...mRam2, capacidad: e.target.value })}
-                            />
+                              onValueChange={(val) => setMRam2({ ...mRam2, capacidad: val })}
+                              disabled={!mRam2.tipo_tecnologia}
+                            >
+                              <SelectTrigger className="bg-secondary/50 border-0 h-7 text-[10px]">
+                                <SelectValue placeholder="Capacidad" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {mRam2.tipo_tecnologia && RAM_SPECS[mRam2.tipo_tecnologia]?.capacidades.map((cap) => (
+                                  <SelectItem key={cap} value={cap}>
+                                    {cap}
+                                  </SelectItem>
+                                ))}
+                                {mRam2.capacidad && mRam2.tipo_tecnologia && !RAM_SPECS[mRam2.tipo_tecnologia]?.capacidades.includes(mRam2.capacidad) && (
+                                  <SelectItem value={mRam2.capacidad}>{mRam2.capacidad}</SelectItem>
+                                )}
+                              </SelectContent>
+                            </Select>
                           </div>
                           <div className="space-y-1 col-span-2">
                             <Label className="text-[10px]">Frecuencia</Label>
-                            <Input
-                              placeholder="Ej: 3200MHz..."
-                              className="bg-secondary/50 border-0 h-7 text-[10px]"
+                            <Select
                               value={mRam2.frecuencia}
-                              onChange={(e) => setMRam2({ ...mRam2, frecuencia: e.target.value })}
-                            />
+                              onValueChange={(val) => setMRam2({ ...mRam2, frecuencia: val })}
+                              disabled={!mRam2.tipo_tecnologia}
+                            >
+                              <SelectTrigger className="bg-secondary/50 border-0 h-7 text-[10px]">
+                                <SelectValue placeholder="Frecuencia" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {mRam2.tipo_tecnologia && RAM_SPECS[mRam2.tipo_tecnologia]?.frecuencias.map((freq) => (
+                                  <SelectItem key={freq} value={`${freq} MHz`}>
+                                    {freq} MHz
+                                  </SelectItem>
+                                ))}
+                                {mRam2.frecuencia && mRam2.tipo_tecnologia && !RAM_SPECS[mRam2.tipo_tecnologia]?.frecuencias.some(f => `${f} MHz` === mRam2.frecuencia) && (
+                                  <SelectItem value={mRam2.frecuencia}>{mRam2.frecuencia}</SelectItem>
+                                )}
+                              </SelectContent>
+                            </Select>
                           </div>
                         </div>
                       )}
@@ -1623,18 +1857,16 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                           <button
                             type="button"
                             onClick={() => setRam3Mode("existing")}
-                            className={`px-1.5 py-0.5 rounded transition-all ${
-                              ram3Mode === "existing" ? "bg-background text-foreground font-medium shadow-sm" : "text-muted-foreground"
-                            }`}
+                            className={`px-1.5 py-0.5 rounded transition-all ${ram3Mode === "existing" ? "bg-background text-foreground font-medium shadow-sm" : "text-muted-foreground"
+                              }`}
                           >
                             Existente
                           </button>
                           <button
                             type="button"
                             onClick={() => setRam3Mode("manual")}
-                            className={`px-1.5 py-0.5 rounded transition-all ${
-                              ram3Mode === "manual" ? "bg-background text-foreground font-medium shadow-sm" : "text-muted-foreground"
-                            }`}
+                            className={`px-1.5 py-0.5 rounded transition-all ${ram3Mode === "manual" ? "bg-background text-foreground font-medium shadow-sm" : "text-muted-foreground"
+                              }`}
                           >
                             Manual
                           </button>
@@ -1677,39 +1909,90 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                           </div>
                           <div className="space-y-1">
                             <Label className="text-[10px]">Tecnología</Label>
-                            <Input
-                              placeholder="Ej: DDR4..."
-                              className="bg-secondary/50 border-0 h-7 text-[10px]"
+                            <Select
                               value={mRam3.tipo_tecnologia}
-                              onChange={(e) => setMRam3({ ...mRam3, tipo_tecnologia: e.target.value })}
-                            />
+                              onValueChange={(val) => setMRam3({ ...mRam3, tipo_tecnologia: val, formato: "", capacidad: "", frecuencia: "" })}
+                            >
+                              <SelectTrigger className="bg-secondary/50 border-0 h-7 text-[10px]">
+                                <SelectValue placeholder="Tecnología" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {Object.keys(RAM_SPECS).map((tech) => (
+                                  <SelectItem key={tech} value={tech}>
+                                    {RAM_SPECS[tech].label}
+                                  </SelectItem>
+                                ))}
+                                {mRam3.tipo_tecnologia && !RAM_SPECS[mRam3.tipo_tecnologia] && (
+                                  <SelectItem value={mRam3.tipo_tecnologia}>{mRam3.tipo_tecnologia}</SelectItem>
+                                )}
+                              </SelectContent>
+                            </Select>
                           </div>
                           <div className="space-y-1">
                             <Label className="text-[10px]">Formato</Label>
-                            <Input
-                              placeholder="Ej: UDIMM..."
-                              className="bg-secondary/50 border-0 h-7 text-[10px]"
+                            <Select
                               value={mRam3.formato}
-                              onChange={(e) => setMRam3({ ...mRam3, formato: e.target.value })}
-                            />
+                              onValueChange={(val) => setMRam3({ ...mRam3, formato: val })}
+                              disabled={!mRam3.tipo_tecnologia}
+                            >
+                              <SelectTrigger className="bg-secondary/50 border-0 h-7 text-[10px]">
+                                <SelectValue placeholder="Formato" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {mRam3.tipo_tecnologia && RAM_SPECS[mRam3.tipo_tecnologia]?.formatos.map((fmt) => (
+                                  <SelectItem key={fmt} value={fmt}>
+                                    {fmt}
+                                  </SelectItem>
+                                ))}
+                                {mRam3.formato && mRam3.tipo_tecnologia && !RAM_SPECS[mRam3.tipo_tecnologia]?.formatos.includes(mRam3.formato) && (
+                                  <SelectItem value={mRam3.formato}>{mRam3.formato}</SelectItem>
+                                )}
+                              </SelectContent>
+                            </Select>
                           </div>
                           <div className="space-y-1">
                             <Label className="text-[10px]">Capacidad</Label>
-                            <Input
-                              placeholder="Ej: 8GB..."
-                              className="bg-secondary/50 border-0 h-7 text-[10px]"
+                            <Select
                               value={mRam3.capacidad}
-                              onChange={(e) => setMRam3({ ...mRam3, capacidad: e.target.value })}
-                            />
+                              onValueChange={(val) => setMRam3({ ...mRam3, capacidad: val })}
+                              disabled={!mRam3.tipo_tecnologia}
+                            >
+                              <SelectTrigger className="bg-secondary/50 border-0 h-7 text-[10px]">
+                                <SelectValue placeholder="Capacidad" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {mRam3.tipo_tecnologia && RAM_SPECS[mRam3.tipo_tecnologia]?.capacidades.map((cap) => (
+                                  <SelectItem key={cap} value={cap}>
+                                    {cap}
+                                  </SelectItem>
+                                ))}
+                                {mRam3.capacidad && mRam3.tipo_tecnologia && !RAM_SPECS[mRam3.tipo_tecnologia]?.capacidades.includes(mRam3.capacidad) && (
+                                  <SelectItem value={mRam3.capacidad}>{mRam3.capacidad}</SelectItem>
+                                )}
+                              </SelectContent>
+                            </Select>
                           </div>
                           <div className="space-y-1 col-span-2">
                             <Label className="text-[10px]">Frecuencia</Label>
-                            <Input
-                              placeholder="Ej: 3200MHz..."
-                              className="bg-secondary/50 border-0 h-7 text-[10px]"
+                            <Select
                               value={mRam3.frecuencia}
-                              onChange={(e) => setMRam3({ ...mRam3, frecuencia: e.target.value })}
-                            />
+                              onValueChange={(val) => setMRam3({ ...mRam3, frecuencia: val })}
+                              disabled={!mRam3.tipo_tecnologia}
+                            >
+                              <SelectTrigger className="bg-secondary/50 border-0 h-7 text-[10px]">
+                                <SelectValue placeholder="Frecuencia" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {mRam3.tipo_tecnologia && RAM_SPECS[mRam3.tipo_tecnologia]?.frecuencias.map((freq) => (
+                                  <SelectItem key={freq} value={`${freq} MHz`}>
+                                    {freq} MHz
+                                  </SelectItem>
+                                ))}
+                                {mRam3.frecuencia && mRam3.tipo_tecnologia && !RAM_SPECS[mRam3.tipo_tecnologia]?.frecuencias.some(f => `${f} MHz` === mRam3.frecuencia) && (
+                                  <SelectItem value={mRam3.frecuencia}>{mRam3.frecuencia}</SelectItem>
+                                )}
+                              </SelectContent>
+                            </Select>
                           </div>
                         </div>
                       )}
@@ -1724,18 +2007,16 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                           <button
                             type="button"
                             onClick={() => setRam4Mode("existing")}
-                            className={`px-1.5 py-0.5 rounded transition-all ${
-                              ram4Mode === "existing" ? "bg-background text-foreground font-medium shadow-sm" : "text-muted-foreground"
-                            }`}
+                            className={`px-1.5 py-0.5 rounded transition-all ${ram4Mode === "existing" ? "bg-background text-foreground font-medium shadow-sm" : "text-muted-foreground"
+                              }`}
                           >
                             Existente
                           </button>
                           <button
                             type="button"
                             onClick={() => setRam4Mode("manual")}
-                            className={`px-1.5 py-0.5 rounded transition-all ${
-                              ram4Mode === "manual" ? "bg-background text-foreground font-medium shadow-sm" : "text-muted-foreground"
-                            }`}
+                            className={`px-1.5 py-0.5 rounded transition-all ${ram4Mode === "manual" ? "bg-background text-foreground font-medium shadow-sm" : "text-muted-foreground"
+                              }`}
                           >
                             Manual
                           </button>
@@ -1778,39 +2059,90 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                           </div>
                           <div className="space-y-1">
                             <Label className="text-[10px]">Tecnología</Label>
-                            <Input
-                              placeholder="Ej: DDR4..."
-                              className="bg-secondary/50 border-0 h-7 text-[10px]"
+                            <Select
                               value={mRam4.tipo_tecnologia}
-                              onChange={(e) => setMRam4({ ...mRam4, tipo_tecnologia: e.target.value })}
-                            />
+                              onValueChange={(val) => setMRam4({ ...mRam4, tipo_tecnologia: val, formato: "", capacidad: "", frecuencia: "" })}
+                            >
+                              <SelectTrigger className="bg-secondary/50 border-0 h-7 text-[10px]">
+                                <SelectValue placeholder="Tecnología" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {Object.keys(RAM_SPECS).map((tech) => (
+                                  <SelectItem key={tech} value={tech}>
+                                    {RAM_SPECS[tech].label}
+                                  </SelectItem>
+                                ))}
+                                {mRam4.tipo_tecnologia && !RAM_SPECS[mRam4.tipo_tecnologia] && (
+                                  <SelectItem value={mRam4.tipo_tecnologia}>{mRam4.tipo_tecnologia}</SelectItem>
+                                )}
+                              </SelectContent>
+                            </Select>
                           </div>
                           <div className="space-y-1">
                             <Label className="text-[10px]">Formato</Label>
-                            <Input
-                              placeholder="Ej: UDIMM..."
-                              className="bg-secondary/50 border-0 h-7 text-[10px]"
+                            <Select
                               value={mRam4.formato}
-                              onChange={(e) => setMRam4({ ...mRam4, formato: e.target.value })}
-                            />
+                              onValueChange={(val) => setMRam4({ ...mRam4, formato: val })}
+                              disabled={!mRam4.tipo_tecnologia}
+                            >
+                              <SelectTrigger className="bg-secondary/50 border-0 h-7 text-[10px]">
+                                <SelectValue placeholder="Formato" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {mRam4.tipo_tecnologia && RAM_SPECS[mRam4.tipo_tecnologia]?.formatos.map((fmt) => (
+                                  <SelectItem key={fmt} value={fmt}>
+                                    {fmt}
+                                  </SelectItem>
+                                ))}
+                                {mRam4.formato && mRam4.tipo_tecnologia && !RAM_SPECS[mRam4.tipo_tecnologia]?.formatos.includes(mRam4.formato) && (
+                                  <SelectItem value={mRam4.formato}>{mRam4.formato}</SelectItem>
+                                )}
+                              </SelectContent>
+                            </Select>
                           </div>
                           <div className="space-y-1">
                             <Label className="text-[10px]">Capacidad</Label>
-                            <Input
-                              placeholder="Ej: 8GB..."
-                              className="bg-secondary/50 border-0 h-7 text-[10px]"
+                            <Select
                               value={mRam4.capacidad}
-                              onChange={(e) => setMRam4({ ...mRam4, capacidad: e.target.value })}
-                            />
+                              onValueChange={(val) => setMRam4({ ...mRam4, capacidad: val })}
+                              disabled={!mRam4.tipo_tecnologia}
+                            >
+                              <SelectTrigger className="bg-secondary/50 border-0 h-7 text-[10px]">
+                                <SelectValue placeholder="Capacidad" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {mRam4.tipo_tecnologia && RAM_SPECS[mRam4.tipo_tecnologia]?.capacidades.map((cap) => (
+                                  <SelectItem key={cap} value={cap}>
+                                    {cap}
+                                  </SelectItem>
+                                ))}
+                                {mRam4.capacidad && mRam4.tipo_tecnologia && !RAM_SPECS[mRam4.tipo_tecnologia]?.capacidades.includes(mRam4.capacidad) && (
+                                  <SelectItem value={mRam4.capacidad}>{mRam4.capacidad}</SelectItem>
+                                )}
+                              </SelectContent>
+                            </Select>
                           </div>
                           <div className="space-y-1 col-span-2">
                             <Label className="text-[10px]">Frecuencia</Label>
-                            <Input
-                              placeholder="Ej: 3200MHz..."
-                              className="bg-secondary/50 border-0 h-7 text-[10px]"
+                            <Select
                               value={mRam4.frecuencia}
-                              onChange={(e) => setMRam4({ ...mRam4, frecuencia: e.target.value })}
-                            />
+                              onValueChange={(val) => setMRam4({ ...mRam4, frecuencia: val })}
+                              disabled={!mRam4.tipo_tecnologia}
+                            >
+                              <SelectTrigger className="bg-secondary/50 border-0 h-7 text-[10px]">
+                                <SelectValue placeholder="Frecuencia" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {mRam4.tipo_tecnologia && RAM_SPECS[mRam4.tipo_tecnologia]?.frecuencias.map((freq) => (
+                                  <SelectItem key={freq} value={`${freq} MHz`}>
+                                    {freq} MHz
+                                  </SelectItem>
+                                ))}
+                                {mRam4.frecuencia && mRam4.tipo_tecnologia && !RAM_SPECS[mRam4.tipo_tecnologia]?.frecuencias.some(f => `${f} MHz` === mRam4.frecuencia) && (
+                                  <SelectItem value={mRam4.frecuencia}>{mRam4.frecuencia}</SelectItem>
+                                )}
+                              </SelectContent>
+                            </Select>
                           </div>
                         </div>
                       )}
@@ -1851,18 +2183,16 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                           <button
                             type="button"
                             onClick={() => setDisco1Mode("existing")}
-                            className={`px-1.5 py-0.5 rounded transition-all ${
-                              disco1Mode === "existing" ? "bg-background text-foreground font-medium shadow-sm" : "text-muted-foreground"
-                            }`}
+                            className={`px-1.5 py-0.5 rounded transition-all ${disco1Mode === "existing" ? "bg-background text-foreground font-medium shadow-sm" : "text-muted-foreground"
+                              }`}
                           >
                             Existente
                           </button>
                           <button
                             type="button"
                             onClick={() => setDisco1Mode("manual")}
-                            className={`px-1.5 py-0.5 rounded transition-all ${
-                              disco1Mode === "manual" ? "bg-background text-foreground font-medium shadow-sm" : "text-muted-foreground"
-                            }`}
+                            className={`px-1.5 py-0.5 rounded transition-all ${disco1Mode === "manual" ? "bg-background text-foreground font-medium shadow-sm" : "text-muted-foreground"
+                              }`}
                           >
                             Manual
                           </button>
@@ -1920,12 +2250,24 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                           </div>
                           <div className="space-y-1">
                             <Label className="text-[10px]">Tipo Disco</Label>
-                            <Input
-                              placeholder="Ej: SSD NVMe..."
-                              className="bg-secondary/50 border-0 h-7 text-[10px]"
+                            <Select
                               value={mDisco1.tipo_disco}
-                              onChange={(e) => setMDisco1({ ...mDisco1, tipo_disco: e.target.value })}
-                            />
+                              onValueChange={(val) => setMDisco1({ ...mDisco1, tipo_disco: val, capacidad: "" })}
+                            >
+                              <SelectTrigger className="bg-secondary/50 border-0 h-7 text-[10px]">
+                                <SelectValue placeholder="Tipo de Disco" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {Object.keys(DISK_SPECS).map((d) => (
+                                  <SelectItem key={d} value={d}>
+                                    {d}
+                                  </SelectItem>
+                                ))}
+                                {mDisco1.tipo_disco && !DISK_SPECS[mDisco1.tipo_disco] && (
+                                  <SelectItem value={mDisco1.tipo_disco}>{mDisco1.tipo_disco}</SelectItem>
+                                )}
+                              </SelectContent>
+                            </Select>
                           </div>
                           <div className="space-y-1">
                             <Label className="text-[10px]">Modelo</Label>
@@ -1938,12 +2280,42 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                           </div>
                           <div className="space-y-1">
                             <Label className="text-[10px]">Capacidad</Label>
-                            <Input
-                              placeholder="Ej: 1TB..."
-                              className="bg-secondary/50 border-0 h-7 text-[10px]"
-                              value={mDisco1.capacidad}
-                              onChange={(e) => setMDisco1({ ...mDisco1, capacidad: e.target.value })}
-                            />
+                            <div className="flex gap-1">
+                              <Select
+                                value={mDisco1.capacidad.includes("TB") ? "TB" : "GB"}
+                                onValueChange={(val) => setMDisco1({ ...mDisco1, capacidad: val })}
+                              >
+                                <SelectTrigger className="w-[60px] bg-secondary/50 border-0 h-7 text-[10px] px-1">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="GB">GB</SelectItem>
+                                  <SelectItem value="TB">TB</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <Select
+                                value={mDisco1.capacidad.replace("GB", "").replace("TB", "").trim()}
+                                onValueChange={(val) => {
+                                  const unit = mDisco1.capacidad.includes("TB") ? "TB" : "GB";
+                                  setMDisco1({ ...mDisco1, capacidad: `${val} ${unit}` })
+                                }}
+                                disabled={!mDisco1.tipo_disco}
+                              >
+                                <SelectTrigger className="flex-1 bg-secondary/50 border-0 h-7 text-[10px] px-1">
+                                  <SelectValue placeholder="Nº" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {mDisco1.tipo_disco && DISK_SPECS[mDisco1.tipo_disco]?.filter(c => c.endsWith(mDisco1.capacidad.includes("TB") ? "TB" : "GB")).map(c => c.replace(mDisco1.capacidad.includes("TB") ? "TB" : "GB", "").trim()).map((num) => (
+                                    <SelectItem key={num} value={num}>
+                                      {num}
+                                    </SelectItem>
+                                  ))}
+                                  {mDisco1.capacidad.replace("GB", "").replace("TB", "").trim() && mDisco1.tipo_disco && (!DISK_SPECS[mDisco1.tipo_disco] || !DISK_SPECS[mDisco1.tipo_disco].filter(c => c.endsWith(mDisco1.capacidad.includes("TB") ? "TB" : "GB")).map(c => c.replace(mDisco1.capacidad.includes("TB") ? "TB" : "GB", "").trim()).includes(mDisco1.capacidad.replace("GB", "").replace("TB", "").trim())) && (
+                                    <SelectItem value={mDisco1.capacidad.replace("GB", "").replace("TB", "").trim()}>{mDisco1.capacidad.replace("GB", "").replace("TB", "").trim()}</SelectItem>
+                                  )}
+                                </SelectContent>
+                              </Select>
+                            </div>
                           </div>
                           <div className="space-y-1 col-span-2">
                             <Label className="text-[10px]">N° Serie Disco 1</Label>
@@ -1969,18 +2341,16 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                           <button
                             type="button"
                             onClick={() => setDisco2Mode("existing")}
-                            className={`px-1.5 py-0.5 rounded transition-all ${
-                              disco2Mode === "existing" ? "bg-background text-foreground font-medium shadow-sm" : "text-muted-foreground"
-                            }`}
+                            className={`px-1.5 py-0.5 rounded transition-all ${disco2Mode === "existing" ? "bg-background text-foreground font-medium shadow-sm" : "text-muted-foreground"
+                              }`}
                           >
                             Existente
                           </button>
                           <button
                             type="button"
                             onClick={() => setDisco2Mode("manual")}
-                            className={`px-1.5 py-0.5 rounded transition-all ${
-                              disco2Mode === "manual" ? "bg-background text-foreground font-medium shadow-sm" : "text-muted-foreground"
-                            }`}
+                            className={`px-1.5 py-0.5 rounded transition-all ${disco2Mode === "manual" ? "bg-background text-foreground font-medium shadow-sm" : "text-muted-foreground"
+                              }`}
                           >
                             Manual
                           </button>
@@ -2038,12 +2408,24 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                           </div>
                           <div className="space-y-1">
                             <Label className="text-[10px]">Tipo Disco</Label>
-                            <Input
-                              placeholder="Ej: SSD NVMe..."
-                              className="bg-secondary/50 border-0 h-7 text-[10px]"
+                            <Select
                               value={mDisco2.tipo_disco}
-                              onChange={(e) => setMDisco2({ ...mDisco2, tipo_disco: e.target.value })}
-                            />
+                              onValueChange={(val) => setMDisco2({ ...mDisco2, tipo_disco: val, capacidad: "" })}
+                            >
+                              <SelectTrigger className="bg-secondary/50 border-0 h-7 text-[10px]">
+                                <SelectValue placeholder="Tipo de Disco" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {Object.keys(DISK_SPECS).map((d) => (
+                                  <SelectItem key={d} value={d}>
+                                    {d}
+                                  </SelectItem>
+                                ))}
+                                {mDisco2.tipo_disco && !DISK_SPECS[mDisco2.tipo_disco] && (
+                                  <SelectItem value={mDisco2.tipo_disco}>{mDisco2.tipo_disco}</SelectItem>
+                                )}
+                              </SelectContent>
+                            </Select>
                           </div>
                           <div className="space-y-1">
                             <Label className="text-[10px]">Modelo</Label>
@@ -2056,12 +2438,42 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                           </div>
                           <div className="space-y-1">
                             <Label className="text-[10px]">Capacidad</Label>
-                            <Input
-                              placeholder="Ej: 1TB..."
-                              className="bg-secondary/50 border-0 h-7 text-[10px]"
-                              value={mDisco2.capacidad}
-                              onChange={(e) => setMDisco2({ ...mDisco2, capacidad: e.target.value })}
-                            />
+                            <div className="flex gap-1">
+                              <Select
+                                value={mDisco2.capacidad.includes("TB") ? "TB" : "GB"}
+                                onValueChange={(val) => setMDisco2({ ...mDisco2, capacidad: val })}
+                              >
+                                <SelectTrigger className="w-[60px] bg-secondary/50 border-0 h-7 text-[10px] px-1">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="GB">GB</SelectItem>
+                                  <SelectItem value="TB">TB</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <Select
+                                value={mDisco2.capacidad.replace("GB", "").replace("TB", "").trim()}
+                                onValueChange={(val) => {
+                                  const unit = mDisco2.capacidad.includes("TB") ? "TB" : "GB";
+                                  setMDisco2({ ...mDisco2, capacidad: `${val} ${unit}` })
+                                }}
+                                disabled={!mDisco2.tipo_disco}
+                              >
+                                <SelectTrigger className="flex-1 bg-secondary/50 border-0 h-7 text-[10px] px-1">
+                                  <SelectValue placeholder="Nº" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {mDisco2.tipo_disco && DISK_SPECS[mDisco2.tipo_disco]?.filter(c => c.endsWith(mDisco2.capacidad.includes("TB") ? "TB" : "GB")).map(c => c.replace(mDisco2.capacidad.includes("TB") ? "TB" : "GB", "").trim()).map((num) => (
+                                    <SelectItem key={num} value={num}>
+                                      {num}
+                                    </SelectItem>
+                                  ))}
+                                  {mDisco2.capacidad.replace("GB", "").replace("TB", "").trim() && mDisco2.tipo_disco && (!DISK_SPECS[mDisco2.tipo_disco] || !DISK_SPECS[mDisco2.tipo_disco].filter(c => c.endsWith(mDisco2.capacidad.includes("TB") ? "TB" : "GB")).map(c => c.replace(mDisco2.capacidad.includes("TB") ? "TB" : "GB", "").trim()).includes(mDisco2.capacidad.replace("GB", "").replace("TB", "").trim())) && (
+                                    <SelectItem value={mDisco2.capacidad.replace("GB", "").replace("TB", "").trim()}>{mDisco2.capacidad.replace("GB", "").replace("TB", "").trim()}</SelectItem>
+                                  )}
+                                </SelectContent>
+                              </Select>
+                            </div>
                           </div>
                           <div className="space-y-1 col-span-2">
                             <Label className="text-[10px]">N° Serie Disco 2</Label>
@@ -2087,18 +2499,16 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                           <button
                             type="button"
                             onClick={() => setDisco3Mode("existing")}
-                            className={`px-1.5 py-0.5 rounded transition-all ${
-                              disco3Mode === "existing" ? "bg-background text-foreground font-medium shadow-sm" : "text-muted-foreground"
-                            }`}
+                            className={`px-1.5 py-0.5 rounded transition-all ${disco3Mode === "existing" ? "bg-background text-foreground font-medium shadow-sm" : "text-muted-foreground"
+                              }`}
                           >
                             Existente
                           </button>
                           <button
                             type="button"
                             onClick={() => setDisco3Mode("manual")}
-                            className={`px-1.5 py-0.5 rounded transition-all ${
-                              disco3Mode === "manual" ? "bg-background text-foreground font-medium shadow-sm" : "text-muted-foreground"
-                            }`}
+                            className={`px-1.5 py-0.5 rounded transition-all ${disco3Mode === "manual" ? "bg-background text-foreground font-medium shadow-sm" : "text-muted-foreground"
+                              }`}
                           >
                             Manual
                           </button>
@@ -2156,12 +2566,24 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                           </div>
                           <div className="space-y-1">
                             <Label className="text-[10px]">Tipo Disco</Label>
-                            <Input
-                              placeholder="Ej: SSD NVMe..."
-                              className="bg-secondary/50 border-0 h-7 text-[10px]"
+                            <Select
                               value={mDisco3.tipo_disco}
-                              onChange={(e) => setMDisco3({ ...mDisco3, tipo_disco: e.target.value })}
-                            />
+                              onValueChange={(val) => setMDisco3({ ...mDisco3, tipo_disco: val, capacidad: "" })}
+                            >
+                              <SelectTrigger className="bg-secondary/50 border-0 h-7 text-[10px]">
+                                <SelectValue placeholder="Tipo de Disco" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {Object.keys(DISK_SPECS).map((d) => (
+                                  <SelectItem key={d} value={d}>
+                                    {d}
+                                  </SelectItem>
+                                ))}
+                                {mDisco3.tipo_disco && !DISK_SPECS[mDisco3.tipo_disco] && (
+                                  <SelectItem value={mDisco3.tipo_disco}>{mDisco3.tipo_disco}</SelectItem>
+                                )}
+                              </SelectContent>
+                            </Select>
                           </div>
                           <div className="space-y-1">
                             <Label className="text-[10px]">Modelo</Label>
@@ -2174,12 +2596,42 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                           </div>
                           <div className="space-y-1">
                             <Label className="text-[10px]">Capacidad</Label>
-                            <Input
-                              placeholder="Ej: 1TB..."
-                              className="bg-secondary/50 border-0 h-7 text-[10px]"
-                              value={mDisco3.capacidad}
-                              onChange={(e) => setMDisco3({ ...mDisco3, capacidad: e.target.value })}
-                            />
+                            <div className="flex gap-1">
+                              <Select
+                                value={mDisco3.capacidad.includes("TB") ? "TB" : "GB"}
+                                onValueChange={(val) => setMDisco3({ ...mDisco3, capacidad: val })}
+                              >
+                                <SelectTrigger className="w-[60px] bg-secondary/50 border-0 h-7 text-[10px] px-1">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="GB">GB</SelectItem>
+                                  <SelectItem value="TB">TB</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <Select
+                                value={mDisco3.capacidad.replace("GB", "").replace("TB", "").trim()}
+                                onValueChange={(val) => {
+                                  const unit = mDisco3.capacidad.includes("TB") ? "TB" : "GB";
+                                  setMDisco3({ ...mDisco3, capacidad: `${val} ${unit}` })
+                                }}
+                                disabled={!mDisco3.tipo_disco}
+                              >
+                                <SelectTrigger className="flex-1 bg-secondary/50 border-0 h-7 text-[10px] px-1">
+                                  <SelectValue placeholder="Nº" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {mDisco3.tipo_disco && DISK_SPECS[mDisco3.tipo_disco]?.filter(c => c.endsWith(mDisco3.capacidad.includes("TB") ? "TB" : "GB")).map(c => c.replace(mDisco3.capacidad.includes("TB") ? "TB" : "GB", "").trim()).map((num) => (
+                                    <SelectItem key={num} value={num}>
+                                      {num}
+                                    </SelectItem>
+                                  ))}
+                                  {mDisco3.capacidad.replace("GB", "").replace("TB", "").trim() && mDisco3.tipo_disco && (!DISK_SPECS[mDisco3.tipo_disco] || !DISK_SPECS[mDisco3.tipo_disco].filter(c => c.endsWith(mDisco3.capacidad.includes("TB") ? "TB" : "GB")).map(c => c.replace(mDisco3.capacidad.includes("TB") ? "TB" : "GB", "").trim()).includes(mDisco3.capacidad.replace("GB", "").replace("TB", "").trim())) && (
+                                    <SelectItem value={mDisco3.capacidad.replace("GB", "").replace("TB", "").trim()}>{mDisco3.capacidad.replace("GB", "").replace("TB", "").trim()}</SelectItem>
+                                  )}
+                                </SelectContent>
+                              </Select>
+                            </div>
                           </div>
                           <div className="space-y-1 col-span-2">
                             <Label className="text-[10px]">N° Serie Disco 3</Label>

@@ -33,12 +33,111 @@ interface ComponentFormDialogProps {
   onSave: (data: any) => void
 }
 
-const FIELDS_BY_TYPE: Record<string, { key: string; label: string; placeholder: string; type: 'text' | 'brand' | 'number' }[]> = {
+const RAM_SPECS: Record<string, { label: string, frecuencias: string[], capacidades: string[], formatos: string[] }> = {
+  "DDR": { label: "DDR (DDR1)", frecuencias: ["200", "266", "333", "400"], capacidades: ["128 MB", "256 MB", "512 MB", "1 GB", "2 GB"], formatos: ["DIMM", "SO-DIMM"] },
+  "DDR2": { label: "DDR2", frecuencias: ["400", "533", "667", "800", "1066"], capacidades: ["256 MB", "512 MB", "1 GB", "2 GB", "4 GB"], formatos: ["DIMM", "SO-DIMM"] },
+  "DDR3": { label: "DDR3", frecuencias: ["800", "1066", "1333", "1600", "1866", "2133"], capacidades: ["1 GB", "2 GB", "4 GB", "8 GB", "16 GB"], formatos: ["DIMM", "SO-DIMM"] },
+  "DDR4": { label: "DDR4", frecuencias: ["1600", "1866", "2133", "2400", "2666", "2933", "3200", "3600+", "4000+", "4266+", "4400+", "4600+", "4800+", "5000+"], capacidades: ["4 GB", "8 GB", "16 GB", "32 GB", "64 GB", "128 GB"], formatos: ["DIMM", "SO-DIMM"] },
+  "DDR5": { label: "DDR5", frecuencias: ["4800", "5200", "5600", "6000", "6400", "6800", "7200", "7600", "8000", "8400", "8800", "9200+", "9600+", "10000+"], capacidades: ["8 GB", "16 GB", "24 GB", "32 GB", "48 GB", "64 GB", "96 GB", "128 GB"], formatos: ["DIMM", "SO-DIMM", "CAMM2*"] },
+}
+
+const DISK_SPECS: Record<string, string[]> = {
+  "HDD 3.5\"": ["500 GB", "1 TB", "2 TB", "4 TB", "6 TB", "8 TB", "10 TB", "12 TB", "14 TB", "16 TB", "18 TB", "20 TB", "22 TB", "24 TB", "28 TB"],
+  "HDD 2.5\"": ["250 GB", "320 GB", "500 GB", "750 GB", "1 TB", "2 TB", "4 TB", "5 TB"],
+  "SSD 2.5\"": ["120 GB", "128 GB", "240 GB", "250 GB", "256 GB", "480 GB", "500 GB", "512 GB", "960 GB", "1 TB", "2 TB", "4 TB", "8 TB"],
+  "mSATA": ["32 GB", "64 GB", "128 GB", "256 GB", "512 GB", "1 TB"],
+  "M.2 SATA 2280": ["120 GB", "128 GB", "240 GB", "250 GB", "256 GB", "480 GB", "500 GB", "512 GB", "1 TB", "2 TB"],
+  "M.2 SATA 2242": ["120 GB", "128 GB", "240 GB", "250 GB", "256 GB", "480 GB", "500 GB", "512 GB", "1 TB", "2 TB"],
+  "NVMe 2280": ["128 GB", "256 GB", "512 GB", "1 TB", "2 TB", "4 TB", "8 TB", "16 TB"],
+  "NVMe 2242": ["128 GB", "256 GB", "512 GB", "1 TB", "2 TB", "4 TB", "8 TB", "16 TB"],
+  "NVMe 2230": ["128 GB", "256 GB", "512 GB", "1 TB", "2 TB", "4 TB", "8 TB", "16 TB"],
+  "NVMe 2260": ["128 GB", "256 GB", "512 GB", "1 TB", "2 TB", "4 TB", "8 TB", "16 TB"],
+  "NVMe 22110": ["128 GB", "256 GB", "512 GB", "1 TB", "2 TB", "4 TB", "8 TB", "16 TB"],
+}
+
+const CPU_SPECS: Record<string, Record<string, Record<string, { nucleos: string; hilos: string; frecuencia: string }>>> = {
+  "INTEL": {
+    "Core i3": {
+      "i3-12100": { nucleos: "4", hilos: "8", frecuencia: "4.3 GHz turbo" },
+      "i3-13100": { nucleos: "4", hilos: "8", frecuencia: "4.5 GHz turbo" },
+      "i3-14100": { nucleos: "4", hilos: "8", frecuencia: "4.7 GHz turbo" },
+    },
+    "Core i5": {
+      "i5-12400": { nucleos: "6", hilos: "12", frecuencia: "4.4 GHz turbo" },
+      "i5-13400": { nucleos: "10", hilos: "16", frecuencia: "4.6 GHz turbo" },
+      "i5-13600K": { nucleos: "14", hilos: "20", frecuencia: "5.1 GHz turbo" },
+      "i5-14600K": { nucleos: "14", hilos: "20", frecuencia: "5.3 GHz turbo" },
+    },
+    "Core i7": {
+      "i7-12700K": { nucleos: "12", hilos: "20", frecuencia: "5.0 GHz turbo" },
+      "i7-13700K": { nucleos: "16", hilos: "24", frecuencia: "5.4 GHz turbo" },
+      "i7-14700K": { nucleos: "20", hilos: "28", frecuencia: "5.6 GHz turbo" },
+    },
+    "Core i9": {
+      "i9-12900K": { nucleos: "16", hilos: "24", frecuencia: "5.2 GHz turbo" },
+      "i9-13900K": { nucleos: "24", hilos: "32", frecuencia: "5.8 GHz turbo" },
+      "i9-14900K": { nucleos: "24", hilos: "32", frecuencia: "6.0 GHz turbo" },
+    },
+    "Core Ultra 5": {
+      "Core Ultra 5 125H": { nucleos: "14", hilos: "18", frecuencia: "4.5 GHz turbo" },
+      "Core Ultra 5 135H": { nucleos: "14", hilos: "18", frecuencia: "4.6 GHz turbo" },
+    },
+    "Core Ultra 7": {
+      "Core Ultra 7 155H": { nucleos: "16", hilos: "22", frecuencia: "4.8 GHz turbo" },
+      "Core Ultra 7 165H": { nucleos: "16", hilos: "22", frecuencia: "5.0 GHz turbo" },
+    },
+    "Core Ultra 9": {
+      "Core Ultra 9 185H": { nucleos: "16", hilos: "22", frecuencia: "5.1 GHz turbo" },
+    }
+  },
+  "AMD": {
+    "Ryzen 3": {
+      "Ryzen 3 3100": { nucleos: "4", hilos: "8", frecuencia: "3.9 GHz turbo" },
+      "Ryzen 3 4100": { nucleos: "4", hilos: "8", frecuencia: "4.0 GHz turbo" },
+      "Ryzen 3 5300G": { nucleos: "4", hilos: "8", frecuencia: "4.2 GHz turbo" },
+    },
+    "Ryzen 5": {
+      "Ryzen 5 3600": { nucleos: "6", hilos: "12", frecuencia: "4.2 GHz turbo" },
+      "Ryzen 5 5600X": { nucleos: "6", hilos: "12", frecuencia: "4.6 GHz turbo" },
+      "Ryzen 5 7600X": { nucleos: "6", hilos: "12", frecuencia: "5.3 GHz turbo" },
+      "Ryzen 5 8600G": { nucleos: "6", hilos: "12", frecuencia: "5.0 GHz turbo" },
+    },
+    "Ryzen 7": {
+      "Ryzen 7 3700X": { nucleos: "8", hilos: "16", frecuencia: "4.4 GHz turbo" },
+      "Ryzen 7 5800X": { nucleos: "8", hilos: "16", frecuencia: "4.7 GHz turbo" },
+      "Ryzen 7 7700X": { nucleos: "8", hilos: "16", frecuencia: "5.4 GHz turbo" },
+      "Ryzen 7 7800X3D": { nucleos: "8", hilos: "16", frecuencia: "5.0 GHz turbo" },
+    },
+    "Ryzen 9": {
+      "Ryzen 9 3900X": { nucleos: "12", hilos: "24", frecuencia: "4.6 GHz turbo" },
+      "Ryzen 9 5900X": { nucleos: "12", hilos: "24", frecuencia: "4.8 GHz turbo" },
+      "Ryzen 9 7900X": { nucleos: "12", hilos: "24", frecuencia: "5.6 GHz turbo" },
+      "Ryzen 9 7950X": { nucleos: "16", hilos: "32", frecuencia: "5.7 GHz turbo" },
+    },
+    "Ryzen Threadripper": {
+      "Threadripper 1900X": { nucleos: "8", hilos: "16", frecuencia: "4.0 GHz turbo" },
+      "Threadripper 3960X": { nucleos: "24", hilos: "48", frecuencia: "4.5 GHz turbo" },
+      "Threadripper 7970X": { nucleos: "32", hilos: "64", frecuencia: "5.3 GHz turbo" },
+      "Threadripper 7980X": { nucleos: "64", hilos: "128", frecuencia: "5.1 GHz turbo" },
+    },
+    "Ryzen Threadripper Pro": {
+      "Threadripper Pro 3955WX": { nucleos: "16", hilos: "32", frecuencia: "4.3 GHz turbo" },
+      "Threadripper Pro 5975WX": { nucleos: "32", hilos: "64", frecuencia: "4.5 GHz turbo" },
+      "Threadripper Pro 7995WX": { nucleos: "96", hilos: "192", frecuencia: "5.1 GHz turbo" },
+    }
+  }
+}
+
+const CPU_CORES = ["4", "6", "8", "10", "12", "14", "16", "20", "24", "32", "64", "96"]
+const CPU_THREADS = ["8", "12", "16", "18", "20", "22", "24", "28", "32", "48", "64", "128", "192"]
+const CPU_FREQS = ["3.9 GHz turbo", "4.0 GHz turbo", "4.2 GHz turbo", "4.3 GHz turbo", "4.4 GHz turbo", "4.5 GHz turbo", "4.6 GHz turbo", "4.7 GHz turbo", "4.8 GHz turbo", "5.0 GHz turbo", "5.1 GHz turbo", "5.2 GHz turbo", "5.3 GHz turbo", "5.4 GHz turbo", "5.6 GHz turbo", "5.7 GHz turbo", "5.8 GHz turbo", "6.0 GHz turbo"]
+
+const FIELDS_BY_TYPE: Record<string, { key: string; label: string; placeholder: string; type: 'text' | 'brand' | 'number' | 'ram_tech' | 'ram_format' | 'ram_cap' | 'ram_freq' | 'disk_type' | 'disk_cap' | 'cpu_brand' | 'cpu_family' | 'cpu_model' | 'cpu_cores' | 'cpu_threads' | 'cpu_freq' }[]> = {
   "disco-almacenamiento": [
     { key: "id_marca", label: "Marca", placeholder: "Selecciona una marca", type: "brand" },
-    { key: "tipo_disco", label: "Tipo de Disco", placeholder: "Ej: SSD M.2 NVMe, HDD SATA...", type: "text" },
+    { key: "tipo_disco", label: "Tipo de Disco", placeholder: "Ej: SSD M.2 NVMe, HDD SATA...", type: "disk_type" },
     { key: "modelo", label: "Modelo", placeholder: "Ej: KC3000, Blue...", type: "text" },
-    { key: "capacidad", label: "Capacidad", placeholder: "Ej: 1 TB, 512 GB...", type: "text" },
+    { key: "capacidad", label: "Capacidad", placeholder: "Selecciona una capacidad", type: "disk_cap" },
     { key: "uso", label: "Cantidad", placeholder: "Ej: 5", type: "number" }
   ],
   "fuente-poder": [
@@ -50,10 +149,10 @@ const FIELDS_BY_TYPE: Record<string, { key: string; label: string; placeholder: 
   ],
   "memoria-ram": [
     { key: "id_marca", label: "Marca", placeholder: "Selecciona una marca", type: "brand" },
-    { key: "tipo_tecnologia", label: "Tipo de Tecnología", placeholder: "Ej: DDR5, DDR4...", type: "text" },
-    { key: "formato", label: "Formato", placeholder: "Ej: DIMM, SO-DIMM...", type: "text" },
-    { key: "capacidad", label: "Capacidad", placeholder: "Ej: 16 GB, 8 GB...", type: "text" },
-    { key: "frecuencia", label: "Frecuencia", placeholder: "Ej: 5200 MHz, 3200 MHz...", type: "text" },
+    { key: "tipo_tecnologia", label: "Tipo de Tecnología", placeholder: "Tecnología", type: "ram_tech" },
+    { key: "formato", label: "Formato", placeholder: "Formato", type: "ram_format" },
+    { key: "capacidad", label: "Capacidad", placeholder: "Capacidad", type: "ram_cap" },
+    { key: "frecuencia", label: "Frecuencia", placeholder: "Frecuencia", type: "ram_freq" },
     { key: "uso", label: "Cantidad", placeholder: "Ej: 5", type: "number" }
   ],
   "placa-madre": [
@@ -64,12 +163,12 @@ const FIELDS_BY_TYPE: Record<string, { key: string; label: string; placeholder: 
     { key: "uso", label: "Cantidad", placeholder: "Ej: 5", type: "number" }
   ],
   "procesador": [
-    { key: "id_marca", label: "Marca", placeholder: "Selecciona una marca", type: "brand" },
-    { key: "familia", label: "Familia", placeholder: "Ej: Core i7, Ryzen 7...", type: "text" },
-    { key: "modelo", label: "Modelo", placeholder: "Ej: 13700K, 7800X3D...", type: "text" },
-    { key: "nucleos", label: "Núcleos", placeholder: "Ej: 16 nucleos...", type: "text" },
-    { key: "hilos", label: "Hilos", placeholder: "Ej: 24 hilos...", type: "text" },
-    { key: "frecuencia", label: "Frecuencia", placeholder: "Ej: 5.40 GHz...", type: "text" },
+    { key: "marca", label: "Marca", placeholder: "Selecciona una marca", type: "cpu_brand" },
+    { key: "familia", label: "Familia", placeholder: "Ej: Core i7, Ryzen 7...", type: "cpu_family" },
+    { key: "modelo", label: "Modelo", placeholder: "Ej: 13700K, 7800X3D...", type: "cpu_model" },
+    { key: "nucleos", label: "Núcleos", placeholder: "Ej: 16", type: "cpu_cores" },
+    { key: "hilos", label: "Hilos", placeholder: "Ej: 24", type: "cpu_threads" },
+    { key: "frecuencia", label: "Frecuencia", placeholder: "Ej: 5.4 GHz turbo", type: "cpu_freq" },
     { key: "uso", label: "Cantidad", placeholder: "Ej: 5", type: "number" }
   ],
   "tarjeta-grafica": [
@@ -96,13 +195,7 @@ const UNIT_FIELDS_CONFIG: Record<string, Record<string, { units: string[]; defau
   "fuente-poder": {
     "potencia": { units: ["W"], default: "W" }
   },
-  "memoria-ram": {
-    "capacidad": { units: ["GB"], default: "GB" },
-    "frecuencia": { units: ["MHz"], default: "MHz" }
-  },
-  "procesador": {
-    "frecuencia": { units: ["GHz", "MHz"], default: "GHz" }
-  },
+
   "tarjeta-grafica": {
     "vram": { units: ["GB"], default: "GB" }
   }
@@ -244,7 +337,11 @@ export function ComponentFormDialog({
         if (!formData[f.key + "_num"]?.trim()) {
           isValid = false
         }
-      } else if (f.key !== "id_marca" && f.key !== "uso" && !formData[f.key]?.trim()) {
+      } else if (f.type === "ram_tech" || f.type === "ram_format" || f.type === "ram_cap" || f.type === "ram_freq" || f.type === "disk_type") {
+        if (!String(formData[f.key] || "").trim()) {
+          isValid = false
+        }
+      } else if (f.key !== "id_marca" && f.key !== "uso" && !String(formData[f.key] || "").trim()) {
         isValid = false
       }
     })
@@ -265,6 +362,8 @@ export function ComponentFormDialog({
       } else if (type === "procesador" && (f.key === "nucleos" || f.key === "hilos")) {
         const parsed = parseInt(formData[f.key], 10)
         submission[f.key] = isNaN(parsed) ? 0 : parsed
+      } else if (f.type === "ram_tech" || f.type === "ram_format" || f.type === "ram_cap" || f.type === "ram_freq" || f.type === "disk_type") {
+        submission[f.key] = String(formData[f.key] || "").trim() || ""
       } else {
         const unitConfig = UNIT_FIELDS_CONFIG[type]?.[f.key]
         if (unitConfig) {
@@ -309,7 +408,10 @@ export function ComponentFormDialog({
       if (unitConfig) {
         return !!formData[f.key + "_num"]?.trim()
       }
-      return !!formData[f.key]?.trim() // Text is required
+      if (f.type === "ram_tech" || f.type === "ram_format" || f.type === "ram_cap" || f.type === "ram_freq" || f.type === "disk_type") {
+        return !!String(formData[f.key] || "").trim()
+      }
+      return !!String(formData[f.key] || "").trim() // Text is required
     })
 
     const billingValid = !!proveedorId && !!factura && !isNaN(Number(factura)) && !!fechaCompra
@@ -345,6 +447,115 @@ export function ComponentFormDialog({
             <TabsContent value="specs" className="space-y-4 pt-4 outline-none">
               <div className="grid gap-4 py-2">
                 {fields.map((field) => {
+                  if (field.type === "cpu_brand") {
+                    return (
+                      <div key={field.key} className="space-y-2">
+                        <Label htmlFor={field.key}>{field.label}</Label>
+                        <Select
+                          value={formData[field.key] || ""}
+                          onValueChange={(val) => {
+                            handleFieldChange(field.key, val);
+                            handleFieldChange("familia", "");
+                            handleFieldChange("modelo", "");
+                            handleFieldChange("nucleos", "");
+                            handleFieldChange("hilos", "");
+                            handleFieldChange("frecuencia", "");
+                          }}
+                        >
+                          <SelectTrigger id={field.key} className="bg-secondary/50 border-0">
+                            <SelectValue placeholder={field.placeholder} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="INTEL">INTEL</SelectItem>
+                            <SelectItem value="AMD">AMD</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )
+                  }
+
+                  if (field.type === "cpu_family") {
+                    return (
+                      <div key={field.key} className="space-y-2">
+                        <Label htmlFor={field.key}>{field.label}</Label>
+                        <Select
+                          value={formData[field.key] || ""}
+                          onValueChange={(val) => {
+                            handleFieldChange(field.key, val);
+                            handleFieldChange("modelo", "");
+                            handleFieldChange("nucleos", "");
+                            handleFieldChange("hilos", "");
+                            handleFieldChange("frecuencia", "");
+                          }}
+                          disabled={!formData["marca"]}
+                        >
+                          <SelectTrigger id={field.key} className="bg-secondary/50 border-0">
+                            <SelectValue placeholder={field.placeholder} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {formData["marca"] && CPU_SPECS[formData["marca"]] && Object.keys(CPU_SPECS[formData["marca"]]).map(f => (
+                              <SelectItem key={f} value={f}>{f}</SelectItem>
+                            ))}
+                            {formData[field.key] && formData["marca"] && (!CPU_SPECS[formData["marca"]] || !CPU_SPECS[formData["marca"]][formData[field.key]]) && (
+                              <SelectItem value={formData[field.key]}>{formData[field.key]}</SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )
+                  }
+
+                  if (field.type === "cpu_model") {
+                    return (
+                      <div key={field.key} className="space-y-2">
+                        <Label htmlFor={field.key}>{field.label}</Label>
+                        <Select
+                          value={formData[field.key] || ""}
+                          onValueChange={(val) => {
+                            handleFieldChange(field.key, val);
+                            const specs = formData["marca"] && CPU_SPECS[formData["marca"]]?.[formData["familia"]]?.[val];
+                            if (specs) {
+                              handleFieldChange("nucleos", specs.nucleos);
+                              handleFieldChange("hilos", specs.hilos);
+                              handleFieldChange("frecuencia", specs.frecuencia);
+                            }
+                          }}
+                          disabled={!formData["familia"]}
+                        >
+                          <SelectTrigger id={field.key} className="bg-secondary/50 border-0">
+                            <SelectValue placeholder={field.placeholder} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {formData["marca"] && formData["familia"] && CPU_SPECS[formData["marca"]]?.[formData["familia"]] && Object.keys(CPU_SPECS[formData["marca"]][formData["familia"]]).map(m => (
+                              <SelectItem key={m} value={m}>{m}</SelectItem>
+                            ))}
+                            {formData[field.key] && formData["familia"] && (!CPU_SPECS[formData["marca"]]?.[formData["familia"]] || !CPU_SPECS[formData["marca"]][formData["familia"]][formData[field.key]]) && (
+                              <SelectItem value={formData[field.key]}>{formData[field.key]}</SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )
+                  }
+
+                  if (field.type === "cpu_cores" || field.type === "cpu_threads" || field.type === "cpu_freq") {
+                    const isKnownModel = formData["marca"] && formData["familia"] && formData["modelo"] && CPU_SPECS[formData["marca"]]?.[formData["familia"]]?.[formData["modelo"]];
+                    return (
+                      <div key={field.key} className="space-y-2">
+                        <Label htmlFor={field.key}>{field.label}</Label>
+                        <Input
+                          type={field.type === "cpu_freq" ? "text" : "number"}
+                          value={formData[field.key] || ""}
+                          onChange={(e) => handleFieldChange(field.key, e.target.value)}
+                          placeholder={field.placeholder}
+                          className="bg-secondary/50 border-0"
+                          readOnly={!!isKnownModel}
+                          disabled={!!isKnownModel || !formData["modelo"]}
+                        />
+                      </div>
+                    )
+                  }
+
                   if (field.type === "brand") {
                     return (
                       <div key={field.key} className="space-y-2">
@@ -376,8 +587,196 @@ export function ComponentFormDialog({
                     )
                   }
 
+                  if (field.type === "disk_type") {
+                    return (
+                      <div key={field.key} className="space-y-2">
+                        <Label htmlFor={field.key}>{field.label}</Label>
+                        <Select
+                          value={formData[field.key] || ""}
+                          onValueChange={(val) => {
+                            handleFieldChange(field.key, val)
+                            handleFieldChange("capacidad_num", "")
+                          }}
+                        >
+                          <SelectTrigger id={field.key} className="bg-secondary/50 border-0">
+                            <SelectValue placeholder={field.placeholder} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Object.keys(DISK_SPECS).map((d) => (
+                              <SelectItem key={d} value={d}>
+                                {d}
+                              </SelectItem>
+                            ))}
+                            {formData[field.key] && !DISK_SPECS[formData[field.key]] && (
+                              <SelectItem value={formData[field.key]}>{formData[field.key]}</SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )
+                  }
+
+                  if (field.type === "ram_tech") {
+                    return (
+                      <div key={field.key} className="space-y-2">
+                        <Label htmlFor={field.key}>{field.label}</Label>
+                        <Select
+                          value={formData[field.key] || ""}
+                          onValueChange={(val) => setFormData(prev => ({ ...prev, [field.key]: val, formato: "", capacidad: "", frecuencia: "" }))}
+                        >
+                          <SelectTrigger id={field.key} className="bg-secondary/50 border-0">
+                            <SelectValue placeholder={field.placeholder} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Object.keys(RAM_SPECS).map((tech) => (
+                              <SelectItem key={tech} value={tech}>
+                                {RAM_SPECS[tech].label}
+                              </SelectItem>
+                            ))}
+                            {formData[field.key] && !RAM_SPECS[formData[field.key]] && (
+                              <SelectItem value={formData[field.key]}>{formData[field.key]}</SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )
+                  }
+
+                  if (field.type === "ram_format") {
+                    const selectedTech = formData["tipo_tecnologia"]
+                    return (
+                      <div key={field.key} className="space-y-2">
+                        <Label htmlFor={field.key}>{field.label}</Label>
+                        <Select
+                          value={formData[field.key] || ""}
+                          onValueChange={(val) => handleFieldChange(field.key, val)}
+                          disabled={!selectedTech}
+                        >
+                          <SelectTrigger id={field.key} className="bg-secondary/50 border-0">
+                            <SelectValue placeholder={field.placeholder} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {selectedTech && RAM_SPECS[selectedTech]?.formatos.map((fmt) => (
+                              <SelectItem key={fmt} value={fmt}>
+                                {fmt}
+                              </SelectItem>
+                            ))}
+                            {formData[field.key] && selectedTech && !RAM_SPECS[selectedTech]?.formatos.includes(formData[field.key]) && (
+                              <SelectItem value={formData[field.key]}>{formData[field.key]}</SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )
+                  }
+
+                  if (field.type === "ram_cap") {
+                    const selectedTech = formData["tipo_tecnologia"]
+                    return (
+                      <div key={field.key} className="space-y-2">
+                        <Label htmlFor={field.key}>{field.label}</Label>
+                        <Select
+                          value={formData[field.key] || ""}
+                          onValueChange={(val) => handleFieldChange(field.key, val)}
+                          disabled={!selectedTech}
+                        >
+                          <SelectTrigger id={field.key} className="bg-secondary/50 border-0">
+                            <SelectValue placeholder={field.placeholder} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {selectedTech && RAM_SPECS[selectedTech]?.capacidades.map((cap) => (
+                              <SelectItem key={cap} value={cap}>
+                                {cap}
+                              </SelectItem>
+                            ))}
+                            {formData[field.key] && selectedTech && !RAM_SPECS[selectedTech]?.capacidades.includes(formData[field.key]) && (
+                              <SelectItem value={formData[field.key]}>{formData[field.key]}</SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )
+                  }
+
+                  if (field.type === "ram_freq") {
+                    const selectedTech = formData["tipo_tecnologia"]
+                    return (
+                      <div key={field.key} className="space-y-2">
+                        <Label htmlFor={field.key}>{field.label}</Label>
+                        <Select
+                          value={formData[field.key] || ""}
+                          onValueChange={(val) => handleFieldChange(field.key, val)}
+                          disabled={!selectedTech}
+                        >
+                          <SelectTrigger id={field.key} className="bg-secondary/50 border-0">
+                            <SelectValue placeholder={field.placeholder} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {selectedTech && RAM_SPECS[selectedTech]?.frecuencias.map((freq) => (
+                              <SelectItem key={freq} value={`${freq} MHz`}>
+                                {freq} MHz
+                              </SelectItem>
+                            ))}
+                            {formData[field.key] && selectedTech && !RAM_SPECS[selectedTech]?.frecuencias.some(f => `${f} MHz` === formData[field.key]) && (
+                              <SelectItem value={formData[field.key]}>{formData[field.key]}</SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )
+                  }
+
                   const unitConfig = UNIT_FIELDS_CONFIG[type]?.[field.key]
                   if (unitConfig) {
+                    const currentUnit = formData[field.key + "_unit"] || unitConfig.default
+                    
+                    if (field.type === "disk_cap") {
+                      return (
+                        <div key={field.key} className="space-y-2">
+                          <Label htmlFor={field.key}>{field.label}</Label>
+                          <div className="flex gap-2">
+                            <Select
+                              value={currentUnit}
+                              onValueChange={(val) => {
+                                handleFieldChange(field.key + "_unit", val)
+                                handleFieldChange(field.key + "_num", "")
+                              }}
+                            >
+                              <SelectTrigger className="w-[80px] bg-secondary/50 border-0">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {unitConfig.units.map((u) => (
+                                  <SelectItem key={u} value={u}>
+                                    {u}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <Select
+                              value={formData[field.key + "_num"] || ""}
+                              onValueChange={(val) => handleFieldChange(field.key + "_num", val)}
+                              disabled={!formData["tipo_disco"]}
+                            >
+                              <SelectTrigger className="flex-1 bg-secondary/50 border-0">
+                                <SelectValue placeholder="Capacidad" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {formData["tipo_disco"] && DISK_SPECS[formData["tipo_disco"]]?.filter(c => c.endsWith(currentUnit)).map(c => c.replace(currentUnit, "").trim()).map((num) => (
+                                  <SelectItem key={num} value={num}>
+                                    {num}
+                                  </SelectItem>
+                                ))}
+                                {formData[field.key + "_num"] && formData["tipo_disco"] && (!DISK_SPECS[formData["tipo_disco"]] || !DISK_SPECS[formData["tipo_disco"]].filter(c => c.endsWith(currentUnit)).map(c => c.replace(currentUnit, "").trim()).includes(formData[field.key + "_num"])) && (
+                                  <SelectItem value={formData[field.key + "_num"]}>{formData[field.key + "_num"]}</SelectItem>
+                                )}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                      )
+                    }
+
                     return (
                       <div key={field.key} className="space-y-2">
                         <Label htmlFor={field.key}>{field.label}</Label>
@@ -393,7 +792,7 @@ export function ComponentFormDialog({
                             onChange={(e) => handleFieldChange(field.key + "_num", e.target.value)}
                           />
                           <Select
-                            value={formData[field.key + "_unit"] || unitConfig.default}
+                            value={currentUnit}
                             onValueChange={(val) => handleFieldChange(field.key + "_unit", val)}
                           >
                             <SelectTrigger className="w-[100px] bg-secondary/50 border-0">

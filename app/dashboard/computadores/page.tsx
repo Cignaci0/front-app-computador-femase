@@ -320,7 +320,12 @@ export default function EquiposPage() {
                       })()}
                     </TableCell>
                     <TableCell className="text-muted-foreground text-sm">
-                      {formatDate(item.vencimiento_garantia)}
+                      <div>{item.vencimiento_garantia ? `${item.vencimiento_garantia} meses` : "N/A"}</div>
+                      {item.vencimiento_garantia_fecha && (
+                        <div className="text-xs text-muted-foreground/70 mt-1">
+                          Vence: {formatDate(item.vencimiento_garantia_fecha)}
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell>{getStatusBadge(item.estado)}</TableCell>
                     <TableCell>

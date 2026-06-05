@@ -141,7 +141,8 @@ export function EquipmentInspectDialog({ open, onOpenChange, equipment }: Equipm
               {equipment.cliente?.correo && renderDetailItem("Correo Cliente", equipment.cliente.correo, true)}
               {renderDetailItem("Usuario Asignado", equipment.usuario)}
               {renderDetailItem("Nombre de Equipo (Host)", equipment.nombre_equipo, true)}
-              {renderDetailItem("Vencimiento Garantía", formatDate(equipment.vencimiento_garantia))}
+              {renderDetailItem("Vencimiento Garantía", equipment.vencimiento_garantia ? `${equipment.vencimiento_garantia} meses` : "N/A")}
+              {equipment.vencimiento_garantia_fecha && renderDetailItem("Fecha Vencimiento Garantía", formatDate(equipment.vencimiento_garantia_fecha))}
               {renderDetailItem("Última Actualización", formatDate(equipment.updatedAt))}
             </div>
             

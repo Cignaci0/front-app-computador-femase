@@ -390,7 +390,7 @@ export default function ComponentesPage() {
               <TableCell>{item.familia}</TableCell>
               <TableCell>{item.frecuencia}</TableCell>
               <TableCell>{item.nucleos} / {item.hilos}</TableCell>
-              <TableCell>{getBrandName(item.id_marca)}</TableCell>
+              <TableCell>{item.marca || "N/A"}</TableCell>
               {commonCells}
               {actions}
             </TableRow>
