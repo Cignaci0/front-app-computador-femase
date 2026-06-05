@@ -44,10 +44,8 @@ export function MantencionFormDialog({
   const [encargado, setEncargado] = useState("")
   const [clienteId, setClienteId] = useState("")
   const [descripcion, setDescripcion] = useState("")
-  const [fechaEgreso, setFechaEgreso] = useState("")
+  const [fechaMantencion, setFechaMantencion] = useState("")
   const [fechaUltimaMantencion, setFechaUltimaMantencion] = useState("")
-  const [fechaUltimoDespacho, setFechaUltimoDespacho] = useState("")
-  const [estado, setEstado] = useState("PENDIENTE")
 
   // API option lists
   const [dbComputadores, setDbComputadores] = useState<any[]>([])
@@ -94,18 +92,12 @@ export function MantencionFormDialog({
             : ""
         )
         setDescripcion(mantencionToEdit.descripcion || "")
-        setFechaEgreso(mantencionToEdit.fecha_egreso ? mantencionToEdit.fecha_egreso.substring(0, 10) : "")
+        setFechaMantencion(mantencionToEdit.fecha_mantencion ? mantencionToEdit.fecha_mantencion.substring(0, 10) : "")
         setFechaUltimaMantencion(
           mantencionToEdit.fecha_ultima_mantencion
             ? mantencionToEdit.fecha_ultima_mantencion.substring(0, 10)
             : ""
         )
-        setFechaUltimoDespacho(
-          mantencionToEdit.fecha_ultimo_despacho
-            ? mantencionToEdit.fecha_ultimo_despacho.substring(0, 10)
-            : ""
-        )
-        setEstado(mantencionToEdit.estado || "PENDIENTE")
       } else {
         // Defaults for new record
         setAssociationType("computador")
@@ -117,25 +109,35 @@ export function MantencionFormDialog({
         
         // Default dates to today if creating
         const today = new Date().toISOString().substring(0, 10)
-        setFechaEgreso(today)
-        setFechaUltimaMantencion(today)
-        setFechaUltimoDespacho("")
-        setEstado("PENDIENTE")
+        setFechaMantencion(today)
+        setFechaUltimaMantencion("")
       }
     }
   }, [open, mantencionToEdit])
 
+  // Update fechaUltimaMantencion based on selected asset (if creating new)
+  useEffect(() => {
+    if (!open || mantencionToEdit) return;
+
+    if (associationType === "computador" && computadorId && computadorId !== "_null") {
+      const comp = dbComputadores.find((c) => String(c.id) === computadorId);
+      setFechaUltimaMantencion(comp?.fecha_ultima_mantencion ? comp.fecha_ultima_mantencion.substring(0, 10) : "");
+    } else if (associationType === "equipo" && equipoId && equipoId !== "_null") {
+      const eq = dbEquipos.find((e) => String(e.id) === equipoId);
+      setFechaUltimaMantencion(eq?.fecha_ultima_mantencion ? eq.fecha_ultima_mantencion.substring(0, 10) : "");
+    } else {
+      setFechaUltimaMantencion("");
+    }
+  }, [computadorId, equipoId, associationType, dbComputadores, dbEquipos, mantencionToEdit, open]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!encargado || !descripcion || !fechaEgreso || !fechaUltimaMantencion || !estado) return
+    if (!encargado || !descripcion || !fechaMantencion) return
 
     const payload = {
-      fecha_egreso: fechaEgreso,
-      fecha_ultima_mantencion: fechaUltimaMantencion,
-      fecha_ultimo_despacho: fechaUltimoDespacho || null,
+      fecha_mantencion: fechaMantencion,
       encargado,
       descripcion,
-      estado,
       computador:
         associationType === "computador" && computadorId && computadorId !== "_null"
           ? Number(computadorId)
@@ -160,9 +162,7 @@ export function MantencionFormDialog({
       isAssetSelected &&
       !!encargado &&
       !!descripcion &&
-      !!fechaEgreso &&
-      !!fechaUltimaMantencion &&
-      !!estado
+      !!fechaMantencion
     )
   }
 
@@ -182,6 +182,31 @@ export function MantencionFormDialog({
           </DialogHeader>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Cliente */}
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="m-cliente">Cliente *</Label>
+              <Select 
+                value={clienteId} 
+                onValueChange={(val) => {
+                  setClienteId(val)
+                  setComputadorId("")
+                  setEquipoId("")
+                }}
+              >
+                <SelectTrigger id="m-cliente" className="bg-secondary/50 border-0">
+                  <SelectValue placeholder="Selecciona un cliente primero" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="_null">Sin Asignar (Interno / Bodega)</SelectItem>
+                  {dbClientes.map((c) => (
+                    <SelectItem key={c.id} value={String(c.id)}>
+                      {c.nombre}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             {/* Association Type Selector */}
             <div className="space-y-2 md:col-span-2">
               <Label>Asociar a *</Label>
@@ -215,16 +240,21 @@ export function MantencionFormDialog({
             {associationType === "computador" && (
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="m-computador">Computador *</Label>
-                <Select value={computadorId} onValueChange={setComputadorId}>
+                <Select value={computadorId} onValueChange={setComputadorId} disabled={!clienteId}>
                   <SelectTrigger id="m-computador" className="bg-secondary/50 border-0">
-                    <SelectValue placeholder="Selecciona un Computador" />
+                    <SelectValue placeholder={clienteId ? "Selecciona un Computador" : "Selecciona un cliente primero"} />
                   </SelectTrigger>
                   <SelectContent>
-                    {dbComputadores.map((comp) => (
+                    {dbComputadores
+                      .filter(comp => clienteId === "_null" ? !comp.cliente : String(comp.cliente?.id) === clienteId)
+                      .map((comp) => (
                       <SelectItem key={comp.id} value={String(comp.id)}>
-                        {comp.nombre_equipo || `ID: ${comp.id}`} {comp.usuario ? `(${comp.usuario})` : ""} - Estado: {comp.estado}
+                        {comp.nombre_equipo || "Sin Nombre"} - BIOS: {comp.n_serie_bios || "N/A"}
                       </SelectItem>
                     ))}
+                    {dbComputadores.filter(comp => clienteId === "_null" ? !comp.cliente : String(comp.cliente?.id) === clienteId).length === 0 && (
+                      <SelectItem value="empty" disabled>No hay computadores para este cliente</SelectItem>
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -234,16 +264,23 @@ export function MantencionFormDialog({
             {associationType === "equipo" && (
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="m-equipo">Equipo (No Computador) *</Label>
-                <Select value={equipoId} onValueChange={setEquipoId}>
+                <Select value={equipoId} onValueChange={setEquipoId} disabled={!clienteId}>
                   <SelectTrigger id="m-equipo" className="bg-secondary/50 border-0">
-                    <SelectValue placeholder="Selecciona un Equipo" />
+                    <SelectValue placeholder={clienteId ? "Selecciona un Equipo" : "Selecciona un cliente primero"} />
                   </SelectTrigger>
                   <SelectContent>
-                    {dbEquipos.map((eq) => (
+                    {dbEquipos
+                      .filter(eq => clienteId === "_null" ? !eq.cliente : String(eq.cliente?.id) === clienteId)
+                      .map((eq) => (
                       <SelectItem key={eq.id} value={String(eq.id)}>
-                        {eq.nombre || `ID: ${eq.id}`} {eq.n_serie ? `(S/N: ${eq.n_serie})` : ""}
+                        {eq.tipo_equipo?.nombre || "Equipo"}
+                        {eq.pulgadas ? ` - ${eq.pulgadas}"` : ""}
+                        {eq.n_serie ? ` - S/N: ${eq.n_serie}` : " - S/N: N/A"}
                       </SelectItem>
                     ))}
+                    {dbEquipos.filter(eq => clienteId === "_null" ? !eq.cliente : String(eq.cliente?.id) === clienteId).length === 0 && (
+                      <SelectItem value="empty" disabled>No hay equipos para este cliente</SelectItem>
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -261,77 +298,31 @@ export function MantencionFormDialog({
               />
             </div>
 
-            {/* Cliente */}
+            {/* Fecha Mantención */}
             <div className="space-y-2">
-              <Label htmlFor="m-cliente">Cliente (Opcional)</Label>
-              <Select value={clienteId} onValueChange={setClienteId}>
-                <SelectTrigger id="m-cliente" className="bg-secondary/50 border-0">
-                  <SelectValue placeholder="Selecciona cliente" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="_null">Ninguno</SelectItem>
-                  {dbClientes.map((c) => (
-                    <SelectItem key={c.id} value={String(c.id)}>
-                      {c.nombre}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Fecha Egreso */}
-            <div className="space-y-2">
-              <Label htmlFor="m-fecha-egreso">Fecha Egreso *</Label>
+              <Label htmlFor="m-fecha-mantencion">Fecha Mantención *</Label>
               <Input
-                id="m-fecha-egreso"
+                id="m-fecha-mantencion"
                 type="date"
                 className="bg-secondary/50 border-0"
-                value={fechaEgreso}
-                onChange={(e) => setFechaEgreso(e.target.value)}
+                value={fechaMantencion}
+                onChange={(e) => setFechaMantencion(e.target.value)}
               />
             </div>
 
             {/* Fecha Última Mantención */}
             <div className="space-y-2">
-              <Label htmlFor="m-fecha-ultima">Fecha Última Mantención *</Label>
+              <Label htmlFor="m-fecha-ultima">Fecha Última Mantención</Label>
               <Input
                 id="m-fecha-ultima"
                 type="date"
-                className="bg-secondary/50 border-0"
+                className="bg-secondary/50 border-0 text-muted-foreground"
                 value={fechaUltimaMantencion}
-                onChange={(e) => setFechaUltimaMantencion(e.target.value)}
+                disabled
               />
             </div>
 
-            {/* Fecha Último Despacho */}
-            <div className="space-y-2">
-              <Label htmlFor="m-fecha-despacho">Fecha Último Despacho (Opcional)</Label>
-              <Input
-                id="m-fecha-despacho"
-                type="date"
-                className="bg-secondary/50 border-0"
-                value={fechaUltimoDespacho}
-                onChange={(e) => setFechaUltimoDespacho(e.target.value)}
-              />
-            </div>
 
-            {/* Estado */}
-            <div className="space-y-2">
-              <Label htmlFor="m-estado">Estado *</Label>
-              <Select value={estado} onValueChange={setEstado}>
-                <SelectTrigger id="m-estado" className="bg-secondary/50 border-0">
-                  <SelectValue placeholder="Selecciona estado" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="PENDIENTE">PENDIENTE</SelectItem>
-                  <SelectItem value="EN PROGRESO">EN PROGRESO</SelectItem>
-                  <SelectItem value="LISTO">LISTO</SelectItem>
-                  <SelectItem value="REPARACION">REPARACION</SelectItem>
-                  <SelectItem value="BODEGA">BODEGA</SelectItem>
-                  <SelectItem value="COMPLETADO">COMPLETADO</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
 
             {/* Descripción */}
             <div className="space-y-2 md:col-span-2">

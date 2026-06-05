@@ -125,6 +125,7 @@ export function EquipoInspectDialog({ open, onOpenChange, equipo }: EquipoInspec
               {renderDetailItem("Expira Garantía", formatDate(equipo.fe_exp_garantia))}
               {renderDetailItem("Fecha Recibido", formatDate(equipo.fecha_recibido))}
               {renderDetailItem("Fecha Entrega", formatDate(equipo.fecha_entrega))}
+              {equipo.fecha_ultima_mantencion && renderDetailItem("Última Mantención", formatDate(equipo.fecha_ultima_mantencion))}
             </div>
           </div>
 

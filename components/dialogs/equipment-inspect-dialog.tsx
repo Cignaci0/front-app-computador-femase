@@ -142,10 +142,18 @@ export function EquipmentInspectDialog({ open, onOpenChange, equipment }: Equipm
               {renderDetailItem("Usuario Asignado", equipment.usuario)}
               {renderDetailItem("Nombre de Equipo (Host)", equipment.nombre_equipo, true)}
               {renderDetailItem("Vencimiento Garantía", equipment.vencimiento_garantia ? `${equipment.vencimiento_garantia} meses` : "N/A")}
-              {equipment.vencimiento_garantia_fecha && renderDetailItem("Fecha Vencimiento Garantía", formatDate(equipment.vencimiento_garantia_fecha))}
+              {equipment.vencimiento_garantia_fecha && renderDetailItem(
+                "Fecha Vencimiento Garantía", 
+                `${formatDate(equipment.vencimiento_garantia_fecha)} ${
+                  equipment.dias_restantes_garantia !== undefined 
+                    ? `(${equipment.dias_restantes_garantia > 0 ? `${equipment.dias_restantes_garantia} días restantes` : "vencida"})`
+                    : ""
+                }`.trim()
+              )}
               {equipment.fecha_ingreso && renderDetailItem("Fecha Ingreso", formatDate(equipment.fecha_ingreso))}
               {equipment.fecha_listo && renderDetailItem("Fecha Listo", formatDate(equipment.fecha_listo))}
               {equipment.fecha_entregado && renderDetailItem("Fecha Entregado", formatDate(equipment.fecha_entregado))}
+              {equipment.fecha_ultima_mantencion && renderDetailItem("Última Mantención", formatDate(equipment.fecha_ultima_mantencion))}
               {renderDetailItem("Última Actualización", formatDate(equipment.updatedAt))}
             </div>
             

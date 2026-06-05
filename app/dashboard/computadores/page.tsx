@@ -322,8 +322,20 @@ export default function EquiposPage() {
                     <TableCell className="text-muted-foreground text-sm">
                       <div>{item.vencimiento_garantia ? `${item.vencimiento_garantia} meses` : "N/A"}</div>
                       {item.vencimiento_garantia_fecha && (
-                        <div className="text-xs text-muted-foreground/70 mt-1">
-                          Vence: {formatDate(item.vencimiento_garantia_fecha)}
+                        <div className="flex flex-col gap-1 mt-1">
+                          <span className="text-xs text-muted-foreground/70">
+                            Vence: {formatDate(item.vencimiento_garantia_fecha)}
+                          </span>
+                          {item.dias_restantes_garantia !== undefined && (
+                            <Badge 
+                              variant={item.dias_restantes_garantia > 0 ? "outline" : "destructive"} 
+                              className={`w-fit text-[10px] px-1.5 py-0 ${item.dias_restantes_garantia > 0 ? "text-emerald-500 border-emerald-500/30 bg-emerald-500/10" : ""}`}
+                            >
+                              {item.dias_restantes_garantia > 0 
+                                ? `${item.dias_restantes_garantia} días restantes`
+                                : "Garantía vencida"}
+                            </Badge>
+                          )}
                         </div>
                       )}
                     </TableCell>

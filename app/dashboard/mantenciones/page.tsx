@@ -36,44 +36,7 @@ import {
 } from "@/services/mantencionService"
 import { MantencionFormDialog } from "@/components/forms/mantencion-form-dialog"
 
-function getStatusBadge(status: string) {
-  const norm = (status || "").toUpperCase()
-  switch (norm) {
-    case "COMPLETADO":
-    case "LISTO":
-      return (
-        <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20 font-semibold">
-          {status}
-        </Badge>
-      )
-    case "EN PROGRESO":
-      return (
-        <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/20 font-semibold">
-          {status}
-        </Badge>
-      )
-    case "PENDIENTE":
-      return (
-        <Badge variant="outline" className="bg-slate-500/10 text-slate-400 border-slate-500/20 font-semibold">
-          {status}
-        </Badge>
-      )
-    case "REPARACION":
-      return (
-        <Badge variant="outline" className="bg-red-500/10 text-red-500 border-red-500/20 font-semibold">
-          {status}
-        </Badge>
-      )
-    case "BODEGA":
-      return (
-        <Badge variant="outline" className="bg-blue-500/10 text-blue-400 border-blue-500/20 font-semibold">
-          {status}
-        </Badge>
-      )
-    default:
-      return <Badge variant="outline" className="font-semibold">{status}</Badge>
-  }
-}
+
 
 export default function MantencionesPage() {
   const [data, setData] = useState<any[]>([])
@@ -81,7 +44,6 @@ export default function MantencionesPage() {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState("")
   const [searchDebounced, setSearchDebounced] = useState("")
-  const [statusFilter, setStatusFilter] = useState<string>("all")
   const [isLoading, setIsLoading] = useState(false)
 
   // Dialog State
@@ -96,7 +58,7 @@ export default function MantencionesPage() {
     return () => clearTimeout(handler)
   }, [search])
 
-  const fetchData = async (p: number, s: string, filter: string) => {
+  const fetchData = async (p: number, s: string) => {
     setIsLoading(true)
     try {
       // Fetch list from service (page-wise)
@@ -123,12 +85,7 @@ export default function MantencionesPage() {
           })
         }
 
-        // Perform local status filtering
-        if (filter !== "all") {
-          items = items.filter(
-            (item: any) => (item.estado || "").toUpperCase() === filter.toUpperCase()
-          )
-        }
+
 
         setData(items)
         setMeta(
@@ -146,8 +103,8 @@ export default function MantencionesPage() {
   }
 
   useEffect(() => {
-    fetchData(page, searchDebounced, statusFilter)
-  }, [page, searchDebounced, statusFilter])
+    fetchData(page, searchDebounced)
+  }, [page, searchDebounced])
 
   const handleSave = async (formData: any) => {
     try {
@@ -158,7 +115,7 @@ export default function MantencionesPage() {
         await createMantencion(formData)
         toast.success("Mantención creada exitosamente")
       }
-      fetchData(page, searchDebounced, statusFilter)
+      fetchData(page, searchDebounced)
     } catch (error) {
       console.error(error)
       toast.error("Error al guardar la mantención")
@@ -171,7 +128,7 @@ export default function MantencionesPage() {
     try {
       await deleteMantencion(id)
       toast.success("Mantención eliminada exitosamente")
-      fetchData(page, searchDebounced, statusFilter)
+      fetchData(page, searchDebounced)
     } catch (error) {
       console.error(error)
       toast.error("Error al eliminar la mantención")
@@ -215,20 +172,7 @@ export default function MantencionesPage() {
                 className="pl-9 bg-secondary/50 border-0"
               />
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[180px] bg-secondary/50 border-0">
-                <Filter className="mr-2 h-4 w-4" />
-                <SelectValue placeholder="Estado" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los Estados</SelectItem>
-                <SelectItem value="PENDIENTE">PENDIENTE</SelectItem>
-                <SelectItem value="EN PROGRESO">EN PROGRESO</SelectItem>
-                <SelectItem value="LISTO">LISTO / COMPLETADO</SelectItem>
-                <SelectItem value="REPARACION">REPARACION</SelectItem>
-                <SelectItem value="BODEGA">BODEGA</SelectItem>
-              </SelectContent>
-            </Select>
+
           </div>
         </CardContent>
       </Card>
@@ -250,9 +194,8 @@ export default function MantencionesPage() {
                   <TableHead className="text-muted-foreground font-medium">Cliente</TableHead>
                   <TableHead className="text-muted-foreground font-medium">Encargado</TableHead>
                   <TableHead className="text-muted-foreground font-medium max-w-[250px]">Descripción</TableHead>
-                  <TableHead className="text-muted-foreground font-medium">Fecha Egreso</TableHead>
+                  <TableHead className="text-muted-foreground font-medium">Fecha Mantención</TableHead>
                   <TableHead className="text-muted-foreground font-medium">Última Mantención</TableHead>
-                  <TableHead className="text-muted-foreground font-medium">Estado</TableHead>
                   <TableHead className="text-muted-foreground font-medium w-[50px]"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -298,7 +241,7 @@ export default function MantencionesPage() {
                       <TableCell className="text-muted-foreground text-xs font-medium">
                         <div className="flex items-center gap-1.5">
                           <Calendar className="h-3.5 w-3.5" />
-                          {formatDate(item.fecha_egreso)}
+                          {formatDate(item.fecha_mantencion)}
                         </div>
                       </TableCell>
                       <TableCell className="text-muted-foreground text-xs font-medium">
@@ -307,7 +250,6 @@ export default function MantencionesPage() {
                           {formatDate(item.fecha_ultima_mantencion)}
                         </div>
                       </TableCell>
-                      <TableCell>{getStatusBadge(item.estado)}</TableCell>
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -341,7 +283,7 @@ export default function MantencionesPage() {
                 })}
                 {!isLoading && data.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                       No se encontraron registros de mantención.
                     </TableCell>
                   </TableRow>
