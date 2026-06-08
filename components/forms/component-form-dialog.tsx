@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -23,7 +23,11 @@ import { Switch } from "@/components/ui/switch"
 import { getMarcas } from "@/services/marcaService"
 import { getProveedores } from "@/services/proveedorService"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Settings, Receipt } from "lucide-react"
+import { Settings, Receipt, Check, ChevronsUpDown } from "lucide-react"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
+import { cn } from "@/lib/utils"
+import { AsyncCombobox } from "@/components/ui/async-combobox"
 
 interface ComponentFormDialogProps {
   open: boolean
@@ -241,27 +245,42 @@ export function ComponentFormDialog({
   const [factura, setFactura] = useState("")
   const [fechaCompra, setFechaCompra] = useState("")
 
-  // Load brands, proveedores, and form values
+  const [openComboboxBrand, setOpenComboboxBrand] = useState(false)
+  const [searchBrand, setSearchBrand] = useState("")
+  const fetchMarcas = useCallback((s: string) => getMarcas(1, 10, s).then(r => r.data || []), [])
+
+  const [openComboboxProveedor, setOpenComboboxProveedor] = useState(false)
+  const [searchProveedor, setSearchProveedor] = useState("")
+
+  useEffect(() => {
+    if (open) {
+      const handler = setTimeout(() => {
+        getMarcas(1, 10, searchBrand)
+          .then((res) => {
+            const mapped = (res.data || []).map((b: any) => ({ id: b.id, name: b.nombre }))
+            setBrands(mapped)
+          })
+          .catch(err => console.error(err))
+      }, 300)
+      return () => clearTimeout(handler)
+    }
+  }, [open, searchBrand])
+
+  useEffect(() => {
+    if (open) {
+      const handler = setTimeout(() => {
+        getProveedores(1, 10, searchProveedor)
+          .then((res) => setProveedores(res.data || []))
+          .catch(err => console.error(err))
+      }, 300)
+      return () => clearTimeout(handler)
+    }
+  }, [open, searchProveedor])
+
+  // Load form values
   useEffect(() => {
     if (open) {
       setActiveTab("specs")
-
-      // 1. Fetch brands
-      const storedBrands = localStorage.getItem("femase_marcas")
-      if (storedBrands) {
-        setBrands(JSON.parse(storedBrands))
-      } else {
-        getMarcas(1, 1000).then((res) => {
-          const mapped = (res.data || []).map((b: any) => ({ id: b.id, name: b.nombre }))
-          setBrands(mapped)
-          localStorage.setItem("femase_marcas", JSON.stringify(mapped))
-        }).catch(err => console.error("Error fetching brands in dialog:", err))
-      }
-
-      // 2. Fetch proveedores
-      getProveedores(1, 1000).then((res) => {
-        setProveedores(res.data || [])
-      }).catch(err => console.error("Error fetching proveedores in dialog:", err))
 
       // 3. Initialize form data
       const fields = FIELDS_BY_TYPE[type] || []
@@ -299,12 +318,22 @@ export function ComponentFormDialog({
         setProveedorId(componentToEdit.proveedor?.id ? String(componentToEdit.proveedor.id) : "")
         setFactura(componentToEdit.factura !== undefined && componentToEdit.factura !== null ? String(componentToEdit.factura) : "")
         setFechaCompra(componentToEdit.fecha_compra ? componentToEdit.fecha_compra.substring(0, 10) : "")
+
+        if (componentToEdit.id_marca && typeof componentToEdit.id_marca === "object") {
+           setBrands([{ id: componentToEdit.id_marca.id, name: componentToEdit.id_marca.nombre }])
+        }
+        if (componentToEdit.proveedor) {
+           setProveedores([componentToEdit.proveedor])
+        }
       } else {
         setProveedorId("")
         setFactura("")
         setFechaCompra("")
       }
       setFormData(initial)
+    } else {
+      setSearchBrand("")
+      setSearchProveedor("")
     }
   }, [componentToEdit, open, type])
 
@@ -560,29 +589,22 @@ export function ComponentFormDialog({
                     return (
                       <div key={field.key} className="space-y-2">
                         <Label htmlFor={field.key}>{field.label}</Label>
-                        <Select
-                          value={formData[field.key]}
-                          onValueChange={(val) => handleFieldChange(field.key, val)}
-                        >
-                          <SelectTrigger id={field.key} className="bg-secondary/50 border-0">
-                            <SelectValue placeholder={field.placeholder} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {type === "disco-almacenamiento" && (
-                              <SelectItem value="_null">Sin Marca (Ninguno)</SelectItem>
-                            )}
-                            {brands.map((brand) => (
-                              <SelectItem key={brand.id} value={String(brand.id)}>
-                                {brand.name}
-                              </SelectItem>
-                            ))}
-                            {brands.length === 0 && (
-                              <SelectItem value="_empty" disabled>
-                                No hay marcas registradas
-                              </SelectItem>
-                            )}
-                          </SelectContent>
-                        </Select>
+                        <AsyncCombobox
+                          value={String(formData[field.key] || "")}
+                          onValueChange={(val: string) => handleFieldChange(field.key, val)}
+                          fetcher={fetchMarcas}
+                          placeholder={field.placeholder}
+                          preloadItems={
+                            formData[field.key] 
+                              ? formData[field.key] === "_null" 
+                                ? [{ id: "_null", nombre: "Sin Marca (Ninguno)" }] 
+                                : brands.find(b => String(b.id) === String(formData[field.key])) 
+                                  ? [{ id: formData[field.key], nombre: brands.find(b => String(b.id) === String(formData[field.key]))?.name }] 
+                                  : [{ id: formData[field.key], nombre: "Marca actual" }]
+                              : []
+                          }
+                          extraItems={type === "disco-almacenamiento" ? [{ id: "_null", nombre: "Sin Marca (Ninguno)" }] : []}
+                        />
                       </div>
                     )
                   }
@@ -850,26 +872,53 @@ export function ComponentFormDialog({
                 {/* Proveedor */}
                 <div className="space-y-2">
                   <Label htmlFor="comp-proveedor">Proveedor *</Label>
-                  <Select
-                    value={proveedorId}
-                    onValueChange={setProveedorId}
-                  >
-                    <SelectTrigger id="comp-proveedor" className="bg-secondary/50 border-0">
-                      <SelectValue placeholder="Selecciona un proveedor" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {proveedores.map((p) => (
-                        <SelectItem key={p.id} value={String(p.id)}>
-                          {p.nombre}
-                        </SelectItem>
-                      ))}
-                      {proveedores.length === 0 && (
-                        <SelectItem value="_empty" disabled>
-                          No hay proveedores registrados
-                        </SelectItem>
-                      )}
-                    </SelectContent>
-                  </Select>
+                  <Popover open={openComboboxProveedor} onOpenChange={setOpenComboboxProveedor}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={openComboboxProveedor}
+                        className="w-full justify-between bg-secondary/50 border-0"
+                      >
+                        {proveedorId
+                          ? proveedores.find((p) => String(p.id) === proveedorId)?.nombre || "Proveedor seleccionado"
+                          : "Selecciona un proveedor"}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+                      <Command shouldFilter={false}>
+                        <CommandInput 
+                          placeholder="Buscar proveedor..." 
+                          value={searchProveedor}
+                          onValueChange={setSearchProveedor}
+                        />
+                        <CommandList>
+                          <CommandEmpty>No se encontraron proveedores.</CommandEmpty>
+                          <CommandGroup>
+                            {proveedores.map((p) => (
+                              <CommandItem
+                                key={p.id}
+                                value={String(p.id)}
+                                onSelect={(currentValue) => {
+                                  setProveedorId(currentValue)
+                                  setOpenComboboxProveedor(false)
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    proveedorId === String(p.id) ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                {p.nombre}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
 
                 {/* Factura */}

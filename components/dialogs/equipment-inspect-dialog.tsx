@@ -142,6 +142,7 @@ export function EquipmentInspectDialog({ open, onOpenChange, equipment }: Equipm
               {renderDetailItem("Usuario Asignado", equipment.usuario)}
               {renderDetailItem("Nombre de Equipo (Host)", equipment.nombre_equipo, true)}
               {renderDetailItem("Vencimiento Garantía", equipment.vencimiento_garantia ? `${equipment.vencimiento_garantia} meses` : "N/A")}
+              {renderDetailItem("Procedencia", equipment.vendido_femase ? "Computador vendido por femase" : "Computador vendido por empresa externa")}
               {equipment.vencimiento_garantia_fecha && renderDetailItem(
                 "Fecha Vencimiento Garantía", 
                 `${formatDate(equipment.vencimiento_garantia_fecha)} ${
@@ -154,7 +155,6 @@ export function EquipmentInspectDialog({ open, onOpenChange, equipment }: Equipm
               {equipment.fecha_listo && renderDetailItem("Fecha Listo", formatDate(equipment.fecha_listo))}
               {equipment.fecha_entregado && renderDetailItem("Fecha Entregado", formatDate(equipment.fecha_entregado))}
               {equipment.fecha_ultima_mantencion && renderDetailItem("Última Mantención", formatDate(equipment.fecha_ultima_mantencion))}
-              {renderDetailItem("Última Actualización", formatDate(equipment.updatedAt))}
             </div>
             
             <div className="grid grid-cols-2 gap-4 bg-secondary/20 p-4 rounded-lg border border-border/80">

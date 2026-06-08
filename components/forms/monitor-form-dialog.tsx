@@ -12,13 +12,8 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { AsyncCombobox } from "@/components/ui/async-combobox"
+import { useCallback } from "react"
 import { getMarcas } from "@/services/marcaService"
 
 interface MonitorFormDialogProps {
@@ -33,18 +28,10 @@ export function MonitorFormDialog({ open, onOpenChange, monitorToEdit, onSave }:
   const [selectedBrandId, setSelectedBrandId] = useState("")
   const [brands, setBrands] = useState<{ id: number; name: string }[]>([])
 
+  const fetchMarcas = useCallback((s: string) => getMarcas(1, 10, s).then(r => r.data || []), [])
+
   useEffect(() => {
     if (open) {
-      // Fetch brands to populate the select dropdown
-      getMarcas(1, 1000)
-        .then((res) => {
-          const mapped = (res.data || []).map((m: any) => ({
-            id: m.id,
-            name: m.nombre || m.name,
-          }))
-          setBrands(mapped)
-        })
-        .catch((err) => console.error("Error loading brands:", err))
 
       if (monitorToEdit) {
         setPulgadas(monitorToEdit.pulgadas)
@@ -87,23 +74,17 @@ export function MonitorFormDialog({ open, onOpenChange, monitorToEdit, onSave }:
             </div>
             <div className="space-y-2">
               <Label htmlFor="brand-select">Marca</Label>
-              <Select value={selectedBrandId} onValueChange={setSelectedBrandId}>
-                <SelectTrigger id="brand-select" className="bg-secondary/50 border-0">
-                  <SelectValue placeholder="Selecciona una marca" />
-                </SelectTrigger>
-                <SelectContent>
-                  {brands.map((brand) => (
-                    <SelectItem key={brand.id} value={String(brand.id)}>
-                      {brand.name}
-                    </SelectItem>
-                  ))}
-                  {brands.length === 0 && (
-                    <SelectItem value="_empty" disabled>
-                      No hay marcas creadas
-                    </SelectItem>
-                  )}
-                </SelectContent>
-              </Select>
+              <AsyncCombobox 
+                value={selectedBrandId} 
+                onValueChange={setSelectedBrandId} 
+                fetcher={fetchMarcas} 
+                placeholder="Selecciona una marca" 
+                preloadItems={monitorToEdit && monitorToEdit.marca ? [{ id: monitorToEdit.marca.id || monitorToEdit.marca, nombre: monitorToEdit.marca.nombre || "Marca actual" }] : []}
+                labelKey="nombre"
+                valueKey="id"
+                renderValue={(item) => item.nombre}
+                renderItem={(item) => item.nombre}
+              />
             </div>
           </div>
           <DialogFooter>

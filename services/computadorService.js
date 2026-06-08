@@ -14,9 +14,13 @@ async function safeParseResponse(response) {
  * @param {number} page - Número de página
  * @param {number} limit - Límite de elementos por página
  */
-export async function getComputadores(page = 1, limit = 6) {
+export async function getComputadores(page = 1, limit = 6, search = "") {
   try {
-    const response = await fetch(`${BASE_URL}?page=${page}&limit=${limit}`);
+    let url = `${BASE_URL}?page=${page}&limit=${limit}`;
+    if (search) {
+      url += `&search=${encodeURIComponent(search)}`;
+    }
+    const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`Error al obtener computadores: ${response.statusText}`);
     }

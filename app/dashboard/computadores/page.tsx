@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { Plus, Search, Filter, MoreHorizontal, Pencil, Trash2, Eye } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
 import {
   Table,
@@ -282,7 +283,7 @@ export default function EquiposPage() {
                     </TableCell>
                   </TableRow>
                 ) : filteredData.map((item) => (
-                  <TableRow key={item.id} className="border-border">
+                  <TableRow key={item.id} className={cn("border-border", item.upgrade && "bg-emerald-500/10 hover:bg-emerald-500/20")}>
                     <TableCell className="font-mono text-sm font-bold">{item.n_serie_bios || "N/A"}</TableCell>
                     <TableCell>
                       <Badge variant="secondary" className="font-normal">

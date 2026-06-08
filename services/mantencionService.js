@@ -92,3 +92,34 @@ export async function deleteMantencion(id) {
     throw error;
   }
 }
+
+/**
+ * Obtiene el encargado de un computador específico.
+ * @param {number|string} id - ID del computador
+ */
+export async function getEncargadosPorComputador(id) {
+  try {
+    const response = await fetch(`${BASE_URL}/encargados/${id}`);
+    if (!response.ok) {
+      throw new Error(`Error al obtener encargado por computador: ${response.statusText}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Error en getEncargadosPorComputador:", error);
+    throw error;
+  }
+}
+
+export async function getMantencionesComputador(id, page = 1, limit = 10) {
+  try {
+    const url = `${BASE_URL}/computador/${id}?page=${page}&limit=${limit}`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Error al obtener mantenciones del computador: ${response.statusText}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Error en getMantencionesComputador:", error);
+    throw error;
+  }
+}

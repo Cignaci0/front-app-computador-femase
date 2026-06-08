@@ -15,9 +15,13 @@ async function safeParseResponse(response) {
  * @param {number} limit - Límite de elementos por página.
  * @returns {Promise<{ data: Array<{ id: number, nombre: string }>, meta: any }>}
  */
-export async function getClientes(page = 1, limit = 6) {
+export async function getClientes(page = 1, limit = 6, search = "") {
   try {
-    const response = await fetch(`${API_URL}?page=${page}&limit=${limit}`);
+    let url = `${API_URL}?page=${page}&limit=${limit}`;
+    if (search) {
+      url += `&search=${encodeURIComponent(search)}`;
+    }
+    const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`Error al obtener clientes: ${response.statusText}`);
     }
@@ -92,6 +96,23 @@ export async function deleteCliente(id) {
     return true;
   } catch (error) {
     console.error("Error en deleteCliente:", error);
+    throw error;
+  }
+}
+
+/**
+ * Obtiene los computadores y equipos asignados a un cliente.
+ * @param {number|string} clienteId - ID del cliente.
+ */
+export async function getActivosPorCliente(clienteId) {
+  try {
+    const response = await fetch(`http://localhost:3000/clientes-computadores/por-cliente?cliente=${clienteId}&limit=1000`);
+    if (!response.ok) {
+      throw new Error(`Error al obtener activos del cliente: ${response.statusText}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Error en getActivosPorCliente:", error);
     throw error;
   }
 }

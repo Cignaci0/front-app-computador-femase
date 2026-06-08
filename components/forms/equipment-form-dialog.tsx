@@ -20,6 +20,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
+import { AsyncCombobox } from "@/components/ui/async-combobox"
+import { useCallback } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Cpu, Info, Key, Layers, Database } from "lucide-react"
 
@@ -140,6 +142,9 @@ const CPU_FREQS = ["3.9 GHz turbo", "4.0 GHz turbo", "4.2 GHz turbo", "4.3 GHz t
 
 export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSave }: EquipmentFormDialogProps) {
   // Navigation tab state
+  
+  
+
   const [activeTab, setActiveTab] = useState("general")
 
   // Form states matching backend entity relationships & columns
@@ -148,6 +153,7 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
   const [modeloId, setModeloId] = useState("")
   const [estado, setEstado] = useState("RECIBIDO")
   const [vencimientoGarantia, setVencimientoGarantia] = useState("")
+  const [vendidoFemase, setVendidoFemase] = useState(false)
 
   // Custom added fields from Computador entity
   const [clienteId, setClienteId] = useState("")
@@ -217,6 +223,22 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
   const [mDisco1, setMDisco1] = useState({ id: "", marca: "", tipo_disco: "", modelo: "", capacidad: "" })
   const [mDisco2, setMDisco2] = useState({ id: "", marca: "", tipo_disco: "", modelo: "", capacidad: "" })
   const [mDisco3, setMDisco3] = useState({ id: "", marca: "", tipo_disco: "", modelo: "", capacidad: "" })
+
+  const fetchMarcas = useCallback((s: string) => getMarcas(1, 10, s).then(r => r.data || []), [])
+  const fetchModelos = useCallback((s: string) => getModelos(1, 10, s, marcaId ? Number(marcaId) : undefined).then(r => (r.data || []).map((m: any) => ({ id: m.id, nombre: m.name || m.nombre, brandId: m.marca?.id }))), [marcaId])
+  const fetchTipos = useCallback((s: string) => getTiposDeEquipo(1, 10, s).then(r => r.data || []), [])
+  const fetchClientes = useCallback((s: string) => getClientes(1, 10, s).then(r => r.data || []), [])
+  
+  const fetchWinLic = useCallback((s: string) => getLicenciasWin(1, 10, s).then(r => r.data || []), [])
+  const fetchOfficeLic = useCallback((s: string) => getLicenciasOffice(1, 10, s).then(r => r.data || []), [])
+
+  const fetchCpu = useCallback((s: string) => getComponentes('procesador', 1, 10, s).then(r => r.data || []), [])
+  const fetchPlaca = useCallback((s: string) => getComponentes('placa-madre', 1, 10, s).then(r => r.data || []), [])
+  const fetchGpu = useCallback((s: string) => getComponentes('tarjeta-grafica', 1, 10, s).then(r => r.data || []), [])
+  const fetchFuente = useCallback((s: string) => getComponentes('fuente-poder', 1, 10, s).then(r => r.data || []), [])
+  
+  const fetchRam = useCallback((s: string) => getComponentes('memoria-ram', 1, 10, s).then(r => r.data || []), [])
+  const fetchDisk = useCallback((s: string) => getComponentes('disco-almacenamiento', 1, 10, s).then(r => r.data || []), [])
 
   // Catalog lists
   const [dbBrands, setDbBrands] = useState<{ id: number; nombre: string }[]>([])
@@ -295,6 +317,8 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
         } else {
           setVencimientoGarantia("")
         }
+
+        setVendidoFemase(equipmentToEdit.vendido_femase || false)
 
         setClienteId(equipmentToEdit.cliente?.id ? String(equipmentToEdit.cliente.id) : "")
         setUsuario(equipmentToEdit.usuario || "")
@@ -740,14 +764,15 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!tipoDeEquipoId || !marcaId || !modeloId || !estado || !vencimientoGarantia) return
+    if (!tipoDeEquipoId || !marcaId || !modeloId || !estado || (!vendidoFemase && !vencimientoGarantia)) return
 
     onSave({
       tipo_de_equipo: Number(tipoDeEquipoId),
       marca: Number(marcaId),
       modelo: Number(modeloId),
       estado,
-      vencimiento_garantia: Number(vencimientoGarantia),
+      vendido_femase: vendidoFemase,
+      vencimiento_garantia: vendidoFemase ? null : Number(vencimientoGarantia),
       cliente: clienteId ? Number(clienteId) : null,
       usuario: usuario || "",
       nombre_equipo: nombreEquipo || "",
@@ -937,7 +962,7 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
   }
 
   const isFormValid = () => {
-    const basicValid = !!tipoDeEquipoId && !!marcaId && !!modeloId && !!estado && !!vencimientoGarantia
+    const basicValid = !!tipoDeEquipoId && !!marcaId && !!modeloId && !!estado && (vendidoFemase || !!vencimientoGarantia)
     
     const hasMac = !!macEthernet1?.trim() || !!macEthernet2?.trim() || !!macWifi?.trim()
     const hasBios = !!nSerieBios?.trim()
@@ -991,18 +1016,7 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="eq-type">Tipo de Equipo *</Label>
-                  <Select value={tipoDeEquipoId} onValueChange={setTipoDeEquipoId}>
-                    <SelectTrigger id="eq-type" className="bg-secondary/50 border-0">
-                      <SelectValue placeholder="Selecciona tipo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {dbTypes.filter(t => t.computador || String(t.id) === tipoDeEquipoId).map((t) => (
-                        <SelectItem key={t.id} value={String(t.id)}>
-                          {t.nombre}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <AsyncCombobox value={tipoDeEquipoId} onValueChange={setTipoDeEquipoId} fetcher={fetchTipos} placeholder="Selecciona tipo de equipo" preloadItems={dbTypes} filterItem={t => t.computador || String(t.id) === tipoDeEquipoId} />
                 </div>
 
                 {equipmentToEdit && (
@@ -1025,40 +1039,12 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
 
                 <div className="space-y-2">
                   <Label htmlFor="eq-brand">Marca *</Label>
-                  <Select
-                    value={marcaId}
-                    onValueChange={(val) => {
-                      setMarcaId(val)
-                      setModeloId("")
-                    }}
-                  >
-                    <SelectTrigger id="eq-brand" className="bg-secondary/50 border-0">
-                      <SelectValue placeholder="Selecciona marca" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {dbBrands.map((b) => (
-                        <SelectItem key={b.id} value={String(b.id)}>
-                          {b.nombre}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <AsyncCombobox value={marcaId} onValueChange={(val) => { setMarcaId(val); setModeloId(""); }} fetcher={fetchMarcas} placeholder="Selecciona marca" preloadItems={dbBrands} />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="eq-model">Modelo *</Label>
-                  <Select value={modeloId} onValueChange={setModeloId} disabled={!marcaId}>
-                    <SelectTrigger id="eq-model" className="bg-secondary/50 border-0">
-                      <SelectValue placeholder={marcaId ? "Selecciona modelo" : "Selecciona marca primero"} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {filteredModels.map((m) => (
-                        <SelectItem key={m.id} value={String(m.id)}>
-                          {m.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <AsyncCombobox value={modeloId} onValueChange={setModeloId} disabled={!marcaId} fetcher={fetchModelos} labelKey="nombre" placeholder={marcaId ? "Selecciona modelo" : "Selecciona marca primero"} preloadItems={dbModels} />
                 </div>
 
 
@@ -1086,10 +1072,10 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="eq-warranty">Garantía (Meses) *</Label>
-                  <Select value={vencimientoGarantia} onValueChange={setVencimientoGarantia}>
+                  <Label htmlFor="eq-warranty">Garantía (Meses) {vendidoFemase ? "" : "*"}</Label>
+                  <Select value={vencimientoGarantia} onValueChange={setVencimientoGarantia} disabled={vendidoFemase}>
                     <SelectTrigger id="eq-warranty" className="bg-secondary/50 border-0">
-                      <SelectValue placeholder="Selecciona" />
+                      <SelectValue placeholder={vendidoFemase ? "N/A" : "Selecciona"} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="3">3 meses</SelectItem>
@@ -1098,11 +1084,18 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                       <SelectItem value="18">18 meses</SelectItem>
                     </SelectContent>
                   </Select>
-                  {equipmentToEdit?.vencimiento_garantia_fecha && (
+                  {!vendidoFemase && equipmentToEdit?.vencimiento_garantia_fecha && (
                     <p className="text-xs text-muted-foreground mt-1">
                       Vence el: {new Date(equipmentToEdit.vencimiento_garantia_fecha).toLocaleDateString("es-CL", { timeZone: "UTC" })}
                     </p>
                   )}
+                </div>
+
+                <div className="space-y-2 flex flex-col justify-end">
+                  <div className="flex items-center space-x-2 h-10 px-3 bg-secondary/20 rounded-md border border-border">
+                    <Switch id="eq-vendido" checked={vendidoFemase} onCheckedChange={setVendidoFemase} />
+                    <Label htmlFor="eq-vendido" className="font-semibold cursor-pointer">Vendido por Femase</Label>
+                  </div>
                 </div>
               </div>
             </TabsContent>
@@ -1139,19 +1132,7 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                   </div>
 
                   {procesadorMode === "existing" ? (
-                    <Select value={procesadorId} onValueChange={setProcesadorId}>
-                      <SelectTrigger id="eq-cpu" className="bg-secondary/50 border-0 mt-2">
-                        <SelectValue placeholder="Ninguno" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="_null">Ninguno / Sin CPU</SelectItem>
-                        {filteredCpus.map((c) => (
-                          <SelectItem key={c.id} value={String(c.id)}>
-                            {c.familia} {c.modelo} (Stock: {c.uso}) {c.proveedor?.nombre ? `- ${c.proveedor.nombre}` : ""}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <AsyncCombobox value={procesadorId} onValueChange={setProcesadorId} fetcher={fetchCpu} placeholder="Selecciona un procesador" preloadItems={filteredCpus} renderItem={(c) => (<div className="flex flex-col"><span>{c.marca?.nombre || c.marca} {c.familia} {c.modelo}</span><span className="text-xs text-muted-foreground">{c.nucleos} Cores / {c.hilos} Threads - {c.frecuencia} - Stock: {c.uso}</span></div>)} renderValue={(c) => `${c.marca?.nombre || c.marca} ${c.familia} ${c.modelo}`} />
                   ) : (
                     <div className="grid grid-cols-2 gap-3 mt-3 bg-secondary/10 p-3 rounded-md border border-border/30">
                       <div className="space-y-1">
@@ -1284,38 +1265,12 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                   </div>
 
                   {placaMode === "existing" ? (
-                    <Select value={placaId} onValueChange={setPlacaId}>
-                      <SelectTrigger id="eq-plate" className="bg-secondary/50 border-0 mt-2">
-                        <SelectValue placeholder="Ninguno" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="_null">Ninguno / Sin Placa</SelectItem>
-                        {filteredPlates.map((pl) => (
-                          <SelectItem key={pl.id} value={String(pl.id)}>
-                            {pl.modelo} (Stock: {pl.uso}) {pl.proveedor?.nombre ? `- ${pl.proveedor.nombre}` : ""}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <AsyncCombobox value={placaId} onValueChange={setPlacaId} fetcher={fetchPlaca} placeholder="Selecciona una placa madre" preloadItems={filteredPlates} renderItem={(p) => (<div className="flex flex-col"><span>{p.marca?.nombre || p.marca} {p.modelo}</span><span className="text-xs text-muted-foreground">Socket: {p.socket} - Chipset: {p.chipset} - Stock: {p.uso}</span></div>)} renderValue={(p) => `${p.marca?.nombre || p.marca} ${p.modelo}`} />
                   ) : (
                     <div className="grid grid-cols-2 gap-3 mt-3 bg-secondary/10 p-3 rounded-md border border-border/30">
                       <div className="space-y-1">
                         <Label className="text-xs">Marca *</Label>
-                        <Select
-                          value={mPlaca.marca}
-                          onValueChange={(val) => setMPlaca({ ...mPlaca, marca: val })}
-                        >
-                          <SelectTrigger className="bg-secondary/50 border-0 h-8 text-xs">
-                            <SelectValue placeholder="Seleccionar" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {dbBrands.map((b) => (
-                              <SelectItem key={b.id} value={String(b.id)}>
-                                {b.nombre}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <AsyncCombobox value={mPlaca.marca} onValueChange={(val) => setMPlaca({ ...mPlaca, marca: val })} fetcher={fetchMarcas} placeholder="Seleccionar" preloadItems={dbBrands} className="h-8 text-xs" />
                       </div>
                       <div className="space-y-1">
                         <Label className="text-xs">Modelo</Label>
@@ -1377,38 +1332,12 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                   </div>
 
                   {tarjetaGraficaMode === "existing" ? (
-                    <Select value={tarjetaGraficaId} onValueChange={setTarjetaGraficaId}>
-                      <SelectTrigger id="eq-gpu" className="bg-secondary/50 border-0 mt-2">
-                        <SelectValue placeholder="Ninguno" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="_null">Ninguno / Sin GPU</SelectItem>
-                        {filteredGpus.map((g) => (
-                          <SelectItem key={g.id} value={String(g.id)}>
-                            {g.modelo} ({g.vram}) (Stock: {g.uso}) {g.proveedor?.nombre ? `- ${g.proveedor.nombre}` : ""}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <AsyncCombobox value={tarjetaGraficaId} onValueChange={setTarjetaGraficaId} fetcher={fetchGpu} placeholder="Selecciona una tarjeta gráfica (Opcional)" preloadItems={[{id: "_null", marca: "Sin Tarjeta Gráfica", modelo: ""}, ...filteredGpus]} renderItem={(g) => g.id === "_null" ? "Sin Tarjeta Gráfica" : (<div className="flex flex-col"><span>{g.marca?.nombre || g.marca} {g.modelo}</span><span className="text-xs text-muted-foreground">VRAM: {g.vram} - Stock: {g.uso}</span></div>)} renderValue={(g) => g.id === "_null" ? "Sin Tarjeta Gráfica" : `${g.marca?.nombre || g.marca} ${g.modelo}`} />
                   ) : (
                     <div className="grid grid-cols-2 gap-3 mt-3 bg-secondary/10 p-3 rounded-md border border-border/30">
                       <div className="space-y-1">
                         <Label className="text-xs">Marca *</Label>
-                        <Select
-                          value={mTarjetaGrafica.marca}
-                          onValueChange={(val) => setMTarjetaGrafica({ ...mTarjetaGrafica, marca: val })}
-                        >
-                          <SelectTrigger className="bg-secondary/50 border-0 h-8 text-xs">
-                            <SelectValue placeholder="Seleccionar" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {dbBrands.map((b) => (
-                              <SelectItem key={b.id} value={String(b.id)}>
-                                {b.nombre}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <AsyncCombobox value={mTarjetaGrafica.marca} onValueChange={(val) => setMTarjetaGrafica({ ...mTarjetaGrafica, marca: val })} fetcher={fetchMarcas} placeholder="Seleccionar" preloadItems={dbBrands} className="h-8 text-xs" />
                       </div>
                       <div className="space-y-1">
                         <Label className="text-xs">Modelo</Label>
@@ -1461,38 +1390,12 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                   </div>
 
                   {fuenteMode === "existing" ? (
-                    <Select value={fuenteId} onValueChange={setFuenteId}>
-                      <SelectTrigger id="eq-power" className="bg-secondary/50 border-0 mt-1">
-                        <SelectValue placeholder="Ninguno" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="_null">Ninguno / Sin Fuente</SelectItem>
-                        {filteredPowers.map((p) => (
-                          <SelectItem key={p.id} value={String(p.id)}>
-                            {p.modelo} {p.potencia} (Stock: {p.uso}) {p.proveedor?.nombre ? `- ${p.proveedor.nombre}` : ""}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <AsyncCombobox value={fuenteId} onValueChange={setFuenteId} fetcher={fetchFuente} placeholder="Selecciona una fuente de poder" preloadItems={filteredPowers} renderItem={(p) => (<div className="flex flex-col"><span>{p.marca?.nombre || p.marca} {p.modelo}</span><span className="text-xs text-muted-foreground">{p.potencia} - {p.certificacion} - Stock: {p.uso}</span></div>)} renderValue={(p) => `${p.marca?.nombre || p.marca} ${p.modelo}`} />
                   ) : (
                     <div className="grid grid-cols-2 gap-2 mt-2 bg-secondary/10 p-2 rounded border border-border/30 text-xs">
                       <div className="space-y-1">
                         <Label className="text-[10px]">Marca *</Label>
-                        <Select
-                          value={mFuente.marca}
-                          onValueChange={(val) => setMFuente({ ...mFuente, marca: val })}
-                        >
-                          <SelectTrigger className="bg-secondary/50 border-0 h-7 text-[10px]">
-                            <SelectValue placeholder="Marca" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {dbBrands.map((b) => (
-                              <SelectItem key={b.id} value={String(b.id)}>
-                                {b.nombre}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <AsyncCombobox value={mFuente.marca} onValueChange={(val) => setMFuente({ ...mFuente, marca: val })} fetcher={fetchMarcas} placeholder="Marca" preloadItems={dbBrands} className="h-7 text-[10px]" />
                       </div>
                       <div className="space-y-1">
                         <Label className="text-[10px]">Modelo</Label>
@@ -1575,38 +1478,12 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                       </div>
 
                       {ram1Mode === "existing" ? (
-                        <Select value={memoriaRam1Id} onValueChange={setMemoriaRam1Id}>
-                          <SelectTrigger id="ram-1" className="bg-secondary/50 border-0 text-xs h-8">
-                            <SelectValue placeholder="Selecciona RAM para slot 1" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="_null">Ninguno</SelectItem>
-                            {getAvailableRamsForSlot(1).map((r) => (
-                              <SelectItem key={r.id} value={String(r.id)}>
-                                {r.tipo_tecnologia} {r.formato} {r.capacidad} {r.frecuencia || r.velocidad || ""} (Stock: {getCalculatedRamStockForSlot(r, 1)})
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <AsyncCombobox value={memoriaRam1Id} onValueChange={setMemoriaRam1Id} fetcher={fetchRam} placeholder="Selecciona RAM para slot 1" preloadItems={[{id: "_null", marca: "Ninguno", modelo: ""}, ...rams]} filterItem={(r) => r.id === "_null" || getCalculatedRamStockForSlot(r, 1) > 0 || String(r.id) === memoriaRam1Id} renderItem={(r) => r.id === "_null" ? "Ninguno" : (<div className="flex flex-col"><span>{r.marca?.nombre || r.marca} {r.tipo_tecnologia} {r.capacidad} {r.frecuencia}</span><span className="text-xs text-muted-foreground">{r.formato} - Stock disp: {getCalculatedRamStockForSlot(r, 1)}</span></div>)} renderValue={(r) => r.id === "_null" ? "Ninguno" : `${r.marca?.nombre || r.marca} ${r.capacidad} ${r.frecuencia}`} />
                       ) : (
                         <div className="grid grid-cols-2 gap-2 mt-2 bg-secondary/10 p-2 rounded border border-border/20">
                           <div className="space-y-1">
                             <Label className="text-[10px]">Marca *</Label>
-                            <Select
-                              value={mRam1.marca}
-                              onValueChange={(val) => setMRam1({ ...mRam1, marca: val })}
-                            >
-                              <SelectTrigger className="bg-secondary/50 border-0 h-7 text-[10px]">
-                                <SelectValue placeholder="Marca" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {dbBrands.map((b) => (
-                                  <SelectItem key={b.id} value={String(b.id)}>
-                                    {b.nombre}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <AsyncCombobox value={mRam1.marca} onValueChange={(val) => setMRam1({ ...mRam1, marca: val })} fetcher={fetchMarcas} placeholder="Marca" preloadItems={dbBrands} className="h-7 text-[10px]" />
                           </div>
                           <div className="space-y-1">
                             <Label className="text-[10px]">Tecnología</Label>
@@ -1725,38 +1602,12 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                       </div>
 
                       {ram2Mode === "existing" ? (
-                        <Select value={memoriaRam2Id} onValueChange={setMemoriaRam2Id}>
-                          <SelectTrigger id="ram-2" className="bg-secondary/50 border-0 text-xs h-8">
-                            <SelectValue placeholder="Selecciona RAM para slot 2" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="_null">Ninguno</SelectItem>
-                            {getAvailableRamsForSlot(2).map((r) => (
-                              <SelectItem key={r.id} value={String(r.id)}>
-                                {r.tipo_tecnologia} {r.formato} {r.capacidad} {r.frecuencia || r.velocidad || ""} (Stock: {getCalculatedRamStockForSlot(r, 2)})
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <AsyncCombobox value={memoriaRam2Id} onValueChange={setMemoriaRam2Id} fetcher={fetchRam} placeholder="Selecciona RAM para slot 2" preloadItems={[{id: "_null", marca: "Ninguno", modelo: ""}, ...rams]} filterItem={(r) => r.id === "_null" || getCalculatedRamStockForSlot(r, 2) > 0 || String(r.id) === memoriaRam2Id} renderItem={(r) => r.id === "_null" ? "Ninguno" : (<div className="flex flex-col"><span>{r.marca?.nombre || r.marca} {r.tipo_tecnologia} {r.capacidad} {r.frecuencia}</span><span className="text-xs text-muted-foreground">{r.formato} - Stock disp: {getCalculatedRamStockForSlot(r, 2)}</span></div>)} renderValue={(r) => r.id === "_null" ? "Ninguno" : `${r.marca?.nombre || r.marca} ${r.capacidad} ${r.frecuencia}`} />
                       ) : (
                         <div className="grid grid-cols-2 gap-2 mt-2 bg-secondary/10 p-2 rounded border border-border/20">
                           <div className="space-y-1">
                             <Label className="text-[10px]">Marca *</Label>
-                            <Select
-                              value={mRam2.marca}
-                              onValueChange={(val) => setMRam2({ ...mRam2, marca: val })}
-                            >
-                              <SelectTrigger className="bg-secondary/50 border-0 h-7 text-[10px]">
-                                <SelectValue placeholder="Marca" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {dbBrands.map((b) => (
-                                  <SelectItem key={b.id} value={String(b.id)}>
-                                    {b.nombre}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <AsyncCombobox value={mRam2.marca} onValueChange={(val) => setMRam2({ ...mRam2, marca: val })} fetcher={fetchMarcas} placeholder="Marca" preloadItems={dbBrands} className="h-7 text-[10px]" />
                           </div>
                           <div className="space-y-1">
                             <Label className="text-[10px]">Tecnología</Label>
@@ -1875,38 +1726,12 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                       </div>
 
                       {ram3Mode === "existing" ? (
-                        <Select value={memoriaRam3Id} onValueChange={setMemoriaRam3Id}>
-                          <SelectTrigger id="ram-3" className="bg-secondary/50 border-0 text-xs h-8">
-                            <SelectValue placeholder="Selecciona RAM para slot 3" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="_null">Ninguno</SelectItem>
-                            {getAvailableRamsForSlot(3).map((r) => (
-                              <SelectItem key={r.id} value={String(r.id)}>
-                                {r.tipo_tecnologia} {r.formato} {r.capacidad} {r.frecuencia || r.velocidad || ""} (Stock: {getCalculatedRamStockForSlot(r, 3)})
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <AsyncCombobox value={memoriaRam3Id} onValueChange={setMemoriaRam3Id} fetcher={fetchRam} placeholder="Selecciona RAM para slot 3" preloadItems={[{id: "_null", marca: "Ninguno", modelo: ""}, ...rams]} filterItem={(r) => r.id === "_null" || getCalculatedRamStockForSlot(r, 3) > 0 || String(r.id) === memoriaRam3Id} renderItem={(r) => r.id === "_null" ? "Ninguno" : (<div className="flex flex-col"><span>{r.marca?.nombre || r.marca} {r.tipo_tecnologia} {r.capacidad} {r.frecuencia}</span><span className="text-xs text-muted-foreground">{r.formato} - Stock disp: {getCalculatedRamStockForSlot(r, 3)}</span></div>)} renderValue={(r) => r.id === "_null" ? "Ninguno" : `${r.marca?.nombre || r.marca} ${r.capacidad} ${r.frecuencia}`} />
                       ) : (
                         <div className="grid grid-cols-2 gap-2 mt-2 bg-secondary/10 p-2 rounded border border-border/20">
                           <div className="space-y-1">
                             <Label className="text-[10px]">Marca *</Label>
-                            <Select
-                              value={mRam3.marca}
-                              onValueChange={(val) => setMRam3({ ...mRam3, marca: val })}
-                            >
-                              <SelectTrigger className="bg-secondary/50 border-0 h-7 text-[10px]">
-                                <SelectValue placeholder="Marca" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {dbBrands.map((b) => (
-                                  <SelectItem key={b.id} value={String(b.id)}>
-                                    {b.nombre}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <AsyncCombobox value={mRam3.marca} onValueChange={(val) => setMRam3({ ...mRam3, marca: val })} fetcher={fetchMarcas} placeholder="Marca" preloadItems={dbBrands} className="h-7 text-[10px]" />
                           </div>
                           <div className="space-y-1">
                             <Label className="text-[10px]">Tecnología</Label>
@@ -2025,38 +1850,12 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                       </div>
 
                       {ram4Mode === "existing" ? (
-                        <Select value={memoriaRam4Id} onValueChange={setMemoriaRam4Id}>
-                          <SelectTrigger id="ram-4" className="bg-secondary/50 border-0 text-xs h-8">
-                            <SelectValue placeholder="Selecciona RAM para slot 4" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="_null">Ninguno</SelectItem>
-                            {getAvailableRamsForSlot(4).map((r) => (
-                              <SelectItem key={r.id} value={String(r.id)}>
-                                {r.tipo_tecnologia} {r.formato} {r.capacidad} {r.frecuencia || r.velocidad || ""} (Stock: {getCalculatedRamStockForSlot(r, 4)})
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <AsyncCombobox value={memoriaRam4Id} onValueChange={setMemoriaRam4Id} fetcher={fetchRam} placeholder="Selecciona RAM para slot 4" preloadItems={[{id: "_null", marca: "Ninguno", modelo: ""}, ...rams]} filterItem={(r) => r.id === "_null" || getCalculatedRamStockForSlot(r, 4) > 0 || String(r.id) === memoriaRam4Id} renderItem={(r) => r.id === "_null" ? "Ninguno" : (<div className="flex flex-col"><span>{r.marca?.nombre || r.marca} {r.tipo_tecnologia} {r.capacidad} {r.frecuencia}</span><span className="text-xs text-muted-foreground">{r.formato} - Stock disp: {getCalculatedRamStockForSlot(r, 4)}</span></div>)} renderValue={(r) => r.id === "_null" ? "Ninguno" : `${r.marca?.nombre || r.marca} ${r.capacidad} ${r.frecuencia}`} />
                       ) : (
                         <div className="grid grid-cols-2 gap-2 mt-2 bg-secondary/10 p-2 rounded border border-border/20">
                           <div className="space-y-1">
                             <Label className="text-[10px]">Marca *</Label>
-                            <Select
-                              value={mRam4.marca}
-                              onValueChange={(val) => setMRam4({ ...mRam4, marca: val })}
-                            >
-                              <SelectTrigger className="bg-secondary/50 border-0 h-7 text-[10px]">
-                                <SelectValue placeholder="Marca" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {dbBrands.map((b) => (
-                                  <SelectItem key={b.id} value={String(b.id)}>
-                                    {b.nombre}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <AsyncCombobox value={mRam4.marca} onValueChange={(val) => setMRam4({ ...mRam4, marca: val })} fetcher={fetchMarcas} placeholder="Marca" preloadItems={dbBrands} className="h-7 text-[10px]" />
                           </div>
                           <div className="space-y-1">
                             <Label className="text-[10px]">Tecnología</Label>
@@ -2204,19 +2003,7 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           <div className="space-y-1">
                             <Label className="text-[10px]">Disco 1</Label>
-                            <Select value={discoAlma1Id} onValueChange={setDiscoAlma1Id}>
-                              <SelectTrigger id="disk-1" className="bg-secondary/50 border-0 text-xs h-8">
-                                <SelectValue placeholder="Selecciona disco 1" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="_null">Ninguno</SelectItem>
-                                {getAvailableDisksForSlot(1).map((d) => (
-                                  <SelectItem key={d.id} value={String(d.id)}>
-                                    {d.tipo_disco} {d.modelo} {d.capacidad} (Stock: {getCalculatedDiskStockForSlot(d, 1)})
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <AsyncCombobox value={discoAlma1Id} onValueChange={setDiscoAlma1Id} fetcher={fetchDisk} placeholder="Selecciona disco 1" preloadItems={[{id: "_null", marca: "Ninguno", modelo: ""}, ...disks]} filterItem={(d) => d.id === "_null" || getCalculatedDiskStockForSlot(d, 1) > 0 || String(d.id) === discoAlma1Id} renderItem={(d) => d.id === "_null" ? "Ninguno" : (<div className="flex flex-col"><span>{d.marca?.nombre || d.marca} {d.modelo}</span><span className="text-xs text-muted-foreground">{d.tipo_disco} {d.capacidad} - Stock: {getCalculatedDiskStockForSlot(d, 1)}</span></div>)} renderValue={(d) => d.id === "_null" ? "Ninguno" : `${d.marca?.nombre || d.marca} ${d.modelo}`} />
                           </div>
                           <div className="space-y-1">
                             <Label className="text-[10px]">N° Serie Disco 1</Label>
@@ -2233,21 +2020,7 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                         <div className="grid grid-cols-2 gap-2 bg-secondary/10 p-2 rounded border border-border/20">
                           <div className="space-y-1">
                             <Label className="text-[10px]">Marca *</Label>
-                            <Select
-                              value={mDisco1.marca}
-                              onValueChange={(val) => setMDisco1({ ...mDisco1, marca: val })}
-                            >
-                              <SelectTrigger className="bg-secondary/50 border-0 h-7 text-[10px]">
-                                <SelectValue placeholder="Marca" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {dbBrands.map((b) => (
-                                  <SelectItem key={b.id} value={String(b.id)}>
-                                    {b.nombre}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <AsyncCombobox value={mDisco1.marca} onValueChange={(val) => setMDisco1({ ...mDisco1, marca: val })} fetcher={fetchMarcas} placeholder="Marca" preloadItems={dbBrands} className="h-7 text-[10px]" />
                           </div>
                           <div className="space-y-1">
                             <Label className="text-[10px]">Tipo Disco</Label>
@@ -2362,19 +2135,7 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           <div className="space-y-1">
                             <Label className="text-[10px]">Disco 2</Label>
-                            <Select value={discoAlma2Id} onValueChange={setDiscoAlma2Id}>
-                              <SelectTrigger id="disk-2" className="bg-secondary/50 border-0 text-xs h-8">
-                                <SelectValue placeholder="Selecciona disco 2" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="_null">Ninguno</SelectItem>
-                                {getAvailableDisksForSlot(2).map((d) => (
-                                  <SelectItem key={d.id} value={String(d.id)}>
-                                    {d.tipo_disco} {d.modelo} {d.capacidad} (Stock: {getCalculatedDiskStockForSlot(d, 2)})
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <AsyncCombobox value={discoAlma2Id} onValueChange={setDiscoAlma2Id} fetcher={fetchDisk} placeholder="Selecciona disco 2" preloadItems={[{id: "_null", marca: "Ninguno", modelo: ""}, ...disks]} filterItem={(d) => d.id === "_null" || getCalculatedDiskStockForSlot(d, 2) > 0 || String(d.id) === discoAlma2Id} renderItem={(d) => d.id === "_null" ? "Ninguno" : (<div className="flex flex-col"><span>{d.marca?.nombre || d.marca} {d.modelo}</span><span className="text-xs text-muted-foreground">{d.tipo_disco} {d.capacidad} - Stock: {getCalculatedDiskStockForSlot(d, 2)}</span></div>)} renderValue={(d) => d.id === "_null" ? "Ninguno" : `${d.marca?.nombre || d.marca} ${d.modelo}`} />
                           </div>
                           <div className="space-y-1">
                             <Label className="text-[10px]">N° Serie Disco 2</Label>
@@ -2391,21 +2152,7 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                         <div className="grid grid-cols-2 gap-2 bg-secondary/10 p-2 rounded border border-border/20">
                           <div className="space-y-1">
                             <Label className="text-[10px]">Marca *</Label>
-                            <Select
-                              value={mDisco2.marca}
-                              onValueChange={(val) => setMDisco2({ ...mDisco2, marca: val })}
-                            >
-                              <SelectTrigger className="bg-secondary/50 border-0 h-7 text-[10px]">
-                                <SelectValue placeholder="Marca" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {dbBrands.map((b) => (
-                                  <SelectItem key={b.id} value={String(b.id)}>
-                                    {b.nombre}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <AsyncCombobox value={mDisco2.marca} onValueChange={(val) => setMDisco2({ ...mDisco2, marca: val })} fetcher={fetchMarcas} placeholder="Marca" preloadItems={dbBrands} className="h-7 text-[10px]" />
                           </div>
                           <div className="space-y-1">
                             <Label className="text-[10px]">Tipo Disco</Label>
@@ -2520,19 +2267,7 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           <div className="space-y-1">
                             <Label className="text-[10px]">Disco 3</Label>
-                            <Select value={discoAlma3Id} onValueChange={setDiscoAlma3Id}>
-                              <SelectTrigger id="disk-3" className="bg-secondary/50 border-0 text-xs h-8">
-                                <SelectValue placeholder="Selecciona disco 3" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="_null">Ninguno</SelectItem>
-                                {getAvailableDisksForSlot(3).map((d) => (
-                                  <SelectItem key={d.id} value={String(d.id)}>
-                                    {d.tipo_disco} {d.modelo} {d.capacidad} (Stock: {getCalculatedDiskStockForSlot(d, 3)})
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <AsyncCombobox value={discoAlma3Id} onValueChange={setDiscoAlma3Id} fetcher={fetchDisk} placeholder="Selecciona disco 3" preloadItems={[{id: "_null", marca: "Ninguno", modelo: ""}, ...disks]} filterItem={(d) => d.id === "_null" || getCalculatedDiskStockForSlot(d, 3) > 0 || String(d.id) === discoAlma3Id} renderItem={(d) => d.id === "_null" ? "Ninguno" : (<div className="flex flex-col"><span>{d.marca?.nombre || d.marca} {d.modelo}</span><span className="text-xs text-muted-foreground">{d.tipo_disco} {d.capacidad} - Stock: {getCalculatedDiskStockForSlot(d, 3)}</span></div>)} renderValue={(d) => d.id === "_null" ? "Ninguno" : `${d.marca?.nombre || d.marca} ${d.modelo}`} />
                           </div>
                           <div className="space-y-1">
                             <Label className="text-[10px]">N° Serie Disco 3</Label>
@@ -2549,21 +2284,7 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                         <div className="grid grid-cols-2 gap-2 bg-secondary/10 p-2 rounded border border-border/20">
                           <div className="space-y-1">
                             <Label className="text-[10px]">Marca *</Label>
-                            <Select
-                              value={mDisco3.marca}
-                              onValueChange={(val) => setMDisco3({ ...mDisco3, marca: val })}
-                            >
-                              <SelectTrigger className="bg-secondary/50 border-0 h-7 text-[10px]">
-                                <SelectValue placeholder="Marca" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {dbBrands.map((b) => (
-                                  <SelectItem key={b.id} value={String(b.id)}>
-                                    {b.nombre}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <AsyncCombobox value={mDisco3.marca} onValueChange={(val) => setMDisco3({ ...mDisco3, marca: val })} fetcher={fetchMarcas} placeholder="Marca" preloadItems={dbBrands} className="h-7 text-[10px]" />
                           </div>
                           <div className="space-y-1">
                             <Label className="text-[10px]">Tipo Disco</Label>
@@ -2723,38 +2444,12 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
 
                 <div className="space-y-2">
                   <Label htmlFor="eq-key-win">Licencia Windows</Label>
-                  <Select value={keyWinId} onValueChange={setKeyWinId}>
-                    <SelectTrigger id="eq-key-win" className="bg-secondary/50 border-0">
-                      <SelectValue placeholder="Selecciona Licencia Windows" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="_null">Ninguna</SelectItem>
-                      <SelectItem value="clie">Licencia de marca</SelectItem>
-                      {filteredWinLicenses.map((lic) => (
-                        <SelectItem key={lic.id} value={String(lic.id)}>
-                          {lic.nombre} ({lic.key})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <AsyncCombobox value={keyWinId} onValueChange={setKeyWinId} fetcher={fetchWinLic} placeholder="Selecciona licencia Windows" preloadItems={[{id: "_null", version: "Sin Licencia Windows", key: ""}, {id: "clie", version: "Licencia de marca", key: ""}, ...filteredWinLicenses]} renderItem={(item) => `${item.version} ${item.key ? "- " + item.key : ""} ${item.activa === false ? "(Inactiva)" : ""}`} renderValue={(item) => `${item.version} ${item.key ? "- " + item.key : ""}`} />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="eq-key-office">Licencia Office</Label>
-                  <Select value={keyOfficeId} onValueChange={setKeyOfficeId}>
-                    <SelectTrigger id="eq-key-office" className="bg-secondary/50 border-0">
-                      <SelectValue placeholder="Selecciona Licencia Office" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="_null">Ninguna</SelectItem>
-                      <SelectItem value="marca">Cliente ya posee una</SelectItem>
-                      {filteredOfficeLicenses.map((lic) => (
-                        <SelectItem key={lic.id} value={String(lic.id)}>
-                          {lic.nombre} ({lic.key}) {lic.uso !== undefined ? `[Usos: ${lic.uso}]` : ''}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <AsyncCombobox value={keyOfficeId} onValueChange={setKeyOfficeId} fetcher={fetchOfficeLic} placeholder="Selecciona licencia Office" preloadItems={[{id: "_null", version: "Sin Licencia Office", key: ""}, {id: "marca", version: "Cliente ya posee una", key: ""}, ...filteredOfficeLicenses]} renderItem={(item) => `${item.version} ${item.key ? "- " + item.key : ""} ${item.activa === false ? "(Inactiva)" : ""}`} renderValue={(item) => `${item.version} ${item.key ? "- " + item.key : ""}`} />
                 </div>
               </div>
 

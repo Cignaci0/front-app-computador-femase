@@ -4,11 +4,20 @@ const API_URL = "http://localhost:3000/modelo";
  * Obtiene la lista de modelos paginados desde la API.
  * @param {number} page - Número de página.
  * @param {number} limit - Límite de elementos por página.
+ * @param {string} [search] - Término de búsqueda.
+ * @param {number|null} [marcaId] - Filtro opcional por ID de marca.
  * @returns {Promise<{ data: Array<{ id: number, nombre: string, marca?: { id: number, nombre: string } }>, meta: any }>}
  */
-export async function getModelos(page = 1, limit = 6) {
+export async function getModelos(page = 1, limit = 6, search = "", marcaId = null) {
   try {
-    const response = await fetch(`${API_URL}?page=${page}&limit=${limit}`);
+    let url = `${API_URL}?page=${page}&limit=${limit}`;
+    if (search) {
+      url += `&search=${encodeURIComponent(search)}`;
+    }
+    if (marcaId) {
+      url += `&marca=${marcaId}`;
+    }
+    const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`Error al obtener modelos: ${response.statusText}`);
     }

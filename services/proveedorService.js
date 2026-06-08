@@ -6,9 +6,13 @@ const API_URL = "http://localhost:3000/proveedor";
  * @param {number} limit - Límite de elementos por página.
  * @returns {Promise<{ data: Array<{ id: number, nombre: string }>, meta: any }>}
  */
-export async function getProveedores(page = 1, limit = 1000) {
+export async function getProveedores(page = 1, limit = 10, search = "") {
   try {
-    const response = await fetch(`${API_URL}?page=${page}&limit=${limit}`);
+    let url = `${API_URL}?page=${page}&limit=${limit}`;
+    if (search) {
+      url += `&search=${encodeURIComponent(search)}`;
+    }
+    const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`Error al obtener proveedores: ${response.statusText}`);
     }

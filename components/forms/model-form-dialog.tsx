@@ -12,13 +12,9 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { AsyncCombobox } from "@/components/ui/async-combobox"
+import { useCallback } from "react"
+import { getMarcas } from "@/services/marcaService"
 
 interface ModelFormDialogProps {
   open: boolean
@@ -32,15 +28,13 @@ export function ModelFormDialog({ open, onOpenChange, modelToEdit, onSave }: Mod
   const [selectedBrand, setSelectedBrand] = useState("")
   const [brands, setBrands] = useState<{ id: number; name: string }[]>([])
 
+  const fetchMarcas = useCallback((s: string) => getMarcas(1, 10, s).then(r => r.data || []), [])
+
   useEffect(() => {
     if (open) {
-      const storedBrands = localStorage.getItem("femase_marcas")
-      if (storedBrands) {
-        setBrands(JSON.parse(storedBrands))
-      }
-
       if (modelToEdit) {
         setName(modelToEdit.name)
+        // Ensure we load the brand correctly for the select
         setSelectedBrand(modelToEdit.brand)
       } else {
         setName("")
@@ -79,23 +73,17 @@ export function ModelFormDialog({ open, onOpenChange, modelToEdit, onSave }: Mod
             </div>
             <div className="space-y-2">
               <Label htmlFor="brand-select">Marca</Label>
-              <Select value={selectedBrand} onValueChange={setSelectedBrand}>
-                <SelectTrigger id="brand-select" className="bg-secondary/50 border-0">
-                  <SelectValue placeholder="Selecciona una marca" />
-                </SelectTrigger>
-                <SelectContent>
-                  {brands.map((brand) => (
-                    <SelectItem key={brand.id} value={brand.name}>
-                      {brand.name}
-                    </SelectItem>
-                  ))}
-                  {brands.length === 0 && (
-                    <SelectItem value="_empty" disabled>
-                      No hay marcas creadas
-                    </SelectItem>
-                  )}
-                </SelectContent>
-              </Select>
+              <AsyncCombobox 
+                value={selectedBrand} 
+                onValueChange={setSelectedBrand} 
+                fetcher={fetchMarcas} 
+                placeholder="Selecciona una marca" 
+                preloadItems={modelToEdit && modelToEdit.brand ? [{ id: modelToEdit.brand, nombre: modelToEdit.brand }] : []}
+                labelKey="nombre"
+                valueKey="id"
+                renderValue={(item) => item.nombre}
+                renderItem={(item) => item.nombre}
+              />
             </div>
           </div>
           <DialogFooter>

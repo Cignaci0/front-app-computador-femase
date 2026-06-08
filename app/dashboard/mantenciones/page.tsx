@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Plus, Search, Filter, MoreHorizontal, Pencil, Trash2, Calendar, Monitor, Laptop } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -35,12 +35,22 @@ import {
   deleteMantencion,
 } from "@/services/mantencionService"
 import { MantencionFormDialog } from "@/components/forms/mantencion-form-dialog"
+import { MantencionHistoryDialog } from "@/components/dialogs/mantencion-history-dialog"
+import { AsyncCombobox } from "@/components/ui/async-combobox"
+import { getComputadores } from "@/services/computadorService"
 
 
 
 export default function MantencionesPage() {
   const [data, setData] = useState<any[]>([])
   const [meta, setMeta] = useState({ total: 0, page: 1, lastPage: 1, limit: 10 })
+    const [historyDialogOpen, setHistoryDialogOpen] = useState(false)
+  const [historyComputadorId, setHistoryComputadorId] = useState<string | null>(null)
+  
+  const fetchComputadores = useCallback((search: string) => {
+    return getComputadores(1, 15, search).then(res => res.data || [])
+  }, [])
+
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState("")
   const [searchDebounced, setSearchDebounced] = useState("")
@@ -149,7 +159,17 @@ export default function MantencionesPage() {
           <p className="text-muted-foreground">
             Gestión de mantenciones programadas y correctivas de computadores y equipos
           </p>
-        </div>
+          <MantencionHistoryDialog
+        open={historyDialogOpen}
+        onOpenChange={(open) => {
+          setHistoryDialogOpen(open)
+          if (!open) {
+            setHistoryComputadorId(null) // clear selection when closing
+          }
+        }}
+        computadorId={historyComputadorId}
+      />
+    </div>
         <Button onClick={() => {
           setMantencionToEdit(null)
           setDialogOpen(true)
@@ -179,23 +199,37 @@ export default function MantencionesPage() {
 
       {/* Table */}
       <Card className="bg-card border-border">
-        <CardHeader className="pb-0">
+        <CardHeader className="pb-3 flex flex-row items-center justify-between">
           <CardTitle className="text-base font-medium">
             {isLoading ? "Cargando..." : `${data.length} mantenciones encontradas`}
           </CardTitle>
+          <div className="w-[300px]">
+            <AsyncCombobox 
+              value={historyComputadorId || ""} 
+              onValueChange={(val) => {
+                if (val) {
+                  setHistoryComputadorId(val)
+                  setHistoryDialogOpen(true)
+                }
+              }} 
+              fetcher={fetchComputadores} 
+              placeholder="Historial de computador..." 
+              renderItem={(c) => `${c.nombre_equipo} ${c.usuario ? '(' + c.usuario + ')' : ''}`} 
+              renderValue={(c) => `${c.nombre_equipo} ${c.usuario ? '(' + c.usuario + ')' : ''}`} 
+              className="h-9" 
+            />
+          </div>
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow className="border-border hover:bg-transparent">
-                  <TableHead className="text-muted-foreground font-medium">ID</TableHead>
                   <TableHead className="text-muted-foreground font-medium">Asociado a</TableHead>
                   <TableHead className="text-muted-foreground font-medium">Cliente</TableHead>
                   <TableHead className="text-muted-foreground font-medium">Encargado</TableHead>
                   <TableHead className="text-muted-foreground font-medium max-w-[250px]">Descripción</TableHead>
                   <TableHead className="text-muted-foreground font-medium">Fecha Mantención</TableHead>
-                  <TableHead className="text-muted-foreground font-medium">Última Mantención</TableHead>
                   <TableHead className="text-muted-foreground font-medium w-[50px]"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -208,7 +242,6 @@ export default function MantencionesPage() {
                   
                   return (
                     <TableRow key={item.id} className="border-border hover:bg-secondary/10">
-                      <TableCell className="font-mono text-sm font-semibold">#{item.id}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           {isComp ? (
@@ -242,12 +275,6 @@ export default function MantencionesPage() {
                         <div className="flex items-center gap-1.5">
                           <Calendar className="h-3.5 w-3.5" />
                           {formatDate(item.fecha_mantencion)}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground text-xs font-medium">
-                        <div className="flex items-center gap-1.5">
-                          <Calendar className="h-3.5 w-3.5" />
-                          {formatDate(item.fecha_ultima_mantencion)}
                         </div>
                       </TableCell>
                       <TableCell>

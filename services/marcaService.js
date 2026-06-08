@@ -6,9 +6,13 @@ const API_URL = "http://localhost:3000/marca";
  * @param {number} limit - Límite de elementos por página.
  * @returns {Promise<{ data: Array<{ id: number, nombre: string }>, meta: any }>}
  */
-export async function getMarcas(page = 1, limit = 6) {
+export async function getMarcas(page = 1, limit = 6, search = "") {
   try {
-    const response = await fetch(`${API_URL}?page=${page}&limit=${limit}`);
+    let url = `${API_URL}?page=${page}&limit=${limit}`;
+    if (search) {
+      url += `&search=${encodeURIComponent(search)}`;
+    }
+    const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`Error al obtener marcas: ${response.statusText}`);
     }

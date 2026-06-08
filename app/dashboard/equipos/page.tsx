@@ -119,8 +119,7 @@ export default function EquiposPage() {
         return <Badge className="bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">Activo</Badge>
       case "MANTENIMIENTO":
         return <Badge className="bg-amber-500/10 text-amber-500 border border-amber-500/20">Mantención</Badge>
-      case "BODEGA":
-        return <Badge className="bg-blue-500/10 text-blue-500 border border-blue-500/20">Bodega</Badge>
+
       case "BAJA":
         return <Badge className="bg-rose-500/10 text-rose-500 border border-rose-500/20">Baja</Badge>
       default:
@@ -170,6 +169,7 @@ export default function EquiposPage() {
               <TableHead className="font-medium">N° Serie</TableHead>
               <TableHead className="font-medium">Marca / Modelo</TableHead>
               <TableHead className="font-medium">Tipo</TableHead>
+              <TableHead className="font-medium">Garantía</TableHead>
               <TableHead className="font-medium">Estado</TableHead>
               <TableHead className="font-medium">Cliente</TableHead>
               <TableHead className="font-medium w-[80px]"></TableHead>
@@ -190,6 +190,26 @@ export default function EquiposPage() {
                     <span>{item.tipo_equipo?.nombre || "N/A"}</span>
                     {item.pulgadas && <span className="text-xs text-muted-foreground">Monitor {item.pulgadas}"</span>}
                   </div>
+                </TableCell>
+                <TableCell className="text-muted-foreground text-sm">
+                  <div>{item.garantia ? `${item.garantia} meses` : "N/A"}</div>
+                  {item.fe_exp_garantia && (
+                    <div className="flex flex-col gap-1 mt-1">
+                      <span className="text-xs text-muted-foreground/70">
+                        Vence: {formatDate(item.fe_exp_garantia)}
+                      </span>
+                      {item.dias_restantes_garantia !== undefined && item.dias_restantes_garantia !== null && (
+                        <Badge 
+                          variant={item.dias_restantes_garantia > 0 ? "outline" : "destructive"} 
+                          className={`w-fit text-[10px] px-1.5 py-0 ${item.dias_restantes_garantia > 0 ? "text-emerald-500 border-emerald-500/30 bg-emerald-500/10" : ""}`}
+                        >
+                          {item.dias_restantes_garantia > 0 
+                            ? `${item.dias_restantes_garantia} días restantes`
+                            : "Garantía vencida"}
+                        </Badge>
+                      )}
+                    </div>
+                  )}
                 </TableCell>
                 <TableCell>{getStatusBadge(item.estado)}</TableCell>
                 <TableCell>{item.cliente?.nombre || "Sin Asignar"}</TableCell>
@@ -235,7 +255,7 @@ export default function EquiposPage() {
             ))}
             {!isLoading && data.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                   No se encontraron equipos generales registrados.
                 </TableCell>
               </TableRow>

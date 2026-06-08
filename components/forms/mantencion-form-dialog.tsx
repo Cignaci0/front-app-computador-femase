@@ -20,9 +20,15 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
+import { Switch } from "@/components/ui/switch"
 import { getComputadores } from "@/services/computadorService"
 import { getEquipos } from "@/services/equipoService"
-import { getClientes } from "@/services/clienteService"
+import { getClientes, getActivosPorCliente } from "@/services/clienteService"
+import { getEncargadosPorComputador } from "@/services/mantencionService"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
+import { Check, ChevronsUpDown } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface MantencionFormDialogProps {
   open: boolean
@@ -42,8 +48,10 @@ export function MantencionFormDialog({
   const [computadorId, setComputadorId] = useState("")
   const [equipoId, setEquipoId] = useState("")
   const [encargado, setEncargado] = useState("")
+  const [responsable, setResponsable] = useState("")
   const [clienteId, setClienteId] = useState("")
   const [descripcion, setDescripcion] = useState("")
+  const [upgrade, setUpgrade] = useState(false)
   const [fechaMantencion, setFechaMantencion] = useState("")
   const [fechaUltimaMantencion, setFechaUltimaMantencion] = useState("")
 
@@ -51,22 +59,23 @@ export function MantencionFormDialog({
   const [dbComputadores, setDbComputadores] = useState<any[]>([])
   const [dbEquipos, setDbEquipos] = useState<any[]>([])
   const [dbClientes, setDbClientes] = useState<any[]>([])
+  const [openCombobox, setOpenCombobox] = useState(false)
+  const [searchClient, setSearchClient] = useState("")
+
+  // Fetch clients based on search query
+  useEffect(() => {
+    if (open) {
+      const handler = setTimeout(() => {
+        getClientes(1, 10, searchClient)
+          .then((res) => setDbClientes(res.data || []))
+          .catch((err) => console.error("Error loading clients", err))
+      }, 300)
+      return () => clearTimeout(handler)
+    }
+  }, [open, searchClient])
 
   useEffect(() => {
     if (open) {
-      // Load option lists
-      getComputadores(1, 1000)
-        .then((res) => setDbComputadores(res.data || []))
-        .catch((err) => console.error("Error loading computers", err))
-
-      getEquipos(1, 1000)
-        .then((res) => setDbEquipos(res.data || []))
-        .catch((err) => console.error("Error loading equipment", err))
-
-      getClientes(1, 1000)
-        .then((res) => setDbClientes(res.data || []))
-        .catch((err) => console.error("Error loading clients", err))
-
       // Pre-populate form if editing
       if (mantencionToEdit) {
         if (mantencionToEdit.computador) {
@@ -84,6 +93,7 @@ export function MantencionFormDialog({
         }
 
         setEncargado(mantencionToEdit.encargado || "")
+        setResponsable(mantencionToEdit.responsable || "")
         setClienteId(
           mantencionToEdit.cliente?.id
             ? String(mantencionToEdit.cliente.id)
@@ -92,6 +102,7 @@ export function MantencionFormDialog({
             : ""
         )
         setDescripcion(mantencionToEdit.descripcion || "")
+        setUpgrade(mantencionToEdit.upgrade || false)
         setFechaMantencion(mantencionToEdit.fecha_mantencion ? mantencionToEdit.fecha_mantencion.substring(0, 10) : "")
         setFechaUltimaMantencion(
           mantencionToEdit.fecha_ultima_mantencion
@@ -104,29 +115,70 @@ export function MantencionFormDialog({
         setComputadorId("")
         setEquipoId("")
         setEncargado("")
+        setResponsable("")
         setClienteId("")
         setDescripcion("")
+        setUpgrade(false)
         
         // Default dates to today if creating
         const today = new Date().toISOString().substring(0, 10)
         setFechaMantencion(today)
         setFechaUltimaMantencion("")
       }
+    } else {
+      setAssociationType("computador")
+      setComputadorId("")
+      setEquipoId("")
+      setEncargado("")
+      setResponsable("")
+      setClienteId("")
+      setDescripcion("")
+      setFechaUltimaMantencion("")
+      setDbComputadores([])
+      setDbEquipos([])
     }
   }, [open, mantencionToEdit])
 
-  // Update fechaUltimaMantencion based on selected asset (if creating new)
+  useEffect(() => {
+    if (!open) return;
+    
+    if (clienteId && clienteId !== "_null") {
+      getActivosPorCliente(clienteId)
+        .then((res) => {
+          const items = res.data || [];
+          const comps = items.filter((item: any) => item.computador).map((item: any) => ({
+            ...item.computador,
+            _encargado: item.encargado
+          }));
+          const eqs = items.filter((item: any) => item.equipo).map((item: any) => ({
+            ...item.equipo,
+            _encargado: item.encargado
+          }));
+          setDbComputadores(comps);
+          setDbEquipos(eqs);
+        })
+        .catch((err) => console.error("Error loading assets for client", err));
+    } else {
+      setDbComputadores([]);
+      setDbEquipos([]);
+    }
+  }, [open, clienteId]);
+
+  // Update fechaUltimaMantencion and responsable based on selected asset (if creating new)
   useEffect(() => {
     if (!open || mantencionToEdit) return;
 
     if (associationType === "computador" && computadorId && computadorId !== "_null") {
       const comp = dbComputadores.find((c) => String(c.id) === computadorId);
       setFechaUltimaMantencion(comp?.fecha_ultima_mantencion ? comp.fecha_ultima_mantencion.substring(0, 10) : "");
+      if (comp?._encargado) setResponsable(comp._encargado);
     } else if (associationType === "equipo" && equipoId && equipoId !== "_null") {
       const eq = dbEquipos.find((e) => String(e.id) === equipoId);
       setFechaUltimaMantencion(eq?.fecha_ultima_mantencion ? eq.fecha_ultima_mantencion.substring(0, 10) : "");
+      if (eq?._encargado) setResponsable(eq._encargado);
     } else {
       setFechaUltimaMantencion("");
+      setResponsable("");
     }
   }, [computadorId, equipoId, associationType, dbComputadores, dbEquipos, mantencionToEdit, open]);
 
@@ -137,7 +189,9 @@ export function MantencionFormDialog({
     const payload = {
       fecha_mantencion: fechaMantencion,
       encargado,
+      responsable,
       descripcion,
+      upgrade,
       computador:
         associationType === "computador" && computadorId && computadorId !== "_null"
           ? Number(computadorId)
@@ -161,6 +215,7 @@ export function MantencionFormDialog({
     return (
       isAssetSelected &&
       !!encargado &&
+      !!responsable &&
       !!descripcion &&
       !!fechaMantencion
     )
@@ -185,26 +240,55 @@ export function MantencionFormDialog({
             {/* Cliente */}
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="m-cliente">Cliente *</Label>
-              <Select 
-                value={clienteId} 
-                onValueChange={(val) => {
-                  setClienteId(val)
-                  setComputadorId("")
-                  setEquipoId("")
-                }}
-              >
-                <SelectTrigger id="m-cliente" className="bg-secondary/50 border-0">
-                  <SelectValue placeholder="Selecciona un cliente primero" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="_null">Sin Asignar (Interno / Bodega)</SelectItem>
-                  {dbClientes.map((c) => (
-                    <SelectItem key={c.id} value={String(c.id)}>
-                      {c.nombre}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover open={openCombobox} onOpenChange={setOpenCombobox}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={openCombobox}
+                    className="w-full justify-between bg-secondary/50 border-0"
+                  >
+                    {clienteId && clienteId !== "_null"
+                      ? dbClientes.find((c) => String(c.id) === clienteId)?.nombre || "Cliente seleccionado"
+                      : "Selecciona un cliente..."}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+                  <Command shouldFilter={false}>
+                    <CommandInput 
+                      placeholder="Buscar cliente..." 
+                      value={searchClient}
+                      onValueChange={setSearchClient}
+                    />
+                    <CommandList>
+                      <CommandEmpty>No se encontraron clientes.</CommandEmpty>
+                      <CommandGroup>
+                        {dbClientes.map((c) => (
+                          <CommandItem
+                            key={c.id}
+                            value={String(c.id)}
+                            onSelect={(currentValue) => {
+                              setClienteId(currentValue)
+                              setComputadorId("")
+                              setEquipoId("")
+                              setOpenCombobox(false)
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                clienteId === String(c.id) ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            {c.nombre}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
 
             {/* Association Type Selector */}
@@ -246,13 +330,13 @@ export function MantencionFormDialog({
                   </SelectTrigger>
                   <SelectContent>
                     {dbComputadores
-                      .filter(comp => clienteId === "_null" ? !comp.cliente : String(comp.cliente?.id) === clienteId)
+                      .filter(comp => String(comp.cliente?.id) === clienteId)
                       .map((comp) => (
                       <SelectItem key={comp.id} value={String(comp.id)}>
                         {comp.nombre_equipo || "Sin Nombre"} - BIOS: {comp.n_serie_bios || "N/A"}
                       </SelectItem>
                     ))}
-                    {dbComputadores.filter(comp => clienteId === "_null" ? !comp.cliente : String(comp.cliente?.id) === clienteId).length === 0 && (
+                    {dbComputadores.filter(comp => String(comp.cliente?.id) === clienteId).length === 0 && (
                       <SelectItem value="empty" disabled>No hay computadores para este cliente</SelectItem>
                     )}
                   </SelectContent>
@@ -270,7 +354,7 @@ export function MantencionFormDialog({
                   </SelectTrigger>
                   <SelectContent>
                     {dbEquipos
-                      .filter(eq => clienteId === "_null" ? !eq.cliente : String(eq.cliente?.id) === clienteId)
+                      .filter(eq => String(eq.cliente?.id) === clienteId)
                       .map((eq) => (
                       <SelectItem key={eq.id} value={String(eq.id)}>
                         {eq.tipo_equipo?.nombre || "Equipo"}
@@ -278,7 +362,7 @@ export function MantencionFormDialog({
                         {eq.n_serie ? ` - S/N: ${eq.n_serie}` : " - S/N: N/A"}
                       </SelectItem>
                     ))}
-                    {dbEquipos.filter(eq => clienteId === "_null" ? !eq.cliente : String(eq.cliente?.id) === clienteId).length === 0 && (
+                    {dbEquipos.filter(eq => String(eq.cliente?.id) === clienteId).length === 0 && (
                       <SelectItem value="empty" disabled>No hay equipos para este cliente</SelectItem>
                     )}
                   </SelectContent>
@@ -322,9 +406,36 @@ export function MantencionFormDialog({
               />
             </div>
 
+            {/* Responsable */}
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="m-responsable">Responsable *</Label>
+              <Input
+                id="m-responsable"
+                placeholder="Nombre del responsable del equipo"
+                className="bg-secondary/50 border-0"
+                value={responsable}
+                onChange={(e) => setResponsable(e.target.value)}
+              />
+            </div>
 
+            
+            {/* Upgrade Switch */}
+            <div className="space-y-2 md:col-span-2 flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm bg-secondary/20">
+              <div className="space-y-0.5">
+                <Label htmlFor="m-upgrade">¿Es un Upgrade?</Label>
+                <div className="text-[13px] text-muted-foreground">
+                  Marcar si esta mantención incluye un upgrade de hardware.
+                </div>
+              </div>
+              <Switch
+                id="m-upgrade"
+                checked={upgrade}
+                onCheckedChange={setUpgrade}
+              />
+            </div>
 
             {/* Descripción */}
+
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="m-descripcion">Descripción / Observación *</Label>
               <Textarea
