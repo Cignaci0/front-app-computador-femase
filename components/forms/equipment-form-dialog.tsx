@@ -764,7 +764,7 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!tipoDeEquipoId || !marcaId || !modeloId || !estado || (!vendidoFemase && !vencimientoGarantia)) return
+    if (!tipoDeEquipoId || !marcaId || !modeloId || !estado || (vendidoFemase && !vencimientoGarantia)) return
 
     onSave({
       tipo_de_equipo: Number(tipoDeEquipoId),
@@ -772,7 +772,7 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
       modelo: Number(modeloId),
       estado,
       vendido_femase: vendidoFemase,
-      vencimiento_garantia: vendidoFemase ? null : Number(vencimientoGarantia),
+      vencimiento_garantia: !vendidoFemase ? null : Number(vencimientoGarantia),
       cliente: clienteId ? Number(clienteId) : null,
       usuario: usuario || "",
       nombre_equipo: nombreEquipo || "",
@@ -962,7 +962,7 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
   }
 
   const isFormValid = () => {
-    const basicValid = !!tipoDeEquipoId && !!marcaId && !!modeloId && !!estado && (vendidoFemase || !!vencimientoGarantia)
+    const basicValid = !!tipoDeEquipoId && !!marcaId && !!modeloId && !!estado && (!vendidoFemase || !!vencimientoGarantia)
     
     const hasMac = !!macEthernet1?.trim() || !!macEthernet2?.trim() || !!macWifi?.trim()
     const hasBios = !!nSerieBios?.trim()
@@ -1072,10 +1072,10 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="eq-warranty">Garantía (Meses) {vendidoFemase ? "" : "*"}</Label>
-                  <Select value={vencimientoGarantia} onValueChange={setVencimientoGarantia} disabled={vendidoFemase}>
+                  <Label htmlFor="eq-warranty">Garantía (Meses) {vendidoFemase ? "*" : ""}</Label>
+                  <Select value={vencimientoGarantia} onValueChange={setVencimientoGarantia} disabled={!vendidoFemase}>
                     <SelectTrigger id="eq-warranty" className="bg-secondary/50 border-0">
-                      <SelectValue placeholder={vendidoFemase ? "N/A" : "Selecciona"} />
+                      <SelectValue placeholder={!vendidoFemase ? "N/A" : "Selecciona"} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="3">3 meses</SelectItem>
@@ -1084,7 +1084,7 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                       <SelectItem value="18">18 meses</SelectItem>
                     </SelectContent>
                   </Select>
-                  {!vendidoFemase && equipmentToEdit?.vencimiento_garantia_fecha && (
+                  {vendidoFemase && equipmentToEdit?.vencimiento_garantia_fecha && (
                     <p className="text-xs text-muted-foreground mt-1">
                       Vence el: {new Date(equipmentToEdit.vencimiento_garantia_fecha).toLocaleDateString("es-CL", { timeZone: "UTC" })}
                     </p>

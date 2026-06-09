@@ -93,6 +93,11 @@ const navItems = [
     icon: Wrench,
   },
   {
+    title: "Agenda Mantenciones",
+    href: "/dashboard/gestion-mantenciones",
+    icon: Wrench,
+  },
+  {
     title: "Reportes",
     href: "/dashboard/reportes",
     icon: BarChart3,

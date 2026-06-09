@@ -123,3 +123,47 @@ export async function getMantencionesComputador(id, page = 1, limit = 10) {
     throw error;
   }
 }
+
+export async function getPendientesComercial() {
+  const res = await fetch(`${BASE_URL}/pendientes/comercial`);
+  if (!res.ok) throw new Error("Error obteniendo pendientes comerciales");
+  return res.json();
+}
+
+export async function getPendientesTecnico() {
+  const res = await fetch(`${BASE_URL}/pendientes/tecnico`);
+  if (!res.ok) throw new Error("Error obteniendo pendientes técnicos");
+  return res.json();
+}
+
+export async function aceptarComercial(tipo, id) {
+  const res = await fetch(`${BASE_URL}/comercial/aceptar/${tipo}/${id}`, { method: 'PATCH' });
+  if (!res.ok) throw new Error("Error al aceptar");
+  return safeParseResponse(res);
+}
+
+export async function aplazarComercial(tipo, id, fecha_proxima_mantencion) {
+  const res = await fetch(`${BASE_URL}/comercial/aplazar/${tipo}/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ fecha_proxima_mantencion })
+  });
+  if (!res.ok) throw new Error("Error al aplazar");
+  return safeParseResponse(res);
+}
+
+export async function rechazarComercial(tipo, id) {
+  const res = await fetch(`${BASE_URL}/comercial/rechazar/${tipo}/${id}`, { method: 'PATCH' });
+  if (!res.ok) throw new Error("Error al rechazar");
+  return safeParseResponse(res);
+}
+
+export async function completarTecnico(tipo, id, data) {
+  const res = await fetch(`${BASE_URL}/tecnico/completar/${tipo}/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) throw new Error("Error al completar técnico");
+  return safeParseResponse(res);
+}

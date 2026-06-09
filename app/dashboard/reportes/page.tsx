@@ -180,17 +180,7 @@ export default function ReportesPage() {
                 {report.description}
               </p>
               <div className="flex flex-col gap-2">
-                <div className="flex gap-2">
-                  <Button 
-                    variant="secondary" 
-                    size="sm" 
-                    className="flex-1"
-                    onClick={() => downloadReport(report.endpoint, selectedCliente)}
-                  >
-                    <Printer className="mr-2 h-4 w-4" />
-                    Imprimir
-                  </Button>
-                  
+                <div className="flex gap-2"> 
                   <Button 
                     variant="outline" 
                     size="sm" 
@@ -201,15 +191,7 @@ export default function ReportesPage() {
                     Descargar PDF
                   </Button>
                 </div>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="w-full"
-                  disabled
-                >
-                  <Download className="mr-2 h-4 w-4" />
-                  Descargar Excel (Próximamente)
-                </Button>
+          
               </div>
             </CardContent>
           </Card>
