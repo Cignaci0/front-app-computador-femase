@@ -23,7 +23,8 @@ import { Switch } from "@/components/ui/switch"
 import { AsyncCombobox } from "@/components/ui/async-combobox"
 import { useCallback } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Cpu, Info, Key, Layers, Database } from "lucide-react"
+import { Cpu, Info, Key, Layers, Database, Receipt } from "lucide-react"
+import { getProveedores } from "@/services/proveedorService"
 
 import { getMarcas } from "@/services/marcaService"
 import { getModelos } from "@/services/modeloService"
@@ -50,17 +51,17 @@ const RAM_SPECS: Record<string, { label: string, frecuencias: string[], capacida
 }
 
 const DISK_SPECS: Record<string, string[]> = {
-  "HDD 3.5\"": ["500 GB", "1 TB", "2 TB", "4 TB", "6 TB", "8 TB", "10 TB", "12 TB", "14 TB", "16 TB", "18 TB", "20 TB", "22 TB", "24 TB", "28 TB"],
-  "HDD 2.5\"": ["250 GB", "320 GB", "500 GB", "750 GB", "1 TB", "2 TB", "4 TB", "5 TB"],
-  "SSD 2.5\"": ["120 GB", "128 GB", "240 GB", "250 GB", "256 GB", "480 GB", "500 GB", "512 GB", "960 GB", "1 TB", "2 TB", "4 TB", "8 TB"],
-  "mSATA": ["32 GB", "64 GB", "128 GB", "256 GB", "512 GB", "1 TB"],
-  "M.2 SATA 2280": ["120 GB", "128 GB", "240 GB", "250 GB", "256 GB", "480 GB", "500 GB", "512 GB", "1 TB", "2 TB"],
-  "M.2 SATA 2242": ["120 GB", "128 GB", "240 GB", "250 GB", "256 GB", "480 GB", "500 GB", "512 GB", "1 TB", "2 TB"],
-  "NVMe 2280": ["128 GB", "256 GB", "512 GB", "1 TB", "2 TB", "4 TB", "8 TB", "16 TB"],
-  "NVMe 2242": ["128 GB", "256 GB", "512 GB", "1 TB", "2 TB", "4 TB", "8 TB", "16 TB"],
-  "NVMe 2230": ["128 GB", "256 GB", "512 GB", "1 TB", "2 TB", "4 TB", "8 TB", "16 TB"],
-  "NVMe 2260": ["128 GB", "256 GB", "512 GB", "1 TB", "2 TB", "4 TB", "8 TB", "16 TB"],
-  "NVMe 22110": ["128 GB", "256 GB", "512 GB", "1 TB", "2 TB", "4 TB", "8 TB", "16 TB"],
+  "HDD 3.5\"": ["20 GB", "40 GB", "80 GB", "120 GB", "160 GB", "250 GB", "320 GB", "400 GB", "500 GB", "640 GB", "750 GB", "1 TB", "2 TB", "3 TB", "4 TB", "6 TB", "8 TB", "10 TB", "12 TB", "14 TB", "16 TB", "18 TB", "20 TB", "22 TB"],
+  "HDD 2.5\"": ["30 GB", "40 GB", "60 GB", "80 GB", "120 GB", "160 GB", "250 GB", "320 GB", "500 GB", "640 GB", "750 GB", "1 TB", "2 TB", "4 TB", "5 TB"],
+  "SSD 2.5\" SATA": ["16 GB", "30 GB", "32 GB", "60 GB", "64 GB", "120 GB", "128 GB", "240 GB", "250 GB", "256 GB", "480 GB", "500 GB", "512 GB", "960 GB", "1 TB", "2 TB", "4 TB", "8 TB"],
+  "mSATA": ["8 GB", "16 GB", "32 GB", "64 GB", "120 GB", "128 GB", "240 GB", "256 GB", "480 GB", "500 GB", "512 GB", "1 TB"],
+  "M.2 SATA 2280": ["32 GB", "64 GB", "120 GB", "128 GB", "240 GB", "250 GB", "256 GB", "480 GB", "500 GB", "512 GB", "960 GB", "1 TB", "2 TB", "4 TB"],
+  "M.2 SATA 2242": ["16 GB", "32 GB", "64 GB", "120 GB", "128 GB", "240 GB", "256 GB", "480 GB", "512 GB", "1 TB", "2 TB"],
+  "NVMe 2280": ["120 GB", "128 GB", "240 GB", "250 GB", "256 GB", "480 GB", "500 GB", "512 GB", "960 GB", "1 TB", "2 TB", "4 TB", "8 TB"],
+  "NVMe 2242": ["128 GB", "250 GB", "256 GB", "500 GB", "512 GB", "1 TB", "2 TB"],
+  "NVMe 2230": ["64 GB", "128 GB", "256 GB", "512 GB", "1 TB", "2 TB"],
+  "NVMe 2260": ["128 GB", "256 GB", "512 GB", "1 TB", "2 TB"],
+  "NVMe 22110": ["240 GB", "256 GB", "480 GB", "512 GB", "960 GB"]
 }
 
 const CPU_SPECS: Record<string, Record<string, Record<string, { nucleos: string; hilos: string; frecuencia: string }>>> = {
@@ -147,6 +148,12 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
 
   const [activeTab, setActiveTab] = useState("general")
 
+  const formatMacAddress = (value: string) => {
+    const cleaned = value.replace(/[^a-fA-F0-9]/g, '').toUpperCase();
+    const formatted = cleaned.match(/.{1,2}/g)?.join(':') || '';
+    return formatted.substring(0, 17);
+  }
+
   // Form states matching backend entity relationships & columns
   const [tipoDeEquipoId, setTipoDeEquipoId] = useState("")
   const [marcaId, setMarcaId] = useState("")
@@ -154,6 +161,15 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
   const [estado, setEstado] = useState("RECIBIDO")
   const [vencimientoGarantia, setVencimientoGarantia] = useState("")
   const [vendidoFemase, setVendidoFemase] = useState(false)
+
+  // Facturacion states
+  const [proveedorId, setProveedorId] = useState("")
+  const [factura, setFactura] = useState("")
+  const [fechaCompra, setFechaCompra] = useState("")
+  const [dbProveedores, setDbProveedores] = useState<{ id: number; nombre: string }[]>([])
+  const [openComboboxProveedor, setOpenComboboxProveedor] = useState(false)
+  const [searchProveedor, setSearchProveedor] = useState("")
+  const fetchProveedores = useCallback((s: string) => getProveedores(1, 10, s).then(r => r.data || []), [])
 
   // Custom added fields from Computador entity
   const [clienteId, setClienteId] = useState("")
@@ -232,17 +248,17 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
   const fetchWinLic = useCallback((s: string) => getLicenciasWin(1, 10, s).then(r => r.data || []), [])
   const fetchOfficeLic = useCallback((s: string) => getLicenciasOffice(1, 10, s).then(r => r.data || []), [])
 
-  const fetchCpu = useCallback((s: string) => getComponentes('procesador', 1, 10, s).then(r => r.data || []), [])
-  const fetchPlaca = useCallback((s: string) => getComponentes('placa-madre', 1, 10, s).then(r => r.data || []), [])
-  const fetchGpu = useCallback((s: string) => getComponentes('tarjeta-grafica', 1, 10, s).then(r => r.data || []), [])
-  const fetchFuente = useCallback((s: string) => getComponentes('fuente-poder', 1, 10, s).then(r => r.data || []), [])
+  const fetchCpu = useCallback((s: string) => getComponentes('procesador', 1, 10, s).then(r => (r.data || []).filter((c: any) => c.uso > 0 || String(c.id) === String(procesadorId))), [procesadorId])
+  const fetchPlaca = useCallback((s: string) => getComponentes('placa-madre', 1, 10, s).then(r => (r.data || []).filter((c: any) => c.uso > 0 || String(c.id) === String(placaId))), [placaId])
+  const fetchGpu = useCallback((s: string) => getComponentes('tarjeta-grafica', 1, 10, s).then(r => (r.data || []).filter((c: any) => c.uso > 0 || String(c.id) === String(tarjetaGraficaId))), [tarjetaGraficaId])
+  const fetchFuente = useCallback((s: string) => getComponentes('fuente-poder', 1, 10, s).then(r => (r.data || []).filter((c: any) => c.uso > 0 || String(c.id) === String(fuenteId))), [fuenteId])
   
-  const fetchRam = useCallback((s: string) => getComponentes('memoria-ram', 1, 10, s).then(r => r.data || []), [])
-  const fetchDisk = useCallback((s: string) => getComponentes('disco-almacenamiento', 1, 10, s).then(r => r.data || []), [])
+  const fetchRam = useCallback((s: string) => getComponentes('memoria-ram', 1, 10, s).then(r => (r.data || []).filter((c: any) => c.uso > 0 || [memoriaRam1Id, memoriaRam2Id, memoriaRam3Id, memoriaRam4Id].includes(String(c.id)))), [memoriaRam1Id, memoriaRam2Id, memoriaRam3Id, memoriaRam4Id])
+  const fetchDisk = useCallback((s: string) => getComponentes('disco-almacenamiento', 1, 10, s).then(r => (r.data || []).filter((c: any) => c.uso > 0 || [discoAlma1Id, discoAlma2Id, discoAlma3Id].includes(String(c.id)))), [discoAlma1Id, discoAlma2Id, discoAlma3Id])
 
   // Catalog lists
   const [dbBrands, setDbBrands] = useState<{ id: number; nombre: string }[]>([])
-  const [dbModels, setDbModels] = useState<{ id: number; name: string; brandId: number }[]>([])
+  const [dbModels, setDbModels] = useState<{ id: number; nombre: string; brandId: number }[]>([])
   const [dbTypes, setDbTypes] = useState<{ id: number; nombre: string; computador?: boolean }[]>([])
   const [dbClientes, setDbClientes] = useState<{ id: number; nombre: string }[]>([])
 
@@ -261,7 +277,7 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
       getModelos(1, 1000).then((res) => {
         const mapped = (res.data || []).map((m: any) => ({
           id: m.id,
-          name: m.nombre,
+          nombre: m.nombre,
           brandId: m.marca?.id || Number(m.marca)
         }))
         setDbModels(mapped)
@@ -279,6 +295,7 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
       getComponentes("tarjeta-grafica", 1, 1000).then((res) => setGpus(res.data || [])).catch(err => console.error(err))
       getComponentes("fuente-poder", 1, 1000).then((res) => setPowers(res.data || [])).catch(err => console.error(err))
       getComponentes("placa-madre", 1, 1000).then((res) => setPlates(res.data || [])).catch(err => console.error(err))
+      getProveedores(1, 1000).then((res) => setDbProveedores(res.data || [])).catch(err => console.error(err))
 
       // Reset manual modes & inputs
       setProcesadorMode("existing")
@@ -333,6 +350,10 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
         setDvd(!!equipmentToEdit.dvd)
         setCamara(!!equipmentToEdit.camara)
         setIdTeamviewer(equipmentToEdit.id_teamviewer || "")
+
+        setProveedorId(equipmentToEdit.proveedor?.id ? String(equipmentToEdit.proveedor.id) : "")
+        setFactura(equipmentToEdit.factura !== undefined && equipmentToEdit.factura !== null ? String(equipmentToEdit.factura) : "")
+        setFechaCompra(equipmentToEdit.fecha_compra ? equipmentToEdit.fecha_compra.substring(0, 10) : "")
 
         // Tarjeta Gráfica
         if (equipmentToEdit.tarjeta_grafica) {
@@ -608,6 +629,10 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
         setCamara(false)
         setIdTeamviewer("")
 
+        setProveedorId("")
+        setFactura("")
+        setFechaCompra("")
+
         setProcesadorId("")
         setTarjetaGraficaMode("existing")
         setTarjetaGraficaId("")
@@ -654,10 +679,10 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
   const filteredOfficeLicenses = officeLicensesOptions.filter((lic) => lic.activa || String(lic.id) === String(keyOfficeId))
 
   // Filter hardware components: only show those that have activa === true OR are currently selected in the equipment
-  const filteredCpus = cpus.filter((c) => c.activa || String(c.id) === String(procesadorId))
-  const filteredPlates = plates.filter((pl) => pl.activa || String(pl.id) === String(placaId))
-  const filteredGpus = gpus.filter((g) => g.activa || String(g.id) === String(tarjetaGraficaId))
-  const filteredPowers = powers.filter((p) => p.activa || String(p.id) === String(fuenteId))
+  const filteredCpus = cpus.filter((c) => (c.activa && c.uso > 0) || String(c.id) === String(procesadorId))
+  const filteredPlates = plates.filter((pl) => (pl.activa && pl.uso > 0) || String(pl.id) === String(placaId))
+  const filteredGpus = gpus.filter((g) => (g.activa && g.uso > 0) || String(g.id) === String(tarjetaGraficaId))
+  const filteredPowers = powers.filter((p) => (p.activa && p.uso > 0) || String(p.id) === String(fuenteId))
 
   const getAvailableRamsForSlot = (slotNum: number) => {
     const selectedInOtherSlots = [
@@ -788,6 +813,9 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
       dvd,
       camara,
       id_teamviewer: idTeamviewer || "",
+      proveedor: proveedorId ? Number(proveedorId) : null,
+      factura: factura ? Number(factura) : null,
+      fecha_compra: fechaCompra || null,
 
       procesador:
         procesadorMode === "manual"
@@ -996,7 +1024,7 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
           </DialogHeader>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 bg-secondary/50 p-1 rounded-lg">
+            <TabsList className="grid w-full grid-cols-4 bg-secondary/50 p-1 rounded-lg">
               <TabsTrigger value="general" className="flex items-center justify-center gap-2 py-2">
                 <Info className="h-4 w-4" />
                 <span>General</span>
@@ -1007,7 +1035,11 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
               </TabsTrigger>
               <TabsTrigger value="detalles" className="flex items-center justify-center gap-2 py-2">
                 <Key className="h-4 w-4" />
-                <span>Detalles y Licencias</span>
+                <span>Detalles</span>
+              </TabsTrigger>
+              <TabsTrigger value="facturacion" className="flex items-center justify-center gap-2 py-2">
+                <Receipt className="h-4 w-4" />
+                <span>Facturación</span>
               </TabsTrigger>
             </TabsList>
 
@@ -1050,7 +1082,7 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
 
 
                 <div className="space-y-2">
-                  <Label htmlFor="eq-user">TIPO DE USUARIO</Label>
+                  <Label htmlFor="eq-user">Tipo de usuario</Label>
                   <Input
                     id="eq-user"
                     placeholder="Ej: ADMINISTRACION, SOPORTE..."
@@ -1332,7 +1364,7 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                   </div>
 
                   {tarjetaGraficaMode === "existing" ? (
-                    <AsyncCombobox value={tarjetaGraficaId} onValueChange={setTarjetaGraficaId} fetcher={fetchGpu} placeholder="Selecciona una tarjeta gráfica (Opcional)" preloadItems={[{id: "_null", marca: "Sin Tarjeta Gráfica", modelo: ""}, ...filteredGpus]} renderItem={(g) => g.id === "_null" ? "Sin Tarjeta Gráfica" : (<div className="flex flex-col"><span>{g.marca?.nombre || g.marca} {g.modelo}</span><span className="text-xs text-muted-foreground">VRAM: {g.vram} - Stock: {g.uso}</span></div>)} renderValue={(g) => g.id === "_null" ? "Sin Tarjeta Gráfica" : `${g.marca?.nombre || g.marca} ${g.modelo}`} />
+                    <AsyncCombobox value={tarjetaGraficaId} onValueChange={setTarjetaGraficaId} fetcher={fetchGpu} placeholder="Selecciona una tarjeta gráfica" preloadItems={[{id: "_null", marca: "Sin Tarjeta Gráfica", modelo: ""}, ...filteredGpus]} renderItem={(g) => g.id === "_null" ? "Sin Tarjeta Gráfica" : (<div className="flex flex-col"><span>{g.marca?.nombre || g.marca} {g.modelo}</span><span className="text-xs text-muted-foreground">VRAM: {g.vram} - Stock: {g.uso}</span></div>)} renderValue={(g) => g.id === "_null" ? "Sin Tarjeta Gráfica" : `${g.marca?.nombre || g.marca} ${g.modelo}`} />
                   ) : (
                     <div className="grid grid-cols-2 gap-3 mt-3 bg-secondary/10 p-3 rounded-md border border-border/30">
                       <div className="space-y-1">
@@ -2402,10 +2434,10 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                   <Label htmlFor="eq-mac-eth1">MAC Ethernet 1</Label>
                   <Input
                     id="eq-mac-eth1"
-                    placeholder="Ej: C4-C6-E6-9E-33-54"
+                    placeholder="Ej: C4:C6:E6:9E:33:54"
                     className="bg-secondary/50 border-0"
                     value={macEthernet1}
-                    onChange={(e) => setMacEthernet1(e.target.value)}
+                    onChange={(e) => setMacEthernet1(formatMacAddress(e.target.value))}
                   />
                 </div>
 
@@ -2413,10 +2445,10 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                   <Label htmlFor="eq-mac-eth2">MAC Ethernet 2</Label>
                   <Input
                     id="eq-mac-eth2"
-                    placeholder="Ej: C4-C6-E6-9E-33-55"
+                    placeholder="Ej: C4:C6:E6:9E:33:55"
                     className="bg-secondary/50 border-0"
                     value={macEthernet2}
-                    onChange={(e) => setMacEthernet2(e.target.value)}
+                    onChange={(e) => setMacEthernet2(formatMacAddress(e.target.value))}
                   />
                 </div>
 
@@ -2424,10 +2456,10 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                   <Label htmlFor="eq-mac-wifi">MAC Wifi</Label>
                   <Input
                     id="eq-mac-wifi"
-                    placeholder="Ej: 74-12-B3-0B-B5-37"
+                    placeholder="Ej: 74:12:B3:0B:B5:37"
                     className="bg-secondary/50 border-0"
                     value={macWifi}
-                    onChange={(e) => setMacWifi(e.target.value)}
+                    onChange={(e) => setMacWifi(formatMacAddress(e.target.value))}
                   />
                 </div>
 
@@ -2444,12 +2476,12 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
 
                 <div className="space-y-2">
                   <Label htmlFor="eq-key-win">Licencia Windows</Label>
-                  <AsyncCombobox value={keyWinId} onValueChange={setKeyWinId} fetcher={fetchWinLic} placeholder="Selecciona licencia Windows" preloadItems={[{id: "_null", version: "Sin Licencia Windows", key: ""}, {id: "clie", version: "Licencia de marca", key: ""}, ...filteredWinLicenses]} renderItem={(item) => `${item.version} ${item.key ? "- " + item.key : ""} ${item.activa === false ? "(Inactiva)" : ""}`} renderValue={(item) => `${item.version} ${item.key ? "- " + item.key : ""}`} />
+                  <AsyncCombobox value={keyWinId} onValueChange={setKeyWinId} fetcher={fetchWinLic} placeholder="Selecciona licencia Windows" preloadItems={[{id: "_null", nombre: "Sin Licencia Windows", key: ""}, {id: "clie", nombre: "Licencia de marca", key: ""}, ...filteredWinLicenses]} renderItem={(item) => `${item.nombre} ${item.key ? "- " + item.key : ""} ${item.activa === false ? "(Inactiva)" : ""}`} renderValue={(item) => `${item.nombre} ${item.key ? "- " + item.key : ""}`} />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="eq-key-office">Licencia Office</Label>
-                  <AsyncCombobox value={keyOfficeId} onValueChange={setKeyOfficeId} fetcher={fetchOfficeLic} placeholder="Selecciona licencia Office" preloadItems={[{id: "_null", version: "Sin Licencia Office", key: ""}, {id: "marca", version: "Cliente ya posee una", key: ""}, ...filteredOfficeLicenses]} renderItem={(item) => `${item.version} ${item.key ? "- " + item.key : ""} ${item.activa === false ? "(Inactiva)" : ""}`} renderValue={(item) => `${item.version} ${item.key ? "- " + item.key : ""}`} />
+                  <AsyncCombobox value={keyOfficeId} onValueChange={setKeyOfficeId} fetcher={fetchOfficeLic} placeholder="Selecciona licencia Office" preloadItems={[{id: "_null", nombre: "Sin Licencia Office", key: ""}, {id: "marca", nombre: "Cliente ya posee una", key: ""}, ...filteredOfficeLicenses]} renderItem={(item) => `${item.nombre} ${item.key ? "- " + item.key : ""} ${item.activa === false ? "(Inactiva)" : ""}`} renderValue={(item) => `${item.nombre} ${item.key ? "- " + item.key : ""}`} />
                 </div>
               </div>
 
@@ -2465,6 +2497,41 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                 </div>
               </div>
             </TabsContent>
+
+            {/* TAB 4: FACTURACIÓN */}
+            <TabsContent value="facturacion" className="space-y-4 pt-4 outline-none">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="eq-proveedor">Proveedor</Label>
+                  <AsyncCombobox value={proveedorId} onValueChange={setProveedorId} fetcher={fetchProveedores} placeholder="Selecciona proveedor" preloadItems={dbProveedores} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="eq-factura">Factura</Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold">$</span>
+                    <Input
+                      id="eq-factura"
+                      type="number"
+                      placeholder="Ej: 15000"
+                      className="pl-7 bg-secondary/50 border-0"
+                      value={factura}
+                      onChange={(e) => setFactura(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="eq-fecha-compra">Fecha de Compra</Label>
+                  <Input
+                    id="eq-fecha-compra"
+                    type="date"
+                    className="bg-secondary/50 border-0"
+                    value={fechaCompra}
+                    onChange={(e) => setFechaCompra(e.target.value)}
+                  />
+                </div>
+              </div>
+            </TabsContent>
+
           </Tabs>
 
           <DialogFooter className="pt-4 border-t border-border/80">

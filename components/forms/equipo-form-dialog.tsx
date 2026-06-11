@@ -22,12 +22,16 @@ import {
 import { Switch } from "@/components/ui/switch"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
-import { Check, ChevronsUpDown } from "lucide-react"
+import { Check, ChevronsUpDown, Settings, Receipt } from "lucide-react"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { AsyncCombobox } from "@/components/ui/async-combobox"
+import { useCallback } from "react"
 import { cn } from "@/lib/utils"
 
 import { getMarcas } from "@/services/marcaService"
 import { getModelos } from "@/services/modeloService"
 import { getTiposDeEquipo } from "@/services/tipoDeEquipoService"
+import { getProveedores } from "@/services/proveedorService"
 interface EquipoFormDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -59,6 +63,23 @@ export function EquipoFormDialog({ open, onOpenChange, equipoToEdit, onSave }: E
 
   const [openComboboxModel, setOpenComboboxModel] = useState(false)
   const [searchModel, setSearchModel] = useState("")
+
+  const [activeTab, setActiveTab] = useState("general")
+
+  // Facturacion states
+  const [proveedorId, setProveedorId] = useState("")
+  const [factura, setFactura] = useState("")
+  const [fechaCompra, setFechaCompra] = useState("")
+  const [dbProveedores, setDbProveedores] = useState<{ id: number; nombre: string }[]>([])
+  const [openComboboxProveedor, setOpenComboboxProveedor] = useState(false)
+  const [searchProveedor, setSearchProveedor] = useState("")
+  const fetchProveedores = useCallback((s: string) => getProveedores(1, 10, s).then(r => r.data || []), [])
+
+  useEffect(() => {
+    if (open) {
+      getProveedores(1, 1000).then((res) => setDbProveedores(res.data || [])).catch(err => console.error(err))
+    }
+  }, [open])
 
   useEffect(() => {
     if (open) {
@@ -139,6 +160,11 @@ export function EquipoFormDialog({ open, onOpenChange, equipoToEdit, onSave }: E
            }])
         }
 
+        setProveedorId(equipoToEdit.proveedor?.id ? String(equipoToEdit.proveedor.id) : "")
+        setFactura(equipoToEdit.factura !== undefined && equipoToEdit.factura !== null ? String(equipoToEdit.factura) : "")
+        setFechaCompra(equipoToEdit.fecha_compra ? equipoToEdit.fecha_compra.substring(0, 10) : "")
+        setActiveTab("general")
+
       } else {
         setTipoDeEquipoId("")
         setMarcaId("")
@@ -148,6 +174,11 @@ export function EquipoFormDialog({ open, onOpenChange, equipoToEdit, onSave }: E
         setGarantia("")
         setIsMonitor(false)
         setPulgadas("")
+
+        setProveedorId("")
+        setFactura("")
+        setFechaCompra("")
+        setActiveTab("general")
       }
     } else {
         setSearchType("")
@@ -168,6 +199,9 @@ export function EquipoFormDialog({ open, onOpenChange, equipoToEdit, onSave }: E
       pulgadas: isMonitor ? pulgadas : "",
       garantia: Number(garantia),
       estado: estado,
+      proveedor: proveedorId ? Number(proveedorId) : null,
+      factura: factura ? Number(factura) : null,
+      fecha_compra: fechaCompra || null,
     })
     onOpenChange(false)
   }
@@ -187,7 +221,20 @@ export function EquipoFormDialog({ open, onOpenChange, equipoToEdit, onSave }: E
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 bg-secondary/50 p-1 rounded-lg">
+              <TabsTrigger value="general" className="flex items-center justify-center gap-2 py-2">
+                <Settings className="h-4 w-4" />
+                <span>Especificaciones</span>
+              </TabsTrigger>
+              <TabsTrigger value="facturacion" className="flex items-center justify-center gap-2 py-2">
+                <Receipt className="h-4 w-4" />
+                <span>Facturación</span>
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="general" className="space-y-4 pt-4 outline-none">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="eq-nserie">Número de Serie *</Label>
               <Input
@@ -414,6 +461,41 @@ export function EquipoFormDialog({ open, onOpenChange, equipoToEdit, onSave }: E
               />
             </div>
           )}
+          </TabsContent>
+
+          <TabsContent value="facturacion" className="space-y-4 pt-4 outline-none">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="eq-proveedor">Proveedor</Label>
+                <AsyncCombobox value={proveedorId} onValueChange={setProveedorId} fetcher={fetchProveedores} placeholder="Selecciona proveedor" preloadItems={dbProveedores} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="eq-factura">Factura</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold">$</span>
+                  <Input
+                    id="eq-factura"
+                    type="number"
+                    placeholder="Ej: 15000"
+                    className="pl-7 bg-secondary/50 border-0"
+                    value={factura}
+                    onChange={(e) => setFactura(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="eq-fecha-compra">Fecha de Compra</Label>
+                <Input
+                  id="eq-fecha-compra"
+                  type="date"
+                  className="bg-secondary/50 border-0"
+                  value={fechaCompra}
+                  onChange={(e) => setFechaCompra(e.target.value)}
+                />
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
 
           <DialogFooter className="pt-4 border-t border-border/80">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>

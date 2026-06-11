@@ -17,7 +17,7 @@ const regexMap = [
   },
   {
     find: /<Select value=\{clienteId\} onValueChange=\{setClienteId\}>\s*<SelectTrigger id="eq-cliente" className="bg-secondary\/50 border-0">\s*<SelectValue placeholder="Selecciona cliente \(Opcional\)" \/>\s*<\/SelectTrigger>\s*<SelectContent>\s*<SelectItem value="_null">Sin Cliente \(Ninguno\)<\/SelectItem>\s*\{dbClientes\.map\(\(c\) => \(\s*<SelectItem key=\{c\.id\} value=\{String\(c\.id\)\}>\s*\{c\.nombre\}\s*<\/SelectItem>\s*\)\)\}\s*<\/SelectContent>\s*<\/Select>/g,
-    repl: `<AsyncCombobox value={clienteId} onValueChange={setClienteId} fetcher={fetchClientes} placeholder="Selecciona cliente (Opcional)" preloadItems={[{id: "_null", nombre: "Sin Cliente (Ninguno)"}, ...dbClientes]} />`
+    repl: `<AsyncCombobox value={clienteId} onValueChange={setClienteId} fetcher={fetchClientes} placeholder="Selecciona cliente" preloadItems={[{id: "_null", nombre: "Sin Cliente (Ninguno)"}, ...dbClientes]} />`
   },
   {
     find: /<Select value=\{keyWinId\} onValueChange=\{setKeyWinId\}>\s*<SelectTrigger id="eq-keywin" className="bg-secondary\/50 border-0">\s*<SelectValue placeholder="Selecciona licencia Windows" \/>\s*<\/SelectTrigger>\s*<SelectContent>\s*<SelectItem value="_null">Sin Licencia Windows<\/SelectItem>\s*<SelectItem value="clie">Licencia Cliente<\/SelectItem>\s*\{filteredWinLicenses\.map\(\(l\) => \(\s*<SelectItem key=\{l\.id\} value=\{String\(l\.id\)\}>\s*\{l\.version\} - \{l\.key\} \{!l\.activa \? "\(Inactiva\)" : ""\}\s*<\/SelectItem>\s*\)\)\}\s*<\/SelectContent>\s*<\/Select>/g,
@@ -41,7 +41,7 @@ const regexMap = [
   },
   {
     find: /<Select value=\{tarjetaGraficaId\} onValueChange=\{setTarjetaGraficaId\}>\s*<SelectTrigger id="hw-gpu" className="bg-secondary\/50 border-0 h-auto min-h-10">\s*<SelectValue placeholder="Selecciona una tarjeta gráfica \(Opcional\)" \/>\s*<\/SelectTrigger>\s*<SelectContent>\s*<SelectItem value="_null">Sin Tarjeta Gráfica<\/SelectItem>\s*\{filteredGpus\.map\(\(g\) => \(\s*<SelectItem key=\{g\.id\} value=\{String\(g\.id\)\}>\s*<div className="flex flex-col">\s*<span>\{g\.marca\} \{g\.modelo\}<\/span>\s*<span className="text-xs text-muted-foreground">\s*VRAM: \{g\.vram\} - Stock: \{g\.uso\}\s*<\/span>\s*<\/div>\s*<\/SelectItem>\s*\)\)\}\s*<\/SelectContent>\s*<\/Select>/g,
-    repl: `<AsyncCombobox value={tarjetaGraficaId} onValueChange={setTarjetaGraficaId} fetcher={fetchGpu} placeholder="Selecciona una tarjeta gráfica (Opcional)" preloadItems={[{id: "_null", marca: "Sin Tarjeta Gráfica", modelo: ""}, ...filteredGpus]} renderItem={(g) => g.id === "_null" ? "Sin Tarjeta Gráfica" : (<div className="flex flex-col"><span>{g.marca?.nombre || g.marca} {g.modelo}</span><span className="text-xs text-muted-foreground">VRAM: {g.vram} - Stock: {g.uso}</span></div>)} renderValue={(g) => g.id === "_null" ? "Sin Tarjeta Gráfica" : \`\${g.marca?.nombre || g.marca} \${g.modelo}\`} />`
+    repl: `<AsyncCombobox value={tarjetaGraficaId} onValueChange={setTarjetaGraficaId} fetcher={fetchGpu} placeholder="Selecciona una tarjeta gráfica" preloadItems={[{id: "_null", marca: "Sin Tarjeta Gráfica", modelo: ""}, ...filteredGpus]} renderItem={(g) => g.id === "_null" ? "Sin Tarjeta Gráfica" : (<div className="flex flex-col"><span>{g.marca?.nombre || g.marca} {g.modelo}</span><span className="text-xs text-muted-foreground">VRAM: {g.vram} - Stock: {g.uso}</span></div>)} renderValue={(g) => g.id === "_null" ? "Sin Tarjeta Gráfica" : \`\${g.marca?.nombre || g.marca} \${g.modelo}\`} />`
   }
 ];
 

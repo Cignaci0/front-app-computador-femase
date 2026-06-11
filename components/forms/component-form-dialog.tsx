@@ -46,17 +46,17 @@ const RAM_SPECS: Record<string, { label: string, frecuencias: string[], capacida
 }
 
 const DISK_SPECS: Record<string, string[]> = {
-  "HDD 3.5\"": ["500 GB", "1 TB", "2 TB", "4 TB", "6 TB", "8 TB", "10 TB", "12 TB", "14 TB", "16 TB", "18 TB", "20 TB", "22 TB", "24 TB", "28 TB"],
-  "HDD 2.5\"": ["250 GB", "320 GB", "500 GB", "750 GB", "1 TB", "2 TB", "4 TB", "5 TB"],
-  "SSD 2.5\"": ["120 GB", "128 GB", "240 GB", "250 GB", "256 GB", "480 GB", "500 GB", "512 GB", "960 GB", "1 TB", "2 TB", "4 TB", "8 TB"],
-  "mSATA": ["32 GB", "64 GB", "128 GB", "256 GB", "512 GB", "1 TB"],
-  "M.2 SATA 2280": ["120 GB", "128 GB", "240 GB", "250 GB", "256 GB", "480 GB", "500 GB", "512 GB", "1 TB", "2 TB"],
-  "M.2 SATA 2242": ["120 GB", "128 GB", "240 GB", "250 GB", "256 GB", "480 GB", "500 GB", "512 GB", "1 TB", "2 TB"],
-  "NVMe 2280": ["128 GB", "256 GB", "512 GB", "1 TB", "2 TB", "4 TB", "8 TB", "16 TB"],
-  "NVMe 2242": ["128 GB", "256 GB", "512 GB", "1 TB", "2 TB", "4 TB", "8 TB", "16 TB"],
-  "NVMe 2230": ["128 GB", "256 GB", "512 GB", "1 TB", "2 TB", "4 TB", "8 TB", "16 TB"],
-  "NVMe 2260": ["128 GB", "256 GB", "512 GB", "1 TB", "2 TB", "4 TB", "8 TB", "16 TB"],
-  "NVMe 22110": ["128 GB", "256 GB", "512 GB", "1 TB", "2 TB", "4 TB", "8 TB", "16 TB"],
+  "HDD 3.5\"": ["20 GB", "40 GB", "80 GB", "120 GB", "160 GB", "250 GB", "320 GB", "400 GB", "500 GB", "640 GB", "750 GB", "1 TB", "2 TB", "3 TB", "4 TB", "6 TB", "8 TB", "10 TB", "12 TB", "14 TB", "16 TB", "18 TB", "20 TB", "22 TB"],
+  "HDD 2.5\"": ["30 GB", "40 GB", "60 GB", "80 GB", "120 GB", "160 GB", "250 GB", "320 GB", "500 GB", "640 GB", "750 GB", "1 TB", "2 TB", "4 TB", "5 TB"],
+  "SSD 2.5\" SATA": ["16 GB", "30 GB", "32 GB", "60 GB", "64 GB", "120 GB", "128 GB", "240 GB", "250 GB", "256 GB", "480 GB", "500 GB", "512 GB", "960 GB", "1 TB", "2 TB", "4 TB", "8 TB"],
+  "mSATA": ["8 GB", "16 GB", "32 GB", "64 GB", "120 GB", "128 GB", "240 GB", "256 GB", "480 GB", "500 GB", "512 GB", "1 TB"],
+  "M.2 SATA 2280": ["32 GB", "64 GB", "120 GB", "128 GB", "240 GB", "250 GB", "256 GB", "480 GB", "500 GB", "512 GB", "960 GB", "1 TB", "2 TB", "4 TB"],
+  "M.2 SATA 2242": ["16 GB", "32 GB", "64 GB", "120 GB", "128 GB", "240 GB", "256 GB", "480 GB", "512 GB", "1 TB", "2 TB"],
+  "NVMe 2280": ["120 GB", "128 GB", "240 GB", "250 GB", "256 GB", "480 GB", "500 GB", "512 GB", "960 GB", "1 TB", "2 TB", "4 TB", "8 TB"],
+  "NVMe 2242": ["128 GB", "250 GB", "256 GB", "500 GB", "512 GB", "1 TB", "2 TB"],
+  "NVMe 2230": ["64 GB", "128 GB", "256 GB", "512 GB", "1 TB", "2 TB"],
+  "NVMe 2260": ["128 GB", "256 GB", "512 GB", "1 TB", "2 TB"],
+  "NVMe 22110": ["240 GB", "256 GB", "480 GB", "512 GB", "960 GB"]
 }
 
 const CPU_SPECS: Record<string, Record<string, Record<string, { nucleos: string; hilos: string; frecuencia: string }>>> = {

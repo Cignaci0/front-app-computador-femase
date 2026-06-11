@@ -29,12 +29,17 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
 
 export default function GestionMantencionesPage() {
   const [comercialData, setComercialData] = useState<any[]>([])
   const [isLoadingPendientes, setIsLoadingPendientes] = useState(false)
   const [itemToAplazar, setItemToAplazar] = useState<{tipo: string, id: number} | null>(null)
   const [aplazarDate, setAplazarDate] = useState("")
+
+  const [itemToAceptar, setItemToAceptar] = useState<{tipo: string, id: number} | null>(null)
+  const [encargadoAceptar, setEncargadoAceptar] = useState("")
+  const [upgradeAceptar, setUpgradeAceptar] = useState(false)
 
   const fetchPendientes = async () => {
     setIsLoadingPendientes(true)
@@ -64,10 +69,18 @@ export default function GestionMantencionesPage() {
     return new Date(dateStr).toLocaleDateString("es-CL", { timeZone: "UTC" })
   }
 
-  const onAceptar = async (tipo: string, id: number) => {
+  const onAceptarClick = (tipo: string, id: number) => {
+    setItemToAceptar({ tipo, id })
+    setEncargadoAceptar("")
+    setUpgradeAceptar(false)
+  }
+
+  const handleAceptarConfirm = async () => {
+    if (!encargadoAceptar || !itemToAceptar) return;
     try {
-      await aceptarComercial(tipo, id);
+      await aceptarComercial(itemToAceptar.tipo, itemToAceptar.id, encargadoAceptar, upgradeAceptar);
       toast.success("Equipo aceptado y ciclo de 1 año reiniciado.");
+      setItemToAceptar(null);
       fetchPendientes();
     } catch (e) {
       toast.error("Error al aceptar");
@@ -82,7 +95,9 @@ export default function GestionMantencionesPage() {
   const handleAplazarConfirm = async () => {
     if (!aplazarDate || !itemToAplazar) return;
     try {
-      await aplazarComercial(itemToAplazar.tipo, itemToAplazar.id, new Date(aplazarDate));
+      // Parsear al mediodía local para evitar que se reste 1 día por las zonas horarias
+      const localDate = new Date(`${aplazarDate}T12:00:00`);
+      await aplazarComercial(itemToAplazar.tipo, itemToAplazar.id, localDate);
       toast.success("Equipo aplazado");
       setItemToAplazar(null);
       fetchPendientes();
@@ -149,7 +164,7 @@ export default function GestionMantencionesPage() {
                     <TableCell>{formatDate(item.fecha_proxima_mantencion)}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <Button size="sm" variant="outline" className="text-emerald-500 border-emerald-200 hover:bg-emerald-50" onClick={() => onAceptar(item.tipo, item.id)}>
+                        <Button size="sm" variant="outline" className="text-emerald-500 border-emerald-200 hover:bg-emerald-50" onClick={() => onAceptarClick(item.tipo, item.id)}>
                           <CheckCircle className="h-4 w-4 mr-1" /> Aceptar
                         </Button>
                         <Button size="sm" variant="outline" className="text-blue-500 border-blue-200 hover:bg-blue-50" onClick={() => onAplazarClick(item.tipo, item.id)}>
@@ -193,6 +208,43 @@ export default function GestionMantencionesPage() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setItemToAplazar(null)}>Cancelar</Button>
             <Button onClick={handleAplazarConfirm} disabled={!aplazarDate}>Confirmar Fecha</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!itemToAceptar} onOpenChange={(open) => !open && setItemToAceptar(null)}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Aceptar Mantención</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="encargado_aceptar" className="col-span-4">
+                Ingrese el encargado para esta mantención programada:
+              </Label>
+              <Input
+                id="encargado_aceptar"
+                type="text"
+                className="col-span-4"
+                placeholder="Ej. Juan Pérez"
+                value={encargadoAceptar}
+                onChange={(e) => setEncargadoAceptar(e.target.value)}
+              />
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="upgrade_aceptar" 
+                checked={upgradeAceptar} 
+                onCheckedChange={(checked) => setUpgradeAceptar(checked as boolean)}
+              />
+              <Label htmlFor="upgrade_aceptar" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                ¿Es un Upgrade? (Actualización de Hardware)
+              </Label>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setItemToAceptar(null)}>Cancelar</Button>
+            <Button onClick={handleAceptarConfirm} disabled={!encargadoAceptar}>Confirmar y Aceptar</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

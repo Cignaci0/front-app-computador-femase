@@ -38,7 +38,7 @@ replaceBlock(
 replaceBlock(
   '<Select value={clienteId}',
   '</Select>',
-  '<AsyncCombobox value={clienteId} onValueChange={setClienteId} fetcher={fetchClientes} placeholder="Selecciona cliente (Opcional)" preloadItems={[{id: "_null", nombre: "Sin Cliente (Ninguno)"}, ...dbClientes]} />'
+  '<AsyncCombobox value={clienteId} onValueChange={setClienteId} fetcher={fetchClientes} placeholder="Selecciona cliente" preloadItems={[{id: "_null", nombre: "Sin Cliente (Ninguno)"}, ...dbClientes]} />'
 );
 
 replaceBlock(
@@ -74,7 +74,7 @@ replaceBlock(
 replaceBlock(
   '<Select value={tarjetaGraficaId}',
   '</Select>',
-  '<AsyncCombobox value={tarjetaGraficaId} onValueChange={setTarjetaGraficaId} fetcher={fetchGpu} placeholder="Selecciona una tarjeta gráfica (Opcional)" preloadItems={[{id: "_null", marca: "Sin Tarjeta Gráfica", modelo: ""}, ...filteredGpus]} renderItem={(g) => g.id === "_null" ? "Sin Tarjeta Gráfica" : (<div className="flex flex-col"><span>{g.marca?.nombre || g.marca} {g.modelo}</span><span className="text-xs text-muted-foreground">VRAM: {g.vram} - Stock: {g.uso}</span></div>)} renderValue={(g) => g.id === "_null" ? "Sin Tarjeta Gráfica" : `${g.marca?.nombre || g.marca} ${g.modelo}`} />'
+  '<AsyncCombobox value={tarjetaGraficaId} onValueChange={setTarjetaGraficaId} fetcher={fetchGpu} placeholder="Selecciona una tarjeta gráfica" preloadItems={[{id: "_null", marca: "Sin Tarjeta Gráfica", modelo: ""}, ...filteredGpus]} renderItem={(g) => g.id === "_null" ? "Sin Tarjeta Gráfica" : (<div className="flex flex-col"><span>{g.marca?.nombre || g.marca} {g.modelo}</span><span className="text-xs text-muted-foreground">VRAM: {g.vram} - Stock: {g.uso}</span></div>)} renderValue={(g) => g.id === "_null" ? "Sin Tarjeta Gráfica" : `${g.marca?.nombre || g.marca} ${g.modelo}`} />'
 );
 
 fs.writeFileSync('components/forms/equipment-form-dialog-new.tsx', code);

@@ -16,7 +16,7 @@ const replacements = [
   },
   {
     regex: /<Select value=\{clienteId\}[\s\S]*?<\/Select>/,
-    repl: `<AsyncCombobox value={clienteId} onValueChange={setClienteId} fetcher={fetchClientes} placeholder="Selecciona cliente (Opcional)" preloadItems={[{id: "_null", nombre: "Sin Cliente (Ninguno)"}, ...dbClientes]} />`
+    repl: `<AsyncCombobox value={clienteId} onValueChange={setClienteId} fetcher={fetchClientes} placeholder="Selecciona cliente" preloadItems={[{id: "_null", nombre: "Sin Cliente (Ninguno)"}, ...dbClientes]} />`
   },
   {
     regex: /<Select value=\{keyWinId\}[\s\S]*?<\/Select>/,
@@ -40,7 +40,7 @@ const replacements = [
   },
   {
     regex: /<Select value=\{tarjetaGraficaId\}[\s\S]*?<\/Select>/,
-    repl: `<AsyncCombobox value={tarjetaGraficaId} onValueChange={setTarjetaGraficaId} fetcher={fetchGpu} placeholder="Selecciona una tarjeta gráfica (Opcional)" preloadItems={[{id: "_null", marca: "Sin Tarjeta Gráfica", modelo: ""}, ...filteredGpus]} renderItem={(g) => g.id === "_null" ? "Sin Tarjeta Gráfica" : (<div className="flex flex-col"><span>{g.marca?.nombre || g.marca} {g.modelo}</span><span className="text-xs text-muted-foreground">VRAM: {g.vram} - Stock: {g.uso}</span></div>)} renderValue={(g) => g.id === "_null" ? "Sin Tarjeta Gráfica" : \`\${g.marca?.nombre || g.marca} \${g.modelo}\`} />`
+    repl: `<AsyncCombobox value={tarjetaGraficaId} onValueChange={setTarjetaGraficaId} fetcher={fetchGpu} placeholder="Selecciona una tarjeta gráfica" preloadItems={[{id: "_null", marca: "Sin Tarjeta Gráfica", modelo: ""}, ...filteredGpus]} renderItem={(g) => g.id === "_null" ? "Sin Tarjeta Gráfica" : (<div className="flex flex-col"><span>{g.marca?.nombre || g.marca} {g.modelo}</span><span className="text-xs text-muted-foreground">VRAM: {g.vram} - Stock: {g.uso}</span></div>)} renderValue={(g) => g.id === "_null" ? "Sin Tarjeta Gráfica" : \`\${g.marca?.nombre || g.marca} \${g.modelo}\`} />`
   },
   {
     regex: /<Select value=\{memoriaRam1Id\}[\s\S]*?<\/Select>/,

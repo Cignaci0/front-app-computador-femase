@@ -177,7 +177,7 @@ export default function EquiposPage() {
           </TableHeader>
           <TableBody>
             {data.map((item) => (
-              <TableRow key={item.id} className="border-border hover:bg-secondary/10">
+              <TableRow key={item.id} className={cn("border-border", item.mantencion_programada ? "bg-emerald-500/10 hover:bg-emerald-500/20" : "hover:bg-secondary/10")}>
                 <TableCell className="font-mono text-xs font-semibold">{item.n_serie}</TableCell>
                 <TableCell>
                   <div className="flex flex-col">

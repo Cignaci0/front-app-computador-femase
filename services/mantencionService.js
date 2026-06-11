@@ -136,8 +136,12 @@ export async function getPendientesTecnico() {
   return res.json();
 }
 
-export async function aceptarComercial(tipo, id) {
-  const res = await fetch(`${BASE_URL}/comercial/aceptar/${tipo}/${id}`, { method: 'PATCH' });
+export async function aceptarComercial(tipo, id, encargado, upgrade = false) {
+  const res = await fetch(`${BASE_URL}/comercial/aceptar/${tipo}/${id}`, { 
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ encargado, upgrade })
+  });
   if (!res.ok) throw new Error("Error al aceptar");
   return safeParseResponse(res);
 }
@@ -166,4 +170,22 @@ export async function completarTecnico(tipo, id, data) {
   });
   if (!res.ok) throw new Error("Error al completar técnico");
   return safeParseResponse(res);
+}
+
+export async function searchMantenciones(query) {
+  try {
+    const response = await fetch(`${BASE_URL}/PorQuery?query=${query}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`Error en búsqueda: ${response.statusText}`);
+    }
+    return await safeParseResponse(response);
+  } catch (error) {
+    console.error("Error en searchMantenciones:", error);
+    throw error;
+  }
 }

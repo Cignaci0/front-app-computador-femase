@@ -33,6 +33,7 @@ import {
   createMantencion,
   updateMantencion,
   deleteMantencion,
+  searchMantenciones,
 } from "@/services/mantencionService"
 import { MantencionFormDialog } from "@/components/forms/mantencion-form-dialog"
 import { MantencionHistoryDialog } from "@/components/dialogs/mantencion-history-dialog"
@@ -71,38 +72,22 @@ export default function MantencionesPage() {
   const fetchData = async (p: number, s: string) => {
     setIsLoading(true)
     try {
-      // Fetch list from service (page-wise)
-      const response = await getMantenciones(p, 10)
-      if (response && response.data) {
-        let items = response.data
-
-        // Perform local search filtering
-        if (s) {
-          items = items.filter((item: any) => {
-            const devName = item.computador?.nombre_equipo || item.equipo?.nombre || ""
-            const devUser = item.computador?.usuario || ""
-            const clientName = item.cliente?.nombre || ""
-            const description = item.descripcion || ""
-            const technician = item.encargado || ""
-
-            return (
-              devName.toLowerCase().includes(s.toLowerCase()) ||
-              devUser.toLowerCase().includes(s.toLowerCase()) ||
-              clientName.toLowerCase().includes(s.toLowerCase()) ||
-              description.toLowerCase().includes(s.toLowerCase()) ||
-              technician.toLowerCase().includes(s.toLowerCase())
-            )
-          })
+      if (s && s.trim() !== "") {
+        // Llamada al endpoint de búsqueda (con POST debido a la restricción de fetch)
+        const items = await searchMantenciones(s)
+        setData(items || [])
+        setMeta({ total: items?.length || 0, page: 1, lastPage: 1, limit: items?.length || 10 })
+      } else {
+        // Fetch list from service (page-wise)
+        const response = await getMantenciones(p, 10)
+        if (response && response.data) {
+          setData(response.data)
+          setMeta(
+            response.meta
+              ? { ...response.meta, total: response.meta.total }
+              : { total: response.data.length, page: p, lastPage: 1, limit: 10 }
+          )
         }
-
-
-
-        setData(items)
-        setMeta(
-          response.meta
-            ? { ...response.meta, total: items.length }
-            : { total: items.length, page: p, lastPage: 1, limit: 10 }
-        )
       }
     } catch (error) {
       console.error(error)

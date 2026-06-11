@@ -140,6 +140,7 @@ export function EquipmentInspectDialog({ open, onOpenChange, equipment }: Equipm
               {equipment.cliente?.telefono && renderDetailItem("Teléfono Cliente", equipment.cliente.telefono, true)}
               {equipment.cliente?.correo && renderDetailItem("Correo Cliente", equipment.cliente.correo, true)}
               {renderDetailItem("Usuario Asignado", equipment.usuario)}
+              {renderDetailItem("Responsable", equipment.responsable)}
               {renderDetailItem("Nombre de Equipo (Host)", equipment.nombre_equipo, true)}
               {renderDetailItem("Vencimiento Garantía", equipment.vencimiento_garantia ? `${equipment.vencimiento_garantia} meses` : "N/A")}
               {renderDetailItem("Procedencia", equipment.vendido_femase ? "Computador vendido por femase" : "Computador vendido por empresa externa")}

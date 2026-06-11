@@ -148,7 +148,7 @@ export function MantencionFormDialog({
           const items = res.data || [];
           const comps = items.filter((item: any) => item.computador).map((item: any) => ({
             ...item.computador,
-            _encargado: item.encargado
+            _encargado: item.computador.responsable || item.encargado
           }));
           const eqs = items.filter((item: any) => item.equipo).map((item: any) => ({
             ...item.equipo,
@@ -171,7 +171,8 @@ export function MantencionFormDialog({
     if (associationType === "computador" && computadorId && computadorId !== "_null") {
       const comp = dbComputadores.find((c) => String(c.id) === computadorId);
       setFechaUltimaMantencion(comp?.fecha_ultima_mantencion ? comp.fecha_ultima_mantencion.substring(0, 10) : "");
-      if (comp?._encargado) setResponsable(comp._encargado);
+      if (comp?.responsable) setResponsable(comp.responsable);
+      else if (comp?._encargado) setResponsable(comp._encargado);
     } else if (associationType === "equipo" && equipoId && equipoId !== "_null") {
       const eq = dbEquipos.find((e) => String(e.id) === equipoId);
       setFechaUltimaMantencion(eq?.fecha_ultima_mantencion ? eq.fecha_ultima_mantencion.substring(0, 10) : "");
