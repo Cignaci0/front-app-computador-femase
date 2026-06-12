@@ -214,6 +214,7 @@ export default function MantencionesPage() {
                   <TableHead className="text-muted-foreground font-medium">Cliente</TableHead>
                   <TableHead className="text-muted-foreground font-medium">Encargado</TableHead>
                   <TableHead className="text-muted-foreground font-medium max-w-[250px]">Descripción</TableHead>
+                  <TableHead className="text-muted-foreground font-medium">Estado</TableHead>
                   <TableHead className="text-muted-foreground font-medium">Fecha Mantención</TableHead>
                   <TableHead className="text-muted-foreground font-medium w-[50px]"></TableHead>
                 </TableRow>
@@ -255,6 +256,11 @@ export default function MantencionesPage() {
                       <TableCell>{item.encargado || "N/A"}</TableCell>
                       <TableCell className="max-w-[250px] truncate text-muted-foreground text-sm" title={item.descripcion}>
                         {item.descripcion}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className="font-normal uppercase">
+                          {item.estado || "LISTO"}
+                        </Badge>
                       </TableCell>
                       <TableCell className="text-muted-foreground text-xs font-medium">
                         <div className="flex items-center gap-1.5">

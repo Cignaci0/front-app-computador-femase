@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { Plus, Search, MoreHorizontal, Pencil, Trash2, Printer } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
 import {
   Table,
@@ -12,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -149,35 +151,46 @@ export default function EquiposPage() {
       </div>
 
       {/* Toolbar */}
-      <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-card p-4 rounded-lg border border-border">
-        <div className="relative w-full sm:max-w-xs">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar por nombre o serie..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 bg-secondary/50 border-0"
-          />
-        </div>
-      </div>
+      <Card className="bg-card border-border">
+        <CardContent className="p-4">
+          <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+            <div className="relative w-full sm:max-w-xs">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por nombre o serie..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9 bg-secondary/50 border-0"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Table Section */}
-      <div className="bg-card border border-border rounded-lg overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow className="border-border hover:bg-transparent">
-              <TableHead className="font-medium">N° Serie</TableHead>
-              <TableHead className="font-medium">Marca / Modelo</TableHead>
-              <TableHead className="font-medium">Tipo</TableHead>
-              <TableHead className="font-medium">Garantía</TableHead>
-              <TableHead className="font-medium">Estado</TableHead>
-              <TableHead className="font-medium">Cliente</TableHead>
-              <TableHead className="font-medium w-[80px]"></TableHead>
-            </TableRow>
-          </TableHeader>
+      <Card className="bg-card border-border mt-6">
+        <CardHeader className="pb-0">
+          <CardTitle className="text-base font-medium">
+            {data.length} equipos registrados
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-border hover:bg-transparent">
+                  <TableHead className="text-muted-foreground font-medium">N° Serie</TableHead>
+                  <TableHead className="text-muted-foreground font-medium">Marca / Modelo</TableHead>
+                  <TableHead className="text-muted-foreground font-medium">Tipo</TableHead>
+                  <TableHead className="text-muted-foreground font-medium">Garantía</TableHead>
+                  <TableHead className="text-muted-foreground font-medium">Estado</TableHead>
+                  <TableHead className="text-muted-foreground font-medium">Cliente</TableHead>
+                  <TableHead className="text-muted-foreground font-medium w-[80px]"></TableHead>
+                </TableRow>
+              </TableHeader>
           <TableBody>
             {data.map((item) => (
-              <TableRow key={item.id} className={cn("border-border", item.mantencion_programada ? "bg-emerald-500/10 hover:bg-emerald-500/20" : "hover:bg-secondary/10")}>
+              <TableRow key={item.id} className={cn("border-border", item.upgrade ? "bg-emerald-500/10 hover:bg-emerald-500/20" : "hover:bg-secondary/10")}>
                 <TableCell className="font-mono text-xs font-semibold">{item.n_serie}</TableCell>
                 <TableCell>
                   <div className="flex flex-col">
@@ -260,8 +273,9 @@ export default function EquiposPage() {
                 </TableCell>
               </TableRow>
             )}
-          </TableBody>
-        </Table>
+            </TableBody>
+          </Table>
+        </div>
 
         {/* Pagination */}
         <div className="flex items-center justify-between px-4 py-3 border-t border-border bg-secondary/20">
@@ -287,7 +301,8 @@ export default function EquiposPage() {
             </Button>
           </div>
         </div>
-      </div>
+      </CardContent>
+    </Card>
 
       <EquipoFormDialog
         open={dialogOpen}

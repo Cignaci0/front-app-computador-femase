@@ -52,6 +52,7 @@ export function MantencionFormDialog({
   const [clienteId, setClienteId] = useState("")
   const [descripcion, setDescripcion] = useState("")
   const [upgrade, setUpgrade] = useState(false)
+  const [estado, setEstado] = useState("LISTO")
   const [fechaMantencion, setFechaMantencion] = useState("")
   const [fechaUltimaMantencion, setFechaUltimaMantencion] = useState("")
 
@@ -103,6 +104,7 @@ export function MantencionFormDialog({
         )
         setDescripcion(mantencionToEdit.descripcion || "")
         setUpgrade(mantencionToEdit.upgrade || false)
+        setEstado(mantencionToEdit.estado || "LISTO")
         setFechaMantencion(mantencionToEdit.fecha_mantencion ? mantencionToEdit.fecha_mantencion.substring(0, 10) : "")
         setFechaUltimaMantencion(
           mantencionToEdit.fecha_ultima_mantencion
@@ -119,6 +121,7 @@ export function MantencionFormDialog({
         setClienteId("")
         setDescripcion("")
         setUpgrade(false)
+        setEstado("LISTO")
         
         // Default dates to today if creating
         const today = new Date().toISOString().substring(0, 10)
@@ -193,6 +196,7 @@ export function MantencionFormDialog({
       responsable,
       descripcion,
       upgrade,
+      estado,
       computador:
         associationType === "computador" && computadorId && computadorId !== "_null"
           ? Number(computadorId)
@@ -418,6 +422,22 @@ export function MantencionFormDialog({
                 onChange={(e) => setResponsable(e.target.value)}
               />
             </div>
+
+            {/* Estado (Solo visible al editar) */}
+            {mantencionToEdit && (
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="m-estado">Estado *</Label>
+                <Select value={estado} onValueChange={setEstado}>
+                  <SelectTrigger id="m-estado" className="bg-secondary/50 border-0">
+                    <SelectValue placeholder="Selecciona estado" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="LISTO">LISTO</SelectItem>
+                    <SelectItem value="PENDIENTE">PENDIENTE</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             
             {/* Upgrade Switch */}
