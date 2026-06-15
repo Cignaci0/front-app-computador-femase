@@ -93,6 +93,11 @@ const navItems = [
     icon: Wrench,
   },
   {
+    title: "Reparaciones",
+    href: "/dashboard/reparaciones",
+    icon: Wrench,
+  },
+  {
     title: "Agenda Mantenciones",
     href: "/dashboard/gestion-mantenciones",
     icon: Wrench,
