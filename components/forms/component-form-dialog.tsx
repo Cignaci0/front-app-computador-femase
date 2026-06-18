@@ -61,18 +61,92 @@ const DISK_SPECS: Record<string, string[]> = {
 
 const CPU_SPECS: Record<string, Record<string, Record<string, { nucleos: string; hilos: string; frecuencia: string }>>> = {
   "INTEL": {
+    "Celeron": {
+      "G1610": { nucleos: "2", hilos: "2", frecuencia: "2.6 GHz" },
+      "J1900": { nucleos: "4", hilos: "4", frecuencia: "2.42 GHz" },
+      "E3300": { nucleos: "2", hilos: "2", frecuencia: "2.5 GHz" },
+      "E3400": { nucleos: "2", hilos: "2", frecuencia: "2.6 GHz" },
+      "J4115": { nucleos: "4", hilos: "4", frecuencia: "2.5 GHz" },
+      "N4000": { nucleos: "2", hilos: "2", frecuencia: "2.6 GHz" },
+      "N4020": { nucleos: "2", hilos: "2", frecuencia: "2.8 GHz" },
+      "N4100": { nucleos: "4", hilos: "4", frecuencia: "2.4 GHz" },
+      "N4500": { nucleos: "2", hilos: "2", frecuencia: "2.8 GHz" },
+    },
+    "Pentium": {
+      "E5200": { nucleos: "2", hilos: "2", frecuencia: "2.5 GHz" },
+      "Gold 6405U": { nucleos: "2", hilos: "4", frecuencia: "2.4 GHz" },
+      "Gold 7505": { nucleos: "2", hilos: "4", frecuencia: "3.5 GHz turbo" },
+      "Silver N5030": { nucleos: "4", hilos: "4", frecuencia: "3.1 GHz turbo" },
+    },
     "Core i3": {
+      "i3-2100": { nucleos: "2", hilos: "4", frecuencia: "3.1 GHz" },
+      "i3-2120": { nucleos: "2", hilos: "4", frecuencia: "3.3 GHz" },
+      "i3-4005U": { nucleos: "2", hilos: "4", frecuencia: "1.7 GHz" },
+      "i3-4130": { nucleos: "2", hilos: "4", frecuencia: "3.4 GHz" },
+      "i3-4130T": { nucleos: "2", hilos: "4", frecuencia: "2.9 GHz" },
+      "i3-4150": { nucleos: "2", hilos: "4", frecuencia: "3.5 GHz" },
+      "i3-4160": { nucleos: "2", hilos: "4", frecuencia: "3.6 GHz" },
+      "i3-4160T": { nucleos: "2", hilos: "4", frecuencia: "3.1 GHz" },
+      "i3-4170": { nucleos: "2", hilos: "4", frecuencia: "3.7 GHz" },
+      "i3-6006U": { nucleos: "2", hilos: "4", frecuencia: "2.0 GHz" },
+      "i3-6100": { nucleos: "2", hilos: "4", frecuencia: "3.7 GHz" },
+      "i3-6100T": { nucleos: "2", hilos: "4", frecuencia: "3.2 GHz" },
+      "i3-6100U": { nucleos: "2", hilos: "4", frecuencia: "2.3 GHz" },
+      "i3-7020U": { nucleos: "2", hilos: "4", frecuencia: "2.3 GHz" },
+      "i3-9100": { nucleos: "4", hilos: "4", frecuencia: "4.2 GHz turbo" },
+      "i3-1005G1": { nucleos: "2", hilos: "4", frecuencia: "3.4 GHz turbo" },
+      "i3-10100": { nucleos: "4", hilos: "8", frecuencia: "4.3 GHz turbo" },
+      "i3-10110U": { nucleos: "2", hilos: "4", frecuencia: "4.1 GHz turbo" },
+      "i3-1115G4": { nucleos: "2", hilos: "4", frecuencia: "4.1 GHz turbo" },
       "i3-12100": { nucleos: "4", hilos: "8", frecuencia: "4.3 GHz turbo" },
+      "i3-1215U": { nucleos: "6", hilos: "8", frecuencia: "4.4 GHz turbo" },
       "i3-13100": { nucleos: "4", hilos: "8", frecuencia: "4.5 GHz turbo" },
+      "i3-1315U": { nucleos: "6", hilos: "8", frecuencia: "4.5 GHz turbo" },
       "i3-14100": { nucleos: "4", hilos: "8", frecuencia: "4.7 GHz turbo" },
     },
     "Core i5": {
+      "i5-520M": { nucleos: "2", hilos: "4", frecuencia: "2.93 GHz turbo" },
+      "i5-2400": { nucleos: "4", hilos: "4", frecuencia: "3.4 GHz turbo" },
+      "i5-2520M": { nucleos: "2", hilos: "4", frecuencia: "3.2 GHz turbo" },
+      "i5-3470S": { nucleos: "4", hilos: "4", frecuencia: "3.6 GHz turbo" },
+      "i5-4300M": { nucleos: "2", hilos: "4", frecuencia: "3.3 GHz turbo" },
+      "i5-4310M": { nucleos: "2", hilos: "4", frecuencia: "3.4 GHz turbo" },
+      "i5-4570S": { nucleos: "4", hilos: "4", frecuencia: "3.6 GHz turbo" },
+      "i5-4570T": { nucleos: "2", hilos: "4", frecuencia: "3.6 GHz turbo" },
+      "i5-4590T": { nucleos: "4", hilos: "4", frecuencia: "3.0 GHz turbo" },
+      "i5-5200U": { nucleos: "2", hilos: "4", frecuencia: "2.7 GHz turbo" },
+      "i5-5300U": { nucleos: "2", hilos: "4", frecuencia: "2.9 GHz turbo" },
+      "i5-6200U": { nucleos: "2", hilos: "4", frecuencia: "2.8 GHz turbo" },
+      "i5-6300U": { nucleos: "2", hilos: "4", frecuencia: "3.0 GHz turbo" },
+      "i5-6400": { nucleos: "4", hilos: "4", frecuencia: "3.3 GHz turbo" },
+      "i5-6400T": { nucleos: "4", hilos: "4", frecuencia: "2.8 GHz turbo" },
+      "i5-6500": { nucleos: "4", hilos: "4", frecuencia: "3.6 GHz turbo" },
+      "i5-6500T": { nucleos: "4", hilos: "4", frecuencia: "3.1 GHz turbo" },
+      "i5-7200U": { nucleos: "2", hilos: "4", frecuencia: "3.1 GHz turbo" },
+      "i5-7500": { nucleos: "4", hilos: "4", frecuencia: "3.8 GHz turbo" },
+      "i5-8250U": { nucleos: "4", hilos: "8", frecuencia: "3.4 GHz turbo" },
+      "i5-8265U": { nucleos: "4", hilos: "8", frecuencia: "3.9 GHz turbo" },
+      "i5-8350U": { nucleos: "4", hilos: "8", frecuencia: "3.6 GHz turbo" },
+      "i5-8400": { nucleos: "6", hilos: "6", frecuencia: "4.0 GHz turbo" },
+      "i5-8400T": { nucleos: "6", hilos: "6", frecuencia: "3.3 GHz turbo" },
+      "i5-8500": { nucleos: "6", hilos: "6", frecuencia: "4.1 GHz turbo" },
+      "i5-8500T": { nucleos: "6", hilos: "6", frecuencia: "3.5 GHz turbo" },
+      "i5-9400": { nucleos: "6", hilos: "6", frecuencia: "4.1 GHz turbo" },
+      "i5-9400F": { nucleos: "6", hilos: "6", frecuencia: "4.1 GHz turbo" },
+      "i5-9500": { nucleos: "6", hilos: "6", frecuencia: "4.4 GHz turbo" },
+      "i5-1035G1": { nucleos: "4", hilos: "8", frecuencia: "3.6 GHz turbo" },
+      "i5-10400": { nucleos: "6", hilos: "12", frecuencia: "4.3 GHz turbo" },
       "i5-12400": { nucleos: "6", hilos: "12", frecuencia: "4.4 GHz turbo" },
+      "i5-12450H": { nucleos: "8", hilos: "12", frecuencia: "4.4 GHz turbo" },
       "i5-13400": { nucleos: "10", hilos: "16", frecuencia: "4.6 GHz turbo" },
       "i5-13600K": { nucleos: "14", hilos: "20", frecuencia: "5.1 GHz turbo" },
       "i5-14600K": { nucleos: "14", hilos: "20", frecuencia: "5.3 GHz turbo" },
     },
     "Core i7": {
+      "i7-4770S": { nucleos: "4", hilos: "8", frecuencia: "3.9 GHz turbo" },
+      "i7-4790S": { nucleos: "4", hilos: "8", frecuencia: "4.0 GHz turbo" },
+      "i7-6500U": { nucleos: "2", hilos: "4", frecuencia: "3.1 GHz turbo" },
+      "i7-7700": { nucleos: "4", hilos: "8", frecuencia: "4.2 GHz turbo" },
       "i7-12700K": { nucleos: "12", hilos: "20", frecuencia: "5.0 GHz turbo" },
       "i7-13700K": { nucleos: "16", hilos: "24", frecuencia: "5.4 GHz turbo" },
       "i7-14700K": { nucleos: "20", hilos: "28", frecuencia: "5.6 GHz turbo" },
@@ -95,19 +169,37 @@ const CPU_SPECS: Record<string, Record<string, Record<string, { nucleos: string;
     }
   },
   "AMD": {
+    "Athlon": {
+      "3020e": { nucleos: "2", hilos: "2", frecuencia: "2.6 GHz turbo" },
+      "Athlon Silver 3050U": { nucleos: "2", hilos: "2", frecuencia: "3.2 GHz turbo" },
+    },
+    "Serie A / FX": {
+      "A4-9125": { nucleos: "2", hilos: "2", frecuencia: "2.6 GHz turbo" },
+      "A10-9620P": { nucleos: "4", hilos: "4", frecuencia: "3.4 GHz turbo" },
+      "FX-6300": { nucleos: "6", hilos: "6", frecuencia: "4.1 GHz turbo" },
+    },
     "Ryzen 3": {
       "Ryzen 3 3100": { nucleos: "4", hilos: "8", frecuencia: "3.9 GHz turbo" },
+      "Ryzen 3 3250U": { nucleos: "2", hilos: "4", frecuencia: "3.5 GHz turbo" },
+      "Ryzen 3 3300U": { nucleos: "4", hilos: "4", frecuencia: "3.5 GHz turbo" },
       "Ryzen 3 4100": { nucleos: "4", hilos: "8", frecuencia: "4.0 GHz turbo" },
+      "Ryzen 3 4300U": { nucleos: "4", hilos: "4", frecuencia: "3.7 GHz turbo" },
       "Ryzen 3 5300G": { nucleos: "4", hilos: "8", frecuencia: "4.2 GHz turbo" },
+      "Ryzen 3 7320U": { nucleos: "4", hilos: "8", frecuencia: "4.1 GHz turbo" },
     },
     "Ryzen 5": {
+      "Ryzen 5 2500U": { nucleos: "4", hilos: "8", frecuencia: "3.6 GHz turbo" },
       "Ryzen 5 3600": { nucleos: "6", hilos: "12", frecuencia: "4.2 GHz turbo" },
+      "Ryzen 5 4000 Series": { nucleos: "6", hilos: "6", frecuencia: "4.0 GHz turbo" },
+      "Ryzen 5 5600U": { nucleos: "6", hilos: "12", frecuencia: "4.2 GHz turbo" },
       "Ryzen 5 5600X": { nucleos: "6", hilos: "12", frecuencia: "4.6 GHz turbo" },
+      "Ryzen 5 5625U": { nucleos: "6", hilos: "12", frecuencia: "4.3 GHz turbo" },
       "Ryzen 5 7600X": { nucleos: "6", hilos: "12", frecuencia: "5.3 GHz turbo" },
       "Ryzen 5 8600G": { nucleos: "6", hilos: "12", frecuencia: "5.0 GHz turbo" },
     },
     "Ryzen 7": {
       "Ryzen 7 3700X": { nucleos: "8", hilos: "16", frecuencia: "4.4 GHz turbo" },
+      "Ryzen 7 4800H": { nucleos: "8", hilos: "16", frecuencia: "4.2 GHz turbo" },
       "Ryzen 7 5800X": { nucleos: "8", hilos: "16", frecuencia: "4.7 GHz turbo" },
       "Ryzen 7 7700X": { nucleos: "8", hilos: "16", frecuencia: "5.4 GHz turbo" },
       "Ryzen 7 7800X3D": { nucleos: "8", hilos: "16", frecuencia: "5.0 GHz turbo" },
@@ -294,6 +386,14 @@ export function ComponentFormDialog({
           // Special mapping for id_marca if it's an object in GET
           if (f.key === "id_marca" && componentToEdit.id_marca && typeof componentToEdit.id_marca === "object") {
             val = componentToEdit.id_marca.id
+          }
+          // Special mapping for processor marca
+          if (f.key === "marca" && type === "procesador" && !val) {
+            const familia = componentToEdit.familia;
+            if (familia) {
+              if (CPU_SPECS["INTEL"] && CPU_SPECS["INTEL"][familia]) val = "INTEL";
+              else if (CPU_SPECS["AMD"] && CPU_SPECS["AMD"][familia]) val = "AMD";
+            }
           }
 
           if (unitConfig) {
