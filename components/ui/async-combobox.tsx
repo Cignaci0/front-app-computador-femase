@@ -72,14 +72,28 @@ export function AsyncCombobox({
   // merge preloadItems with fetched items to ensure the selected item is always in the list
   const allItems = React.useMemo(() => {
     const map = new Map()
-    preloadItems.forEach(i => {
+    
+    items.forEach(i => {
       if (i && i[valueKey] !== undefined) {
         map.set(String(i[valueKey]), i)
       }
     })
-    items.forEach(i => {
+
+    const lowerSearch = search.trim().toLowerCase()
+
+    preloadItems.forEach(i => {
       if (i && i[valueKey] !== undefined) {
-        map.set(String(i[valueKey]), i)
+        const idStr = String(i[valueKey])
+        if (!map.has(idStr)) {
+          let matches = true
+          if (lowerSearch && idStr !== String(value)) {
+             const itemValues = Object.values(i).map(v => typeof v === 'object' ? JSON.stringify(v) : String(v)).join(" ").toLowerCase()
+             matches = itemValues.includes(lowerSearch)
+          }
+          if (matches) {
+            map.set(idStr, i)
+          }
+        }
       }
     })
     
@@ -88,7 +102,7 @@ export function AsyncCombobox({
       result = result.filter(filterItem)
     }
     return result
-  }, [items, preloadItems, valueKey, filterItem])
+  }, [items, preloadItems, valueKey, filterItem, search, value])
 
   const selectedItem = allItems.find((item) => String(item[valueKey]) === String(value)) || preloadItems.find((item) => String(item[valueKey]) === String(value))
 

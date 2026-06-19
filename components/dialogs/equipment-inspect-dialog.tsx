@@ -181,7 +181,7 @@ export function EquipmentInspectDialog({ open, onOpenChange, equipment }: Equipm
           {/* TAB 2: HARDWARE */}
           <TabsContent value="hardware" className="space-y-4 pt-4 outline-none">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {renderDetailItem("Procesador (CPU)", equipment.procesador ? `${equipment.procesador.marca?.nombre || ""} ${equipment.procesador.familia} ${equipment.procesador.modelo} (${equipment.procesador.socket}, ${equipment.procesador.nucleos || "N/A"} Núcleos)` : "Ninguno")}
+              {renderDetailItem("Procesador (CPU)", equipment.procesador ? `${equipment.procesador.marca || ""} ${equipment.procesador.familia} ${equipment.procesador.modelo} (${equipment.procesador.frecuencia ? equipment.procesador.frecuencia + ", " : ""}${equipment.procesador.nucleos || "N/A"} Núcleos)` : "Ninguno")}
               {renderDetailItem("Placa Madre", equipment.placa ? `${equipment.placa.marca?.nombre || ""} ${equipment.placa.modelo} (Socket ${equipment.placa.socket || "N/A"}, Chipset ${equipment.placa.chipset || "N/A"})` : "Ninguno")}
               {renderDetailItem("Tarjeta Gráfica (GPU)", equipment.tarjeta_grafica ? `${equipment.tarjeta_grafica.marca?.nombre || ""} ${equipment.tarjeta_grafica.ensamblador || ""} ${equipment.tarjeta_grafica.modelo} (${equipment.tarjeta_grafica.vram || "N/A"})` : "Ninguno")}
               {renderDetailItem("Fuente de Poder", equipment.fuente ? `${equipment.fuente.marca?.nombre || ""} ${equipment.fuente.modelo} (${equipment.fuente.potencia || "N/A"} - ${equipment.fuente.certificacion || "N/A"})` : "Ninguno")}
@@ -201,7 +201,7 @@ export function EquipmentInspectDialog({ open, onOpenChange, equipment }: Equipm
                     <div key={i} className="bg-secondary/25 p-3 rounded-md border border-border/40">
                       <div className="text-xs text-primary font-bold">Slot {i + 1}</div>
                       <div className="text-sm font-semibold text-foreground mt-1">
-                        {r.marca?.nombre || "Sin Marca"} {r.tipo_tecnologia || ""} {r.formato || ""}
+                        {(r.id_marca?.nombre || r.marca?.nombre || "Sin Marca")} {r.tipo_tecnologia || ""} {r.formato || ""}
                       </div>
                       <div className="text-xs text-muted-foreground mt-1 flex justify-between flex-wrap gap-1">
                         <span>Nº Interno: <strong>{r.n_interno || "N/A"}</strong></span>
@@ -233,7 +233,7 @@ export function EquipmentInspectDialog({ open, onOpenChange, equipment }: Equipm
                         <div>
                           <div className="text-xs text-primary font-bold">Disco {i + 1}</div>
                           <div className="text-sm font-semibold text-foreground mt-1">
-                            {d.marca?.nombre || ""} {d.modelo || ""}
+                            {(d.id_marca?.nombre || d.marca?.nombre || "")} {d.modelo || ""}
                           </div>
                           <div className="text-xs text-muted-foreground mt-1">
                             Tipo: {d.tipo_disco || "SSD"} | Capacidad: {d.capacidad || "N/A"}
@@ -269,9 +269,9 @@ export function EquipmentInspectDialog({ open, onOpenChange, equipment }: Equipm
                 <h4 className="text-sm font-semibold">Información de Licencias</h4>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {renderDetailItem("Licencia Windows", equipment.key_win?.nombre)}
+                {renderDetailItem("Licencia Windows", equipment.key_win?.nombre || (equipment.lice_clie ? "Licencia de Marca" : null))}
                 {renderDetailItem("Key Windows", equipment.key_win?.key, true)}
-                {renderDetailItem("Licencia Office", equipment.key_office?.nombre)}
+                {renderDetailItem("Licencia Office", equipment.key_office?.nombre || (equipment.lice_marca ? "Cliente ya posee una" : null))}
                 {renderDetailItem("Key Office", equipment.key_office?.key, true)}
               </div>
             </div>

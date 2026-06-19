@@ -38,11 +38,13 @@ interface ComponentFormDialogProps {
 }
 
 const RAM_SPECS: Record<string, { label: string, frecuencias: string[], capacidades: string[], formatos: string[] }> = {
-  "DDR": { label: "DDR (DDR1)", frecuencias: ["200", "266", "333", "400"], capacidades: ["128 MB", "256 MB", "512 MB", "1 GB", "2 GB"], formatos: ["DIMM", "SO-DIMM"] },
-  "DDR2": { label: "DDR2", frecuencias: ["400", "533", "667", "800", "1066"], capacidades: ["256 MB", "512 MB", "1 GB", "2 GB", "4 GB"], formatos: ["DIMM", "SO-DIMM"] },
-  "DDR3": { label: "DDR3", frecuencias: ["800", "1066", "1333", "1600", "1866", "2133"], capacidades: ["1 GB", "2 GB", "4 GB", "8 GB", "16 GB"], formatos: ["DIMM", "SO-DIMM"] },
-  "DDR4": { label: "DDR4", frecuencias: ["1600", "1866", "2133", "2400", "2666", "2933", "3200", "3600+", "4000+", "4266+", "4400+", "4600+", "4800+", "5000+"], capacidades: ["4 GB", "8 GB", "16 GB", "32 GB", "64 GB", "128 GB"], formatos: ["DIMM", "SO-DIMM"] },
-  "DDR5": { label: "DDR5", frecuencias: ["4800", "5200", "5600", "6000", "6400", "6800", "7200", "7600", "8000", "8400", "8800", "9200+", "9600+", "10000+"], capacidades: ["8 GB", "16 GB", "24 GB", "32 GB", "48 GB", "64 GB", "96 GB", "128 GB"], formatos: ["DIMM", "SO-DIMM", "CAMM2*"] },
+  "DDR": { label: "DDR (DDR1)", frecuencias: ["200", "266", "333", "400"], capacidades: ["128 MB", "256 MB", "512 MB", "1 GB", "2 GB"], formatos: ["DIMM", "SODIMM"] },
+  "DDR2": { label: "DDR2", frecuencias: ["400", "533", "667", "800", "1066"], capacidades: ["256 MB", "512 MB", "1 GB", "2 GB", "4 GB"], formatos: ["DIMM"] },
+  "DDR3": { label: "DDR3", frecuencias: ["800", "1066", "1333", "1600", "1866", "2133"], capacidades: ["1 GB", "2 GB", "4 GB", "8 GB", "16 GB"], formatos: ["DIMM", "SODIMM"] },
+  "DDR3L": { label: "DDR3L", frecuencias: ["800", "1066", "1333", "1600", "1866", "2133"], capacidades: ["1 GB", "2 GB", "4 GB", "8 GB", "16 GB"], formatos: ["DIMM", "SODIMM"] },
+  "DDR4": { label: "DDR4", frecuencias: ["1600", "1866", "2133", "2400", "2666", "2933", "3200", "3600+", "4000+", "4266+", "4400+", "4600+", "4800+", "5000+"], capacidades: ["4 GB", "8 GB", "16 GB", "32 GB", "64 GB", "128 GB"], formatos: ["DIMM", "SODIMM"] },
+  "DDR5": { label: "DDR5", frecuencias: ["4800", "5200", "5600", "6000", "6400", "6800", "7200", "7600", "8000", "8400", "8800", "9200+", "9600+", "10000+"], capacidades: ["8 GB", "16 GB", "24 GB", "32 GB", "48 GB", "64 GB", "96 GB", "128 GB"], formatos: ["SODIMM"] },
+  "LPDDR5": { label: "LPDDR5", frecuencias: ["5500", "6400", "7500", "8533"], capacidades: ["4 GB", "8 GB", "16 GB", "32 GB", "64 GB"], formatos: ["SODIMM"] },
 }
 
 const DISK_SPECS: Record<string, string[]> = {

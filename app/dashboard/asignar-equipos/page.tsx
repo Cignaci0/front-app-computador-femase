@@ -304,7 +304,7 @@ export default function AsignarEquiposPage() {
                       />
                       <div className="flex flex-col">
                         <span className="text-sm font-medium">
-                          {c._isEquipo ? (c.tipo_equipo?.nombre || "Equipo") : `Computador ${c.id}`}
+                          {c._isEquipo ? (c.tipo_equipo?.nombre || "Equipo") : (c.nombre_equipo || `Computador ${c.id}`)}
                           <span className="text-xs font-normal text-muted-foreground ml-2">SN: {c.n_serie || c.n_serie_bios || "N/A"}</span>
                         </span>
                         <span className="text-xs text-muted-foreground">
@@ -366,7 +366,7 @@ export default function AsignarEquiposPage() {
                         <Checkbox disabled checked />
                         <div className="flex flex-col">
                           <span className="text-sm font-medium">
-                            {c._isEquipo ? (c.tipo_equipo?.nombre || "Equipo") : `Computador ${c.id}`}
+                            {c._isEquipo ? (c.tipo_equipo?.nombre || "Equipo") : (c.nombre_equipo || `Computador ${c.id}`)}
                             <span className="font-normal italic text-xs ml-1 text-muted-foreground">(Encargado: {c.encargadoAsignado || "N/A"})</span>
                           </span>
                           <span className="text-xs text-muted-foreground mt-0.5">
@@ -390,7 +390,7 @@ export default function AsignarEquiposPage() {
                         />
                         <div className="flex flex-col">
                           <span className="text-sm font-medium text-primary">
-                            {c._isEquipo ? (c.tipo_equipo?.nombre || "Equipo") : `Computador ${c.id}`}
+                            {c._isEquipo ? (c.tipo_equipo?.nombre || "Equipo") : (c.nombre_equipo || `Computador ${c.id}`)}
                             <span className="font-bold text-xs ml-2">(NUEVO)</span>
                           </span>
                           <span className="text-xs text-muted-foreground mt-0.5">
