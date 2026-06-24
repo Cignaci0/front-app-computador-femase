@@ -1,4 +1,5 @@
-const API_URL = "http://localhost:3000/modelo";
+const GLOBAL_API_URL = process.env.NEXT_PUBLIC_API_URL ;
+const API_URL = `${GLOBAL_API_URL}/modelo`;
 
 /**
  * Obtiene la lista de modelos paginados desde la API.

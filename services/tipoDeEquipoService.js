@@ -1,4 +1,5 @@
-const API_URL = "http://localhost:3000/tipo-de-equipo";
+const GLOBAL_API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = `${GLOBAL_API_URL}/tipo-de-equipo`;
 
 /**
  * Obtiene la lista de tipos de equipo paginados desde la API.

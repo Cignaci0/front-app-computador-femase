@@ -1,4 +1,5 @@
-const API_URL = "http://localhost:3000/marca";
+const GLOBAL_API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = `${GLOBAL_API_URL}/marca`;
 
 /**
  * Obtiene la lista de marcas paginadas desde la API.

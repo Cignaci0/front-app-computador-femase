@@ -1,4 +1,5 @@
-const API_URL = "http://localhost:3000/monitor";
+const GLOBAL_API_URL = process.env.NEXT_PUBLIC_API_URL ;
+const API_URL = `${GLOBAL_API_URL}/monitor`;
 
 /**
  * Obtiene la lista de monitores paginados desde la API.

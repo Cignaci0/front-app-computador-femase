@@ -1,4 +1,5 @@
-const API_URL = "http://localhost:3000/cliente";
+const GLOBAL_API_URL = process.env.NEXT_PUBLIC_API_URL ;
+const API_URL = `${GLOBAL_API_URL}/cliente`;
 
 async function safeParseResponse(response) {
   const text = await response.text();
@@ -106,7 +107,7 @@ export async function deleteCliente(id) {
  */
 export async function getActivosPorCliente(clienteId) {
   try {
-    const response = await fetch(`http://localhost:3000/clientes-computadores/por-cliente?cliente=${clienteId}&limit=1000`);
+    const response = await fetch(`${GLOBAL_API_URL}/clientes-computadores/por-cliente?cliente=${clienteId}&limit=1000`);
     if (!response.ok) {
       throw new Error(`Error al obtener activos del cliente: ${response.statusText}`);
     }

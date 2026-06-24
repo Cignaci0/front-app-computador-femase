@@ -1,4 +1,5 @@
-const BASE_URL = "http://localhost:3000/mantencion";
+const GLOBAL_API_URL = process.env.NEXT_PUBLIC_API_URL ;
+const BASE_URL = `${GLOBAL_API_URL}/mantencion`;
 
 async function safeParseResponse(response) {
   const text = await response.text();
