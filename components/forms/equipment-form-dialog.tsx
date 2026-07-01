@@ -1190,7 +1190,7 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
 
                 <div className="space-y-2">
                   <Label htmlFor="eq-model">Modelo *</Label>
-                  <AsyncCombobox value={modeloId} onValueChange={setModeloId} disabled={!marcaId} fetcher={fetchModelos} labelKey="nombre" placeholder={marcaId ? "Selecciona modelo" : "Selecciona marca primero"} preloadItems={dbModels} />
+                  <AsyncCombobox value={modeloId} onValueChange={setModeloId} disabled={!marcaId} fetcher={fetchModelos} labelKey="nombre" placeholder={marcaId ? "Selecciona modelo" : "Selecciona marca primero"} preloadItems={filteredModels} />
                 </div>
 
 
