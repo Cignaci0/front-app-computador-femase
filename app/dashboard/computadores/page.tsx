@@ -34,7 +34,15 @@ import { getComputadores, createComputador, updateComputador, deleteComputador, 
 import { getTiposDeEquipo } from "@/services/tipoDeEquipoService"
 import { toast } from "sonner"
 
-function getStatusBadge(status: string) {
+function getStatusBadge(status: string, baja?: boolean) {
+  if (baja) {
+    return (
+      <Badge className="bg-rose-500/10 text-rose-500 border border-rose-500/20">
+        Baja
+      </Badge>
+    )
+  }
+
   const normStatus = (status || "").toUpperCase()
   switch (normStatus) {
     case "ACTIVO":
@@ -90,22 +98,23 @@ export default function EquiposPage() {
   // Fetch list of types for filter dropdown
   useEffect(() => {
     getTiposDeEquipo(1, 100).then((res) => {
-      setDbTypes(res.data || [])
+      const types = res.data || []
+      setDbTypes(types.filter((t: any) => t.computador === true))
     }).catch((err) => console.error(err))
   }, [])
 
   // Fetch computers paginated or by search query
-  const fetchComputers = async (page = 1, search = searchQuery) => {
+  const fetchComputers = async (page = 1, search = searchQuery, status = statusFilter, type = typeFilter) => {
     setLoading(true)
     try {
       if (search.trim()) {
-        const res = await buscarComputadores(search.trim())
+        const res = await buscarComputadores(search.trim(), status, type)
         setComputers(res || [])
         setTotalItems(res?.length || 0)
         setTotalPages(1)
         setCurrentPage(1)
       } else {
-        const res = await getComputadores(page, limit)
+        const res = await getComputadores(page, limit, "", status, type)
         setComputers(res.data || [])
         setTotalItems(res.meta?.total || 0)
         setTotalPages(res.meta?.lastPage || 1)
@@ -119,12 +128,12 @@ export default function EquiposPage() {
     }
   }
 
-  // Fetch when page changes (only if not searching)
+  // Fetch when page, statusFilter, or typeFilter changes (only if not searching)
   useEffect(() => {
     if (!searchQuery.trim()) {
-      fetchComputers(currentPage)
+      fetchComputers(currentPage, "", statusFilter, typeFilter)
     }
-  }, [currentPage])
+  }, [currentPage, statusFilter, typeFilter])
 
   // Debounced search query fetching
   useEffect(() => {
@@ -168,18 +177,8 @@ export default function EquiposPage() {
     }
   }
 
-  // Filter computers on the client side from fetched list (status and type filters)
-  const filteredData = computers.filter((item) => {
-    const matchesStatus =
-      statusFilter === "all" ||
-      (item.estado || "").toUpperCase() === statusFilter.toUpperCase()
-
-    const matchesType =
-      typeFilter === "all" ||
-      String(item.tipo_de_equipo?.id || item.tipo_de_equipo) === typeFilter
-
-    return matchesStatus && matchesType
-  })
+  // No client-side filtering needed anymore for status and type
+  const filteredData = computers
 
   const formatDate = (dateStr: string) => {
     if (!dateStr) return "N/A"
@@ -219,20 +218,20 @@ export default function EquiposPage() {
               />
             </div>
             <div className="flex gap-2">
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <Select value={statusFilter} onValueChange={(val) => { setStatusFilter(val); setCurrentPage(1); }}>
                 <SelectTrigger className="w-[160px] bg-secondary/50 border-0">
                   <Filter className="mr-2 h-4 w-4" />
                   <SelectValue placeholder="Estado" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos los Estados</SelectItem>
-                  <SelectItem value="ACTIVO">Activo</SelectItem>
-                  <SelectItem value="MANTENIMIENTO">Mantención</SelectItem>
-                  <SelectItem value="BODEGA">Bodega</SelectItem>
+                  <SelectItem value="RECIBIDO">Recibido</SelectItem>
+                  <SelectItem value="LISTO">Listo</SelectItem>
+                  <SelectItem value="ENTREGADO">Entregado</SelectItem>
                   <SelectItem value="BAJA">Baja</SelectItem>
                 </SelectContent>
               </Select>
-              <Select value={typeFilter} onValueChange={setTypeFilter}>
+              <Select value={typeFilter} onValueChange={(val) => { setTypeFilter(val); setCurrentPage(1); }}>
                 <SelectTrigger className="w-[160px] bg-secondary/50 border-0">
                   <SelectValue placeholder="Tipo de Equipo" />
                 </SelectTrigger>
@@ -340,7 +339,7 @@ export default function EquiposPage() {
                         </div>
                       )}
                     </TableCell>
-                    <TableCell>{getStatusBadge(item.estado)}</TableCell>
+                    <TableCell>{getStatusBadge(item.estado, item.baja)}</TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>

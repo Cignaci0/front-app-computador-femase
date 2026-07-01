@@ -15,11 +15,17 @@ async function safeParseResponse(response) {
  * @param {number} page - Número de página
  * @param {number} limit - Límite de elementos por página
  */
-export async function getComputadores(page = 1, limit = 6, search = "") {
+export async function getComputadores(page = 1, limit = 6, search = "", estado = "all", tipoDeEquipo = "all") {
   try {
     let url = `${BASE_URL}?page=${page}&limit=${limit}`;
     if (search) {
       url += `&search=${encodeURIComponent(search)}`;
+    }
+    if (estado && estado !== "all") {
+      url += `&estado=${encodeURIComponent(estado)}`;
+    }
+    if (tipoDeEquipo && tipoDeEquipo !== "all") {
+      url += `&tipo_de_equipo=${encodeURIComponent(tipoDeEquipo)}`;
     }
     const response = await fetch(url);
     if (!response.ok) {
@@ -144,9 +150,16 @@ export async function deleteComputador(id) {
  * Busca computadores utilizando un término general (ILIKE).
  * @param {string} query - Término de búsqueda (serial, bios, marca, etc.)
  */
-export async function buscarComputadores(query) {
+export async function buscarComputadores(query, estado = "all", tipoDeEquipo = "all") {
   try {
-    const response = await fetch(`${BASE_URL}/buscar/general?query=${encodeURIComponent(query)}`);
+    let url = `${BASE_URL}/buscar/general?query=${encodeURIComponent(query)}`;
+    if (estado && estado !== "all") {
+      url += `&estado=${encodeURIComponent(estado)}`;
+    }
+    if (tipoDeEquipo && tipoDeEquipo !== "all") {
+      url += `&tipo_de_equipo=${encodeURIComponent(tipoDeEquipo)}`;
+    }
+    const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`Error al buscar computadores: ${response.statusText}`);
     }

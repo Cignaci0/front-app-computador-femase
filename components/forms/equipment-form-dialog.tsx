@@ -1119,8 +1119,7 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
 
     if (equipmentToEdit && estado === "LISTO") {
       const hasWin = !!keyWinId && keyWinId !== "_null"
-      const hasOffice = !!keyOfficeId && keyOfficeId !== "_null"
-      return isValidBase && hasWin && hasOffice && !!idTeamviewer?.trim()
+      return isValidBase && hasWin && !!idTeamviewer?.trim()
     }
 
     return isValidBase
