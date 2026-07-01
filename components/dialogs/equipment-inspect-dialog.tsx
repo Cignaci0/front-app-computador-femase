@@ -156,6 +156,7 @@ export function EquipmentInspectDialog({ open, onOpenChange, equipment }: Equipm
               {equipment.fecha_listo && renderDetailItem("Fecha Listo", formatDate(equipment.fecha_listo))}
               {equipment.fecha_entregado && renderDetailItem("Fecha Entregado", formatDate(equipment.fecha_entregado))}
               {equipment.fecha_ultima_mantencion && renderDetailItem("Última Mantención", formatDate(equipment.fecha_ultima_mantencion))}
+              {equipment.fecha_proxima_mantencion && renderDetailItem("Fecha Próxima Mantención", formatDate(equipment.fecha_proxima_mantencion))}
             </div>
             
             <div className="grid grid-cols-2 gap-4 bg-secondary/20 p-4 rounded-lg border border-border/80">

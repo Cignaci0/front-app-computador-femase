@@ -255,6 +255,7 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
   const [estado, setEstado] = useState("RECIBIDO")
   const [vencimientoGarantia, setVencimientoGarantia] = useState("")
   const [vendidoFemase, setVendidoFemase] = useState(false)
+  const [baja, setBaja] = useState(false)
 
   // Facturacion states
   const [proveedorId, setProveedorId] = useState("")
@@ -268,6 +269,8 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
   // Custom added fields from Computador entity
   const [clienteId, setClienteId] = useState("")
   const [usuario, setUsuario] = useState("")
+  const [responsable, setResponsable] = useState("")
+  const [numero, setNumero] = useState("")
   const [nombreEquipo, setNombreEquipo] = useState("")
   const [nSerieCargadorNote, setNSerieCargadorNote] = useState("")
   const [nSerieBios, setNSerieBios] = useState("")
@@ -430,9 +433,12 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
         }
 
         setVendidoFemase(equipmentToEdit.vendido_femase || false)
+        setBaja(equipmentToEdit.baja || false)
 
         setClienteId(equipmentToEdit.cliente?.id ? String(equipmentToEdit.cliente.id) : "")
         setUsuario(equipmentToEdit.usuario || "")
+        setResponsable(equipmentToEdit.responsable || "")
+        setNumero(equipmentToEdit.numero !== undefined && equipmentToEdit.numero !== null ? String(equipmentToEdit.numero) : "")
         setNombreEquipo(equipmentToEdit.nombre_equipo || "")
         setNSerieCargadorNote(equipmentToEdit.n_serie_cargador_note || "")
         setNSerieBios(equipmentToEdit.n_serie_bios || "")
@@ -716,9 +722,12 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
         setMarcaId("")
         setModeloId("")
         setEstado("RECIBIDO")
+        setBaja(false)
         setVencimientoGarantia("")
         setClienteId("")
         setUsuario("")
+        setResponsable("")
+        setNumero("")
         setNombreEquipo("")
         setNSerieCargadorNote("")
         setNSerieBios("")
@@ -898,10 +907,13 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
       marca: Number(marcaId),
       modelo: Number(modeloId),
       estado,
+      baja,
       vendido_femase: vendidoFemase,
       vencimiento_garantia: !vendidoFemase ? null : Number(vencimientoGarantia),
       cliente: clienteId ? Number(clienteId) : null,
       usuario: usuario || "",
+      responsable: responsable || "",
+      numero: numero ? Number(numero) : null,
       nombre_equipo: nombreEquipo || "",
       n_serie_cargador_note: nSerieCargadorNote || "",
       n_serie_bios: nSerieBios || "",
@@ -1195,6 +1207,29 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                 </div>
 
                 <div className="space-y-2">
+                  <Label htmlFor="eq-responsable">Responsable</Label>
+                  <Input
+                    id="eq-responsable"
+                    placeholder="Ej: Juan Pérez"
+                    className="bg-secondary/50 border-0"
+                    value={responsable}
+                    onChange={(e) => setResponsable(e.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="eq-numero">Número de Equipo</Label>
+                  <Input
+                    id="eq-numero"
+                    type="number"
+                    placeholder="Ej: 123"
+                    className="bg-secondary/50 border-0"
+                    value={numero}
+                    onChange={(e) => setNumero(e.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-2">
                   <Label htmlFor="eq-name">Nombre de Equipo</Label>
                   <Input
                     id="eq-name"
@@ -1231,6 +1266,23 @@ export function EquipmentFormDialog({ open, onOpenChange, equipmentToEdit, onSav
                     <Label htmlFor="eq-vendido" className="font-semibold cursor-pointer">Vendido por Femase</Label>
                   </div>
                 </div>
+
+                {equipmentToEdit && (
+                  <div className="flex flex-row items-center justify-between rounded-lg border border-border/40 bg-secondary/10 p-3 shadow-sm">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="eq-baja">Dar computador de baja</Label>
+                      <p className="text-[0.8rem] text-muted-foreground">
+                        Inhabilita mantenciones
+                      </p>
+                    </div>
+                    <Switch
+                      id="eq-baja"
+                      checked={baja}
+                      onCheckedChange={setBaja}
+                      className="data-[state=checked]:bg-destructive"
+                    />
+                  </div>
+                )}
               </div>
             </TabsContent>
 

@@ -44,7 +44,7 @@ export async function createModelo(nombre, marcaId) {
       },
       body: JSON.stringify({
         nombre: nombre,
-        marca: Number(marcaId),
+        marca: { id: Number(marcaId) },
       }),
     });
     if (!response.ok) {
@@ -73,7 +73,7 @@ export async function updateModelo(id, nombre, marcaId) {
       },
       body: JSON.stringify({
         nombre: nombre,
-        marca: Number(marcaId),
+        marca: { id: Number(marcaId) },
       }),
     });
     if (!response.ok) {

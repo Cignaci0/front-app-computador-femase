@@ -19,8 +19,8 @@ import { getMarcas } from "@/services/marcaService"
 interface ModelFormDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  modelToEdit?: { id: number; name: string; brand: string } | null
-  onSave: (name: string, brand: string) => void
+  modelToEdit?: { id: number; name: string; brand: string; brandId?: number } | null
+  onSave: (name: string, brandId: string) => void
 }
 
 export function ModelFormDialog({ open, onOpenChange, modelToEdit, onSave }: ModelFormDialogProps) {
@@ -35,7 +35,7 @@ export function ModelFormDialog({ open, onOpenChange, modelToEdit, onSave }: Mod
       if (modelToEdit) {
         setName(modelToEdit.name)
         // Ensure we load the brand correctly for the select
-        setSelectedBrand(modelToEdit.brand)
+        setSelectedBrand(modelToEdit.brandId ? String(modelToEdit.brandId) : "")
       } else {
         setName("")
         setSelectedBrand("")
@@ -78,7 +78,7 @@ export function ModelFormDialog({ open, onOpenChange, modelToEdit, onSave }: Mod
                 onValueChange={setSelectedBrand} 
                 fetcher={fetchMarcas} 
                 placeholder="Selecciona una marca" 
-                preloadItems={modelToEdit && modelToEdit.brand ? [{ id: modelToEdit.brand, nombre: modelToEdit.brand }] : []}
+                preloadItems={modelToEdit && modelToEdit.brandId ? [{ id: modelToEdit.brandId, nombre: modelToEdit.brand }] : []}
                 labelKey="nombre"
                 valueKey="id"
                 renderValue={(item) => item.nombre}

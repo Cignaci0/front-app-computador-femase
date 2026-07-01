@@ -29,6 +29,8 @@ interface Client {
   nombre_contacto?: string | null
   telefono?: string | null
   correo?: string | null
+  correo2?: string | null
+  telefono2?: string | null
 }
 
 export default function ClientesPage() {
@@ -54,6 +56,8 @@ export default function ClientesPage() {
         nombre_contacto: item.nombre_contacto || null,
         telefono: item.telefono || null,
         correo: item.correo || null,
+        correo2: item.correo2 || null,
+        telefono2: item.telefono2 || null,
       }))
       setClients(mapped)
       if (response.meta) {
@@ -77,6 +81,8 @@ export default function ClientesPage() {
     nombre_contacto: string
     telefono: string
     correo: string
+    correo2: string
+    telefono2: string
   }) => {
     try {
       if (clientToEdit) {

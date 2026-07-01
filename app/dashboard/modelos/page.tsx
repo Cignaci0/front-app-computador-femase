@@ -30,7 +30,7 @@ export default function ModelosPage() {
   const [availableBrands, setAvailableBrands] = useState<{ id: number; name: string }[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [modelToEdit, setModelToEdit] = useState<{ id: number; name: string; brand: string } | null>(null)
+  const [modelToEdit, setModelToEdit] = useState<{ id: number; name: string; brand: string; brandId?: number } | null>(null)
   
   const [currentPage, setCurrentPage] = useState(1)
   const [limit, setLimit] = useState(6)
@@ -66,6 +66,7 @@ export default function ModelosPage() {
         id: item.id,
         name: item.nombre || item.name,
         brand: item.marca ? (item.marca.nombre || item.marca.name) : "Sin marca",
+        brandId: item.marca ? item.marca.id : undefined,
       }))
       setModels(mapped)
       if (response.meta) {
@@ -94,22 +95,16 @@ export default function ModelosPage() {
     fetchAvailableBrands()
   }, [currentPage, limit])
 
-  const handleSaveModel = async (name: string, brandName: string) => {
-    // Lookup brand ID dynamically by brand name
-    const matchedBrand = availableBrands.find(
-      (b) => b.name.toLowerCase() === brandName.toLowerCase()
-    )
-    const brandId = matchedBrand ? matchedBrand.id : 1
-
+  const handleSaveModel = async (name: string, brandId: string) => {
     try {
       if (modelToEdit) {
         // Edit
-        await updateModelo(modelToEdit.id, name, brandId)
+        await updateModelo(modelToEdit.id, name, Number(brandId))
         toast.success("Modelo actualizado exitosamente")
       } else {
         // Create
         // Sending {"nombre": name, "marca": brandId}
-        await createModelo(name, brandId)
+        await createModelo(name, Number(brandId))
         toast.success("Modelo creado exitosamente")
       }
       setModelToEdit(null)

@@ -283,7 +283,7 @@ export default function EquiposPage() {
                     </TableCell>
                   </TableRow>
                 ) : filteredData.map((item) => (
-                  <TableRow key={item.id} className={cn("border-border", item.upgrade && "bg-emerald-500/10 hover:bg-emerald-500/20")}>
+                  <TableRow key={item.id} className={cn("border-border", item.upgrade && !item.baja && "bg-emerald-500/10 hover:bg-emerald-500/20", item.baja && "bg-destructive/10 hover:bg-destructive/20")}>
                     <TableCell className="font-mono text-sm font-bold">{item.n_serie_bios || "N/A"}</TableCell>
                     <TableCell>
                       <Badge variant="secondary" className="font-normal">

@@ -22,12 +22,16 @@ interface ClientFormDialogProps {
     nombre_contacto?: string | null
     telefono?: string | null
     correo?: string | null
+    correo2?: string | null
+    telefono2?: string | null
   } | null
   onSave: (data: {
     nombre: string
     nombre_contacto: string
     telefono: string
     correo: string
+    correo2: string
+    telefono2: string
   }) => void
 }
 
@@ -36,6 +40,8 @@ export function ClientFormDialog({ open, onOpenChange, clientToEdit, onSave }: C
   const [nombreContacto, setNombreContacto] = useState("")
   const [telefono, setTelefono] = useState("")
   const [correo, setCorreo] = useState("")
+  const [correo2, setCorreo2] = useState("")
+  const [telefono2, setTelefono2] = useState("")
 
   useEffect(() => {
     if (open) {
@@ -44,11 +50,15 @@ export function ClientFormDialog({ open, onOpenChange, clientToEdit, onSave }: C
         setNombreContacto(clientToEdit.nombre_contacto || "")
         setTelefono(clientToEdit.telefono || "")
         setCorreo(clientToEdit.correo || "")
+        setCorreo2(clientToEdit.correo2 || "")
+        setTelefono2(clientToEdit.telefono2 || "")
       } else {
         setName("")
         setNombreContacto("")
         setTelefono("")
         setCorreo("")
+        setCorreo2("")
+        setTelefono2("")
       }
     }
   }, [clientToEdit, open])
@@ -61,6 +71,8 @@ export function ClientFormDialog({ open, onOpenChange, clientToEdit, onSave }: C
       nombre_contacto: nombreContacto.trim(),
       telefono: telefono.trim(),
       correo: correo.trim(),
+      correo2: correo2.trim(),
+      telefono2: telefono2.trim(),
     })
     onOpenChange(false)
   }
@@ -119,6 +131,21 @@ export function ClientFormDialog({ open, onOpenChange, clientToEdit, onSave }: C
               </div>
 
               <div className="space-y-1.5">
+                <Label htmlFor="client-phone2" className="text-sm font-semibold tracking-wide">
+                  Teléfono 2
+                </Label>
+                <Input
+                  id="client-phone2"
+                  placeholder="Ej: +56912345678"
+                  className="bg-secondary/40 border border-border/40 focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-all duration-200"
+                  value={telefono2}
+                  onChange={(e) => setTelefono2(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
                 <Label htmlFor="client-email" className="text-sm font-semibold tracking-wide">
                   Correo Electrónico
                 </Label>
@@ -129,6 +156,20 @@ export function ClientFormDialog({ open, onOpenChange, clientToEdit, onSave }: C
                   className="bg-secondary/40 border border-border/40 focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-all duration-200"
                   value={correo}
                   onChange={(e) => setCorreo(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="client-email2" className="text-sm font-semibold tracking-wide">
+                  Correo 2 
+                </Label>
+                <Input
+                  id="client-email2"
+                  type="email"
+                  placeholder="Ej: otro@gmail.com"
+                  className="bg-secondary/40 border border-border/40 focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-all duration-200"
+                  value={correo2}
+                  onChange={(e) => setCorreo2(e.target.value)}
                 />
               </div>
             </div>
