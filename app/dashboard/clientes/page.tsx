@@ -22,6 +22,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ClientFormDialog } from "@/components/forms/client-form-dialog"
 import { toast } from "sonner"
 import { getClientes, createCliente, updateCliente, deleteCliente } from "@/services/clienteService"
+//hola
 
 interface Client {
   id: number
