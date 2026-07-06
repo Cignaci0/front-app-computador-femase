@@ -209,6 +209,7 @@ const CPU_SPECS: Record<string, Record<string, Record<string, { nucleos: string;
       "Ryzen 7 4800H": { nucleos: "8", hilos: "16", frecuencia: "4.2 GHz turbo" },
       "Ryzen 7 5800X": { nucleos: "8", hilos: "16", frecuencia: "4.7 GHz turbo" },
       "Ryzen 7 7700X": { nucleos: "8", hilos: "16", frecuencia: "5.4 GHz turbo" },
+      "Ryzen 7 7730U": { nucleos: "8", hilos: "16", frecuencia: "4.5 GHz turbo" },
       "Ryzen 7 7800X3D": { nucleos: "8", hilos: "16", frecuencia: "5.0 GHz turbo" },
     },
     "Ryzen 9": {
